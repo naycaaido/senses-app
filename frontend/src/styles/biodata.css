@@ -45,9 +45,10 @@
 /* ---------- Stepper ---------- */
 .biodata-stepper {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 8px;
-  margin-top: 28px;
+  margin-top: 50px;
   width: 464px;
 }
 
