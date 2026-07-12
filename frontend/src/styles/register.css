@@ -1,0 +1,318 @@
+/* =====================================================
+   Sense's Clinic — Register Page
+   ===================================================== */
+
+.register-page {
+  min-height: 100vh;
+  background: var(--bg-cream);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---------- Header ---------- */
+.register-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 720px;
+  padding: 34px 48px 0;
+}
+
+.register-header__logo {
+  display: flex;
+  align-items: baseline;
+  font-family: var(--font-serif);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.register-header__logo-name {
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 2.88px;
+  color: #3d4940;
+}
+
+.register-header__logo-sub {
+  font-style: italic;
+  font-size: 18.72px;
+  color: var(--color-gold);
+  margin-left: 6px;
+}
+
+/* ---------- Stepper ---------- */
+.register-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 99px;
+  width: 464px;
+}
+
+.register-stepper__step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.register-stepper__circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.72px;
+  flex-shrink: 0;
+}
+
+.register-stepper__circle--active {
+  background: #3d4940;
+  color: var(--bg-cream);
+}
+
+.register-stepper__circle--inactive {
+  background: #ebf0eb;
+  color: #6b6b6b;
+}
+
+.register-stepper__label {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.72px;
+  white-space: nowrap;
+}
+
+.register-stepper__label--active {
+  color: #2c2c2c;
+}
+
+.register-stepper__label--inactive {
+  color: #6b6b6b;
+}
+
+.register-stepper__connector {
+  flex: 1;
+  min-width: 0;
+  height: 1px;
+  background: #f0ede7;
+  margin: 0 4px;
+}
+
+/* ---------- Form Card ---------- */
+.register-card {
+  width: 100%;
+  max-width: 720px;
+  padding: 40px 48px;
+}
+
+.register-card__inner {
+  width: 100%;
+  max-width: 448px;
+}
+
+.register-card__heading {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 35px;
+  color: #2c2c2c;
+  margin: 0;
+}
+
+.register-card__subtitle {
+  font-size: 15px;
+  line-height: 24px;
+  color: #6b6b6b;
+  margin: 8px 0 0;
+}
+
+/* ---------- Form ---------- */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 28px;
+}
+
+.register-field {
+  margin-bottom: 16px;
+}
+
+.register-field__label {
+  display: block;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #6b6b6b;
+  margin-bottom: 6px;
+}
+
+.register-field__label-star {
+  color: #9e5860;
+}
+
+.register-input {
+  position: relative;
+}
+
+.register-input input {
+  width: 100%;
+  height: 46px;
+  padding: 11px 15px;
+  background: #fff;
+  border: 1px solid #f0ede7;
+  border-radius: 12px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 24px;
+  color: #2c2c2c;
+  outline: none;
+}
+
+.register-input input::placeholder {
+  color: #6b6b6b;
+}
+
+.register-input input:focus {
+  border-color: #3d4940;
+}
+
+.register-input--icon input {
+  padding-left: 37px;
+}
+
+.register-input__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.register-input__icon img {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.register-input__toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #6b6b6b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.register-input__toggle svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.register-field__hint {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.72px;
+  color: #6b6b6b;
+  margin: 6px 0 0;
+}
+
+/* ---------- Submit Button ---------- */
+.register-form__btn {
+  width: 100%;
+  height: 54px;
+  margin-top: 16px;
+  padding: 14px 28px;
+  background: #3d4940;
+  color: var(--bg-cream);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 26.4px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow:
+    0 1px 2px 0 rgba(44, 44, 44, 0.04),
+    0 8px 24px 0 rgba(61, 73, 64, 0.18);
+}
+
+.register-form__btn:hover {
+  background: #0c3320;
+}
+
+.register-form__disclaimer {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.72px;
+  color: #6b6b6b;
+  text-align: center;
+  margin: 16px 0 0;
+}
+
+/* ---------- Links ---------- */
+.register-card__redirect {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 15px;
+  line-height: 24px;
+  color: #6b6b6b;
+}
+
+.register-card__redirect a {
+  font-weight: 600;
+  color: #3d4940;
+  text-decoration: underline;
+}
+
+.register-card__back {
+  display: block;
+  text-align: center;
+  margin-top: 40px;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.72px;
+  color: #6b6b6b;
+  text-decoration: underline;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .register-header {
+    padding: 24px 20px 0;
+  }
+
+  .register-stepper {
+    width: 100%;
+    max-width: 464px;
+    margin-top: 40px;
+  }
+
+  .register-card {
+    padding: 24px 20px;
+  }
+
+  .register-card__heading {
+    font-size: 24px;
+    line-height: 30px;
+  }
+}

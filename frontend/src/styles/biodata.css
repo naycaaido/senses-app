@@ -1,0 +1,333 @@
+/* =====================================================
+   Sense's Clinic — Lengkapi Biodata Page
+   ===================================================== */
+
+.biodata-page {
+  min-height: 100vh;
+  background: var(--bg-cream);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---------- Header ---------- */
+.biodata-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 768px;
+  padding: 40px 20px 0;
+}
+
+.biodata-header__logo {
+  display: flex;
+  align-items: baseline;
+  font-family: var(--font-serif);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.biodata-header__logo-name {
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 2.88px;
+  color: #3d4940;
+}
+
+.biodata-header__logo-sub {
+  font-style: italic;
+  font-size: 18.72px;
+  color: var(--color-gold);
+  margin-left: 6px;
+}
+
+/* ---------- Stepper ---------- */
+.biodata-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  width: 464px;
+}
+
+.biodata-stepper__step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.biodata-stepper__circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.72px;
+  flex-shrink: 0;
+}
+
+.biodata-stepper__circle--completed {
+  background: #ebf0eb;
+  color: #3d4940;
+}
+
+.biodata-stepper__circle--active {
+  background: #3d4940;
+  color: #fff;
+}
+
+.biodata-stepper__label {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.72px;
+  white-space: nowrap;
+}
+
+.biodata-stepper__label--completed {
+  color: #2c2c2c;
+}
+
+.biodata-stepper__label--active {
+  color: #6b6b6b;
+}
+
+.biodata-stepper__connector {
+  flex: 1;
+  min-width: 0;
+  height: 1px;
+  background: #f0ede7;
+  margin: 0 4px;
+}
+
+/* ---------- Form Content ---------- */
+.biodata-content {
+  width: 100%;
+  max-width: 768px;
+  padding: 0 20px 40px;
+}
+
+.biodata-heading {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 35px;
+  color: #3d4940;
+  margin: 24px 0 0;
+}
+
+.biodata-subtitle {
+  font-size: 15px;
+  line-height: 24px;
+  color: #6b6b6b;
+  margin: 4px 0 0;
+}
+
+/* ---------- Cards ---------- */
+.biodata-card {
+  background: #fff;
+  border: 1px solid #f0ede7;
+  border-radius: 16px;
+  padding: 25px;
+  margin-top: 24px;
+}
+
+.biodata-card__title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 28.6px;
+  color: #3d4940;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.biodata-card__title-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.biodata-card__title-icon img {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.biodata-card__body {
+  padding-top: 16px;
+}
+
+/* ---------- Grid ---------- */
+.biodata-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.biodata-grid--full {
+  grid-template-columns: 1fr;
+}
+
+/* ---------- Fields ---------- */
+.biodata-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.biodata-field__label {
+  display: block;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #6b6b6b;
+  margin-bottom: 6px;
+}
+
+.biodata-input {
+  position: relative;
+}
+
+.biodata-input input,
+.biodata-input select {
+  width: 100%;
+  height: 46px;
+  padding: 11px 15px;
+  background: #fff;
+  border: 1px solid #f0ede7;
+  border-radius: 12px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 24px;
+  color: #2c2c2c;
+  outline: none;
+}
+
+.biodata-input input::placeholder {
+  color: #6b6b6b;
+}
+
+.biodata-input input:focus,
+.biodata-input select:focus {
+  border-color: #3d4940;
+}
+
+.biodata-input--icon input,
+.biodata-input--icon select {
+  padding-left: 37px;
+}
+
+.biodata-input--icon--right select {
+  padding-right: 40px;
+}
+
+.biodata-input__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.biodata-input__icon img {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.biodata-input__icon--right {
+  left: auto;
+  right: 12px;
+}
+
+/* ---------- Select ---------- */
+.biodata-input select {
+  appearance: none;
+  cursor: pointer;
+}
+
+.biodata-input--email input {
+  cursor: default;
+  background: #f9f7f4;
+  color: #6b6b6b;
+}
+
+/* ---------- Actions ---------- */
+.biodata-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.biodata-actions__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 54px;
+  padding: 14px 28px;
+  background: #3d4940;
+  color: var(--bg-cream);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 26.4px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow:
+    0 1px 2px 0 rgba(44, 44, 44, 0.04),
+    0 8px 24px 0 rgba(61, 73, 64, 0.18);
+}
+
+.biodata-actions__btn:hover {
+  background: #0c3320;
+}
+
+.biodata-actions__btn-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.biodata-actions__btn-icon img {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .biodata-header {
+    padding: 24px 20px 0;
+  }
+
+  .biodata-stepper {
+    width: 100%;
+    max-width: 464px;
+  }
+
+  .biodata-content {
+    padding: 0 20px 32px;
+  }
+
+  .biodata-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .biodata-card {
+    padding: 20px;
+  }
+}

@@ -1,0 +1,106 @@
+/* =====================================================
+   Sense's Clinic - Patient Service Catalog Page
+   Page wrapper and patient-specific layout only.
+   Card styles live in service-card.css (shared).
+   ===================================================== */
+
+.patient-service__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+}
+
+/* ---------- Header ---------- */
+
+.patient-service__header {
+  max-width: 672px;
+  margin-bottom: 0;
+}
+
+.patient-service__title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 46px;
+  color: #3d4940;
+  margin: 0;
+}
+
+.patient-service__desc {
+  font-size: 16px;
+  line-height: 26.4px;
+  color: #6b6b6b;
+  margin: 8px 0 0;
+}
+
+/* ---------- Grid ---------- */
+
+.patient-service__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding-top: 32px;
+}
+
+/* ---------- Info card ---------- */
+
+.patient-service__info {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-top: 32px;
+  background: #f5edd6;
+  border: 1px solid #f5edd6;
+  border-radius: 16px;
+  padding: 21px;
+}
+
+.patient-service__info-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: rgba(168, 148, 94, 0.2);
+  margin-top: 2px;
+}
+
+.patient-service__info-icon img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.patient-service__info-text {
+  font-size: 15px;
+  line-height: 24px;
+  color: #2c2c2c;
+  margin: 0;
+}
+
+.patient-service__info-text strong {
+  font-weight: 600;
+}
+
+/* =====================================================
+   Responsive: Patient Service Catalog
+   ===================================================== */
+
+@media (max-width: 900px) {
+  .patient-service__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .patient-service__inner {
+    padding: 24px 16px 40px;
+  }
+
+  .patient-service__title {
+    font-size: 32px;
+    line-height: 38px;
+  }
+}

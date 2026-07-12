@@ -1,0 +1,99 @@
+/* =====================================================
+   Patient Header (authenticated navbar)
+   ===================================================== */
+.patient-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--bg-cream);
+  border-bottom: 1px solid #f0ede7;
+}
+
+.patient-header__inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.patient-header__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: #ebf0eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.patient-header__initials {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.72px;
+  color: #3d4940;
+}
+
+/* =====================================================
+   Patient Layout Main Content
+   ===================================================== */
+.patient-layout__main {
+  padding-top: 65px;
+  min-height: 100vh;
+  background: var(--bg-cream);
+}
+
+/* =====================================================
+   Nav links (shared visual pattern with public navbar)
+   ===================================================== */
+.patient-header .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.patient-header .nav-links a {
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 15px;
+  color: #2c2c2c;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.patient-header .nav-links a:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.patient-header .nav-links a.active {
+  color: var(--color-green);
+}
+
+/* =====================================================
+   Responsive: Patient Header
+   ===================================================== */
+@media (max-width: 768px) {
+  .patient-header__inner {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+  }
+
+  .patient-layout__main {
+    padding-top: 105px;
+  }
+
+  .patient-header .nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}

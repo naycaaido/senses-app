@@ -1,61 +1,9 @@
 import { Link } from "react-router-dom";
 import "../styles/landing.css";
 
-function Navbar() {
-  return (
-    <header className='navbar'>
-      <div className='navbar__inner'>
-        <Link to='/' className='brand'>
-          <span className='brand__name'>SENSE&rsquo;S</span>
-          <span className='brand__sub'>clinic</span>
-        </Link>
-
-        <nav className='nav-links'>
-          <Link to='/'>Beranda</Link>
-          <a href='#layanan'>Layanan</a>
-        </nav>
-
-        <div className='nav-auth'>
-          <Link to='/login' className='btn btn--login'>
-            Login
-          </Link>
-          <Link to='/register' className='btn btn--register'>
-            Register
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className='footer'>
-      <div className='footer__inner'>
-        <div>
-          <div className='footer__brand'>Sense&rsquo;s Clinic</div>
-          <div className='footer__copy'>
-            &copy; 2024 Sense&rsquo;s Clinic. Premium Dermatology &amp;
-            Wellness.
-          </div>
-        </div>
-        <div className='footer__links'>
-          <a href='#layanan'>Tentang Kami</a>
-          <a href='#layanan'>Kebijakan Privasi</a>
-          <a href='#layanan'>Kontak</a>
-          <a href='#layanan'>Bantuan</a>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 export default function LandingPage() {
   return (
     <div className='landing'>
-      <Navbar />
-
-      <main>
         {/* Hero */}
         <section className='hero'>
           <div className='hero__grid'>
@@ -300,9 +248,6 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-      </main>
-
-      <Footer />
     </div>
   );
 }

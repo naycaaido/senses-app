@@ -1,36 +1,36 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import PublicLayout from "./layouts/PublicLayout.jsx";
+import PatientLayout from "./layouts/PatientLayout.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
+import ServiceCatalogPage from "./pages/ServiceCatalogPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import BiodataPage from "./pages/BiodataPage.jsx";
+import NotFoundPage from "./pages/NotFoundPage.jsx";
+import PatientDashboardPage from "./pages/patient/PatientDashboardPage.jsx";
+import PatientServicePage from "./pages/patient/PatientServicePage.jsx";
+import PatientReservationPage from "./pages/patient/PatientReservationPage.jsx";
+import PatientBookingProofPage from "./pages/patient/PatientBookingProofPage.jsx";
 import "./styles/global.css";
-
-function LoginPage() {
-  return (
-    <div className="placeholder-page">
-      <div>
-        <h1>Login</h1>
-        <p>Halaman login akan segera tersedia. Kembali ke <Link to="/">Beranda</Link>.</p>
-      </div>
-    </div>
-  );
-}
-
-function RegisterPage() {
-  return (
-    <div className="placeholder-page">
-      <div>
-        <h1>Register</h1>
-        <p>Halaman register akan segera tersedia. Kembali ke <Link to="/">Beranda</Link>.</p>
-      </div>
-    </div>
-  );
-}
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/layanan" element={<ServiceCatalogPage />} />
+        </Route>
+        <Route element={<PatientLayout />}>
+          <Route path="/pasien/dashboard" element={<PatientDashboardPage />} />
+          <Route path="/pasien/layanan" element={<PatientServicePage />} />
+          <Route path="/pasien/reservasi" element={<PatientReservationPage />} />
+          <Route path="/pasien/bukti-booking" element={<PatientBookingProofPage />} />
+        </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/lengkapi-biodata" element={<BiodataPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
