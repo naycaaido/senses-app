@@ -55,7 +55,8 @@
   background: #3d4940;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(44, 44, 44, 0.06),
+  box-shadow:
+    0 1px 3px rgba(44, 44, 44, 0.06),
     0 12px 32px -16px rgba(61, 73, 64, 0.22);
 }
 
@@ -276,6 +277,7 @@
   background: #f5edd6;
   border-radius: 16px;
   padding: 16px;
+  margin-top: 20px;
   display: flex;
   gap: 12px;
   align-items: flex-start;
@@ -345,8 +347,13 @@
    Responsive: Dashboard
    ===================================================== */
 @media (max-width: 1024px) {
+  .patient-dashboard__right {
+    width: 100%;
+  }
+
   .patient-dashboard__columns {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .patient-dashboard__left {

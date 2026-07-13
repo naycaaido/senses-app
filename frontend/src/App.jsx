@@ -13,6 +13,7 @@ import PatientReservationPage from "./pages/patient/PatientReservationPage.jsx";
 import PatientBookingProofPage from "./pages/patient/PatientBookingProofPage.jsx";
 import PatientHistoryPage from "./pages/patient/PatientHistoryPage.jsx";
 import PatientProfilePage from "./pages/patient/PatientProfilePage.jsx";
+import PatientEditProfilePage from "./pages/patient/PatientEditProfilePage.jsx";
 import "./styles/global.css";
 
 function App() {
@@ -30,6 +31,10 @@ function App() {
           <Route path="/pasien/bukti-booking" element={<PatientBookingProofPage />} />
           <Route path="/pasien/riwayat" element={<PatientHistoryPage />} />
           <Route path="/pasien/profil" element={<PatientProfilePage />} />
+          <Route
+            path="/pasien/profil/ubah"
+            element={<PatientEditProfilePage />}
+          />
         </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

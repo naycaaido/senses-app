@@ -19,14 +19,14 @@ const activeReservation = {
 
 export default function PatientDashboardPage() {
   return (
-    <div className="patient-dashboard">
-      <div className="patient-dashboard__greeting">
+    <div className='patient-dashboard'>
+      <div className='patient-dashboard__greeting'>
         <h1>Halo, {patient.name}</h1>
         <p>Pantau reservasi Anda secara langsung di sini.</p>
       </div>
 
-      <div className="patient-dashboard__columns">
-        <div className="patient-dashboard__left">
+      <div className='patient-dashboard__columns'>
+        <div className='patient-dashboard__left'>
           <QueueCard
             time={activeReservation.time}
             status={activeReservation.status}
@@ -35,109 +35,109 @@ export default function PatientDashboardPage() {
           />
         </div>
 
-        <div className="patient-dashboard__right">
-          <div className="active-reservation">
-            <h2 className="active-reservation__title">Reservasi Aktif</h2>
+        <div className='patient-dashboard__right'>
+          <div className='active-reservation'>
+            <h2 className='active-reservation__title'>Reservasi Aktif</h2>
 
-            <div className="active-reservation__grid">
-              <div className="active-reservation__item">
-                <div className="active-reservation__icon">
+            <div className='active-reservation__grid'>
+              <div className='active-reservation__item'>
+                <div className='active-reservation__icon'>
                   <img
-                    src="/assets/icon-service.svg"
-                    alt=""
-                    className="active-reservation__icon-img"
-                    aria-hidden="true"
+                    src='/assets/icon-service.svg'
+                    alt=''
+                    className='active-reservation__icon-img'
+                    aria-hidden='true'
                   />
                 </div>
                 <div>
-                  <p className="active-reservation__label">Dokter</p>
-                  <p className="active-reservation__value">
+                  <p className='active-reservation__label'>Dokter</p>
+                  <p className='active-reservation__value'>
                     {activeReservation.doctor}
                   </p>
-                  <p className="active-reservation__sub">
+                  <p className='active-reservation__sub'>
                     {activeReservation.specialization}
                   </p>
                 </div>
               </div>
 
-              <div className="active-reservation__item">
-                <div className="active-reservation__icon">
+              <div className='active-reservation__item'>
+                <div className='active-reservation__icon'>
                   <img
-                    src="/assets/icon-check-green.svg"
-                    alt=""
-                    className="active-reservation__icon-img"
-                    aria-hidden="true"
+                    src='/assets/icon-check-green.svg'
+                    alt=''
+                    className='active-reservation__icon-img'
+                    aria-hidden='true'
                   />
                 </div>
                 <div>
-                  <p className="active-reservation__label">Layanan</p>
-                  <p className="active-reservation__value">
+                  <p className='active-reservation__label'>Layanan</p>
+                  <p className='active-reservation__value'>
                     {activeReservation.service}
                   </p>
                 </div>
               </div>
 
-              <div className="active-reservation__item">
-                <div className="active-reservation__icon">
+              <div className='active-reservation__item'>
+                <div className='active-reservation__icon'>
                   <img
-                    src="/assets/icon-calendar.svg"
-                    alt=""
-                    className="active-reservation__icon-img"
-                    aria-hidden="true"
+                    src='/assets/icon-calendar.svg'
+                    alt=''
+                    className='active-reservation__icon-img'
+                    aria-hidden='true'
                   />
                 </div>
                 <div>
-                  <p className="active-reservation__label">Tanggal</p>
-                  <p className="active-reservation__value">
+                  <p className='active-reservation__label'>Tanggal</p>
+                  <p className='active-reservation__value'>
                     {activeReservation.date}
                   </p>
                 </div>
               </div>
 
-              <div className="active-reservation__item">
-                <div className="active-reservation__icon">
+              <div className='active-reservation__item'>
+                <div className='active-reservation__icon'>
                   <img
-                    src="/assets/icon-clock-dark.svg"
-                    alt=""
-                    className="active-reservation__icon-img"
-                    aria-hidden="true"
+                    src='/assets/icon-clock-dark.svg'
+                    alt=''
+                    className='active-reservation__icon-img'
+                    aria-hidden='true'
                   />
                 </div>
                 <div>
-                  <p className="active-reservation__label">Jam</p>
-                  <p className="active-reservation__value">
+                  <p className='active-reservation__label'>Jam</p>
+                  <p className='active-reservation__value'>
                     {activeReservation.time}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="arrival-reminder">
+            <div className='arrival-reminder'>
               <img
-                src="/assets/icon-info-gold.svg"
-                alt=""
-                className="arrival-reminder__icon"
-                aria-hidden="true"
+                src='/assets/icon-info-gold.svg'
+                alt=''
+                className='arrival-reminder__icon'
+                aria-hidden='true'
               />
-              <p className="arrival-reminder__text">
+              <p className='arrival-reminder__text'>
                 Mohon datang 15 menit lebih awal dan lakukan registrasi ulang di
                 resepsionis.
               </p>
             </div>
           </div>
 
-          <Link to="/pasien/riwayat" className="history-link">
+          <Link to='/pasien/riwayat' className='history-link'>
             <div>
-              <p className="history-link__title">Riwayat Kunjungan</p>
-              <p className="history-link__desc">
+              <p className='history-link__title'>Riwayat Kunjungan</p>
+              <p className='history-link__desc'>
                 Lihat catatan perawatan Anda sebelumnya
               </p>
             </div>
             <img
-              src="/assets/icon-chevron-right.svg"
-              alt=""
-              className="history-link__arrow"
-              aria-hidden="true"
+              src='/assets/icon-chevron-right.svg'
+              alt=''
+              className='history-link__arrow'
+              aria-hidden='true'
             />
           </Link>
         </div>

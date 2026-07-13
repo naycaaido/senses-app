@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import ProfileAvatar from "../../components/patient/ProfileAvatar.jsx";
 import ProfileInfoRow from "../../components/patient/ProfileInfoRow.jsx";
 import ProfileSectionCard from "../../components/patient/ProfileSectionCard.jsx";
@@ -55,12 +56,12 @@ export default function PatientProfilePage() {
             </p>
           </div>
         </div>
-        <button type="button" className="patient-profile__edit">
+        <Link to="/pasien/profil/ubah" className="patient-profile__edit-button">
           <span className="patient-profile__edit-icon">
             <img src="/assets/icon-edit.svg" alt="" aria-hidden="true" />
           </span>
           Ubah Biodata
-        </button>
+        </Link>
       </header>
 
       <ProfileSectionCard title="Kontak">
