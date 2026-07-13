@@ -1,0 +1,199 @@
+/* =====================================================
+   Patient Profile & Biodata
+   ===================================================== */
+.patient-profile {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+}
+
+/* ---------- Profile header ---------- */
+.patient-profile__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.patient-profile__identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.patient-profile__heading {
+  min-width: 0;
+}
+
+.patient-profile__name {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 35px;
+  color: #3d4940;
+  margin: 0;
+}
+
+.patient-profile__reg {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 16px;
+  letter-spacing: 0.72px;
+  color: #6b6b6b;
+  margin: 4px 0 0;
+}
+
+.patient-profile__edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 11px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: #3d4940;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.28px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.patient-profile__edit:hover {
+  background: #faf7f2;
+}
+
+.patient-profile__edit-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.patient-profile__edit-icon img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* ---------- Avatar ---------- */
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  background: #ebf0eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-avatar__initials {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 24px;
+  letter-spacing: 0.72px;
+  color: #3d4940;
+}
+
+/* ---------- Section cards ---------- */
+.profile-card {
+  background: #fff;
+  border: 1px solid #f0ede7;
+  border-radius: 16px;
+  padding: 25px;
+  margin-bottom: 16px;
+}
+
+.profile-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 28.6px;
+  color: #3d4940;
+  margin: 0 0 20px;
+}
+
+.profile-card__icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-card__icon img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.profile-card__body {
+  margin-top: -4px;
+}
+
+.profile-card__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ---------- Info rows ---------- */
+.profile-info-row {
+  min-width: 0;
+}
+
+.profile-info-row__label {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.72px;
+  text-transform: uppercase;
+  color: #6b6b6b;
+  margin: 0;
+}
+
+.profile-info-row__value {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 24px;
+  color: #2c2c2c;
+  margin: 4px 0 0;
+  word-break: break-word;
+}
+
+/* =====================================================
+   Responsive: Profile
+   ===================================================== */
+@media (max-width: 768px) {
+  .patient-profile {
+    padding: 16px 16px 32px;
+  }
+
+  .patient-profile__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .patient-profile__name {
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .profile-card__grid {
+    grid-template-columns: 1fr;
+  }
+}

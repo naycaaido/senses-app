@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import DateSelector from "../../components/patient/DateSelector.jsx";
 import TimeSlotGrid from "../../components/patient/TimeSlotGrid.jsx";
 import ReservationSummary from "../../components/patient/ReservationSummary.jsx";
 import mockServices from "../../mocks/services.js";
 import "../../styles/patient-reservation.css";
-
-const selectedService = mockServices[0];
 
 const doctor = {
   name: "dr. Ria Vista Sari, SpDV",
@@ -32,6 +30,13 @@ const timeSlots = [
 
 export default function PatientReservationPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const selectedServiceId = searchParams.get("layanan");
+
+  const selectedService =
+    mockServices.find((service) => service.id === selectedServiceId) ??
+    mockServices[0];
+
   const [selectedDateId, setSelectedDateId] = useState(reservationDates[0].id);
   const [selectedTime, setSelectedTime] = useState(null);
 

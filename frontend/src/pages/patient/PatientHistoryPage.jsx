@@ -70,8 +70,8 @@ export default function PatientHistoryPage() {
       <header className="patient-history__header">
         <h1 className="patient-history__title">Riwayat Kunjungan</h1>
         <p className="patient-history__desc">
-          Bersama dr. Ria Vista Sari, SpDV. Pilih layanan, tanggal, lalu jam yang
-          sesuai.
+          Riwayat kunjungan dan layanan yang pernah Anda lakukan di
+          Sense&rsquo;s Clinic.
         </p>
       </header>
 

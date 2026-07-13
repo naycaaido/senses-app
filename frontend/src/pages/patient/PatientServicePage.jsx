@@ -20,7 +20,7 @@ export default function PatientServicePage() {
             <ServiceCard
               key={service.id}
               service={service}
-              reservationPath="/pasien/reservasi"
+              reservationPath={`/pasien/reservasi?layanan=${service.id}`}
             />
           ))}
         </div>

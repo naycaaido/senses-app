@@ -7,7 +7,14 @@ export default function HistorySearch({ value, onChange }) {
         className="history-search__icon"
         aria-hidden="true"
       />
+      <label
+        htmlFor="patient-history-search"
+        className="sr-only"
+      >
+        Cari riwayat kunjungan
+      </label>
       <input
+        id="patient-history-search"
         type="text"
         className="history-search__input"
         placeholder="Cari layanan atau ID..."
