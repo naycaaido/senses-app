@@ -25,7 +25,7 @@ function App() {
           <Route path="/layanan" element={<ServiceCatalogPage />} />
         </Route>
         <Route element={<PatientLayout />}>
-          <Route path="/pasien/dashboard" element={<PatientDashboardPage />} />
+          <Route path="/pasien/beranda" element={<PatientDashboardPage />} />
           <Route path="/pasien/layanan" element={<PatientServicePage />} />
           <Route path="/pasien/reservasi" element={<PatientReservationPage />} />
           <Route path="/pasien/bukti-booking" element={<PatientBookingProofPage />} />
