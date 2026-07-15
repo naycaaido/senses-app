@@ -4,7 +4,7 @@
   "private": true,
   "description": "Sense Clinic full-stack monorepo",
   "scripts": {
-    "dev": "concurrently -n frontend,backend -c blue,green \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev": "concurrently -n frontend,backend -c blue,green \"npm run dev:fe\" \"npm run dev:be\"",
     "dev:fe": "npm --prefix frontend run dev",
     "dev:be": "npm --prefix backend run dev",
     "install:all": "npm install && npm --prefix frontend install && npm --prefix backend install"
