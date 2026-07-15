@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/login.css";
 
 function EyeIcon({ open }) {
@@ -32,12 +32,14 @@ function EyeIcon({ open }) {
 }
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const [identifierLogin, setIdentifierLogin] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   function handleSubmit(e) {
     e.preventDefault();
+    navigate("/pasien/beranda");
   }
 
   return (

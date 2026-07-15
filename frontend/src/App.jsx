@@ -21,25 +21,31 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<PublicLayout />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/layanan" element={<ServiceCatalogPage />} />
+          <Route path='/' element={<LandingPage />} />
+          <Route path='/layanan' element={<ServiceCatalogPage />} />
         </Route>
         <Route element={<PatientLayout />}>
-          <Route path="/pasien/beranda" element={<PatientDashboardPage />} />
-          <Route path="/pasien/layanan" element={<PatientServicePage />} />
-          <Route path="/pasien/reservasi" element={<PatientReservationPage />} />
-          <Route path="/pasien/bukti-booking" element={<PatientBookingProofPage />} />
-          <Route path="/pasien/riwayat" element={<PatientHistoryPage />} />
-          <Route path="/pasien/profil" element={<PatientProfilePage />} />
+          <Route path='/pasien/beranda' element={<PatientDashboardPage />} />
+          <Route path='/pasien/layanan' element={<PatientServicePage />} />
           <Route
-            path="/pasien/profil/ubah"
+            path='/pasien/reservasi'
+            element={<PatientReservationPage />}
+          />
+          <Route
+            path='/pasien/bukti-booking'
+            element={<PatientBookingProofPage />}
+          />
+          <Route path='/pasien/riwayat' element={<PatientHistoryPage />} />
+          <Route path='/pasien/profil' element={<PatientProfilePage />} />
+          <Route
+            path='/pasien/profil/ubah'
             element={<PatientEditProfilePage />}
           />
         </Route>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/lengkapi-biodata" element={<BiodataPage />} />
-        <Route path="*" element={<NotFoundPage />} />
+        <Route path='/login' element={<LoginPage />} />
+        <Route path='/register' element={<RegisterPage />} />
+        <Route path='/lengkapi-biodata' element={<BiodataPage />} />
+        <Route path='*' element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
