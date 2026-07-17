@@ -1,8 +1,9 @@
+import styles from "../../styles/patient-profile.module.css";
+import cx from "../../utils/classNames.js";
 import { Link } from "react-router-dom";
 import ProfileAvatar from "../../components/patient/ProfileAvatar.jsx";
 import ProfileInfoRow from "../../components/patient/ProfileInfoRow.jsx";
 import ProfileSectionCard from "../../components/patient/ProfileSectionCard.jsx";
-import "../../styles/patient-profile.css";
 
 const MONTHS_ID = [
   "Januari",
@@ -45,19 +46,19 @@ export default function PatientProfilePage() {
   const profile = patientProfile;
 
   return (
-    <div className="patient-profile">
-      <header className="patient-profile__header">
-        <div className="patient-profile__identity">
+    <div className={cx(styles, "patient-profile")}>
+      <header className={cx(styles, "patient-profile__header")}>
+        <div className={cx(styles, "patient-profile__identity")}>
           <ProfileAvatar initials={profile.initials} size={56} />
-          <div className="patient-profile__heading">
-            <h1 className="patient-profile__name">{profile.name}</h1>
-            <p className="patient-profile__reg">
+          <div className={cx(styles, "patient-profile__heading")}>
+            <h1 className={cx(styles, "patient-profile__name")}>{profile.name}</h1>
+            <p className={cx(styles, "patient-profile__reg")}>
               No. Registrasi: {profile.registrationNumber}
             </p>
           </div>
         </div>
-        <Link to="/pasien/profil/ubah" className="patient-profile__edit-button">
-          <span className="patient-profile__edit-icon">
+        <Link to="/pasien/profil/ubah" className={cx(styles, "patient-profile__edit-button")}>
+          <span className={cx(styles, "patient-profile__edit-icon")}>
             <img src="/assets/icon-edit.svg" alt="" aria-hidden="true" />
           </span>
           Ubah Biodata
@@ -65,14 +66,14 @@ export default function PatientProfilePage() {
       </header>
 
       <ProfileSectionCard title="Kontak">
-        <div className="profile-card__grid">
+        <div className={cx(styles, "profile-card__grid")}>
           <ProfileInfoRow label="Nomor Telepon" value={profile.phone} />
           <ProfileInfoRow label="Email" value={profile.email} />
         </div>
       </ProfileSectionCard>
 
       <ProfileSectionCard title="Biodata Pasien">
-        <div className="profile-card__grid">
+        <div className={cx(styles, "profile-card__grid")}>
           <ProfileInfoRow label="Jenis Kelamin" value={profile.gender} />
           <ProfileInfoRow label="Tempat Lahir" value={profile.birthPlace} />
           <ProfileInfoRow
@@ -93,7 +94,7 @@ export default function PatientProfilePage() {
       </ProfileSectionCard>
 
       <ProfileSectionCard title="Alamat" iconSrc="/assets/icon-location.svg">
-        <div className="profile-card__grid">
+        <div className={cx(styles, "profile-card__grid")}>
           <ProfileInfoRow
             label="Alamat Domisili"
             value={profile.address}

@@ -1,8 +1,9 @@
+import styles from "../../styles/patient-history.module.css";
+import cx from "../../utils/classNames.js";
 import { useMemo, useState } from "react";
 import HistorySearch from "../../components/patient/HistorySearch.jsx";
 import HistoryFilter from "../../components/patient/HistoryFilter.jsx";
 import HistoryCard from "../../components/patient/HistoryCard.jsx";
-import "../../styles/patient-history.css";
 
 const visitHistory = [
   {
@@ -66,28 +67,28 @@ export default function PatientHistoryPage() {
   }, [query, statusFilter]);
 
   return (
-    <div className="patient-history">
-      <header className="patient-history__header">
-        <h1 className="patient-history__title">Riwayat Kunjungan</h1>
-        <p className="patient-history__desc">
+    <div className={cx(styles, "patient-history")}>
+      <header className={cx(styles, "patient-history__header")}>
+        <h1 className={cx(styles, "patient-history__title")}>Riwayat Kunjungan</h1>
+        <p className={cx(styles, "patient-history__desc")}>
           Riwayat kunjungan dan layanan yang pernah Anda lakukan di
           Sense&rsquo;s Clinic.
         </p>
       </header>
 
-      <div className="patient-history__toolbar">
+      <div className={cx(styles, "patient-history__toolbar")}>
         <HistorySearch value={query} onChange={setQuery} />
         <HistoryFilter value={statusFilter} onChange={setStatusFilter} />
       </div>
 
       {filteredVisits.length > 0 ? (
-        <div className="patient-history__list">
+        <div className={cx(styles, "patient-history__list")}>
           {filteredVisits.map((visit) => (
             <HistoryCard key={visit.reservationId} visit={visit} />
           ))}
         </div>
       ) : (
-        <p className="patient-history__empty">{EMPTY_MESSAGE}</p>
+        <p className={cx(styles, "patient-history__empty")}>{EMPTY_MESSAGE}</p>
       )}
     </div>
   );

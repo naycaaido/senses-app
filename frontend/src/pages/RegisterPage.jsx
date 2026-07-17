@@ -1,6 +1,7 @@
+import styles from "../styles/register.module.css";
+import cx from "../utils/classNames.js";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import "../styles/register.css";
 
 function EyeIcon({ open }) {
   if (open) {
@@ -44,49 +45,49 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="register-page">
-      <div className="register-header">
-        <div className="register-header__logo">
-          <span className="register-header__logo-name">SENSE&rsquo;S</span>
-          <span className="register-header__logo-sub">clinic</span>
+    <div className={cx(styles, "register-page")}>
+      <div className={cx(styles, "register-header")}>
+        <div className={cx(styles, "register-header__logo")}>
+          <span className={cx(styles, "register-header__logo-name")}>SENSE&rsquo;S</span>
+          <span className={cx(styles, "register-header__logo-sub")}>clinic</span>
         </div>
 
-        <div className="register-stepper">
-          <div className="register-stepper__step">
-            <div className="register-stepper__circle register-stepper__circle--active">
+        <div className={cx(styles, "register-stepper")}>
+          <div className={cx(styles, "register-stepper__step")}>
+            <div className={cx(styles, "register-stepper__circle register-stepper__circle--active")}>
               1
             </div>
-            <span className="register-stepper__label register-stepper__label--active">
+            <span className={cx(styles, "register-stepper__label register-stepper__label--active")}>
               Buat Akun
             </span>
-            <div className="register-stepper__connector" />
+            <div className={cx(styles, "register-stepper__connector")} />
           </div>
-          <div className="register-stepper__step">
-            <div className="register-stepper__circle register-stepper__circle--inactive">
+          <div className={cx(styles, "register-stepper__step")}>
+            <div className={cx(styles, "register-stepper__circle register-stepper__circle--inactive")}>
               2
             </div>
-            <span className="register-stepper__label register-stepper__label--inactive">
+            <span className={cx(styles, "register-stepper__label register-stepper__label--inactive")}>
               Lengkapi Biodata
             </span>
           </div>
         </div>
       </div>
 
-      <div className="register-card">
-        <div className="register-card__inner">
-          <h1 className="register-card__heading">Buat akun Sense&rsquo;s</h1>
-          <p className="register-card__subtitle">
+      <div className={cx(styles, "register-card")}>
+        <div className={cx(styles, "register-card__inner")}>
+          <h1 className={cx(styles, "register-card__heading")}>Buat akun Sense&rsquo;s</h1>
+          <p className={cx(styles, "register-card__subtitle")}>
             Satu akun untuk reservasi, antrean, dan riwayat perawatan Anda.
           </p>
 
-          <form className="register-form" onSubmit={handleSubmit} noValidate>
-            <div className="register-field">
-              <label className="register-field__label" htmlFor="name">
-                Nama Lengkap<span className="register-field__label-star">*</span>
+          <form className={cx(styles, "register-form")} onSubmit={handleSubmit} noValidate>
+            <div className={cx(styles, "register-field")}>
+              <label className={cx(styles, "register-field__label")} htmlFor="name">
+                Nama Lengkap<span className={cx(styles, "register-field__label-star")}>*</span>
               </label>
-              <div className="register-input register-input--icon">
+              <div className={cx(styles, "register-input register-input--icon")}>
                 <img
-                  className="register-input__icon"
+                  className={cx(styles, "register-input__icon")}
                   src="/assets/icon-user.svg"
                   alt=""
                 />
@@ -101,13 +102,13 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="register-field">
-              <label className="register-field__label" htmlFor="email">
-                Email<span className="register-field__label-star">*</span>
+            <div className={cx(styles, "register-field")}>
+              <label className={cx(styles, "register-field__label")} htmlFor="email">
+                Email<span className={cx(styles, "register-field__label-star")}>*</span>
               </label>
-              <div className="register-input register-input--icon">
+              <div className={cx(styles, "register-input register-input--icon")}>
                 <img
-                  className="register-input__icon"
+                  className={cx(styles, "register-input__icon")}
                   src="/assets/icon-mail.svg"
                   alt=""
                 />
@@ -120,16 +121,16 @@ export default function RegisterPage() {
                   autoComplete="email"
                 />
               </div>
-              <p className="register-field__hint">
+              <p className={cx(styles, "register-field__hint")}>
                 Gunakan email aktif untuk menerima pengingat jadwal.
               </p>
             </div>
 
-            <div className="register-field">
-              <label className="register-field__label" htmlFor="password">
-                Kata Sandi<span className="register-field__label-star">*</span>
+            <div className={cx(styles, "register-field")}>
+              <label className={cx(styles, "register-field__label")} htmlFor="password">
+                Kata Sandi<span className={cx(styles, "register-field__label-star")}>*</span>
               </label>
-              <div className="register-input">
+              <div className={cx(styles, "register-input")}>
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -141,7 +142,7 @@ export default function RegisterPage() {
                 />
                 <button
                   type="button"
-                  className="register-input__toggle"
+                  className={cx(styles, "register-input__toggle")}
                   aria-label={
                     showPassword
                       ? "Sembunyikan kata sandi"
@@ -154,11 +155,11 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="register-field">
-              <label className="register-field__label" htmlFor="confirmPassword">
-                Konfirmasi Kata Sandi<span className="register-field__label-star">*</span>
+            <div className={cx(styles, "register-field")}>
+              <label className={cx(styles, "register-field__label")} htmlFor="confirmPassword">
+                Konfirmasi Kata Sandi<span className={cx(styles, "register-field__label-star")}>*</span>
               </label>
-              <div className="register-input">
+              <div className={cx(styles, "register-input")}>
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
@@ -169,7 +170,7 @@ export default function RegisterPage() {
                 />
                 <button
                   type="button"
-                  className="register-input__toggle"
+                  className={cx(styles, "register-input__toggle")}
                   aria-label={
                     showConfirmPassword
                       ? "Sembunyikan kata sandi"
@@ -182,21 +183,21 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <button type="submit" className="register-form__btn">
+            <button type="submit" className={cx(styles, "register-form__btn")}>
               Daftar
             </button>
 
-            <p className="register-form__disclaimer">
+            <p className={cx(styles, "register-form__disclaimer")}>
               Dengan mendaftar, Anda menyetujui ketentuan layanan Sense&rsquo;s
               clinic.
             </p>
           </form>
 
-          <p className="register-card__redirect">
+          <p className={cx(styles, "register-card__redirect")}>
             Sudah punya akun? <Link to="/login">Masuk di sini</Link>
           </p>
 
-          <Link to="/" className="register-card__back">
+          <Link to="/" className={cx(styles, "register-card__back")}>
             &larr; Kembali ke Beranda
           </Link>
         </div>

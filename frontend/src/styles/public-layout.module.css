@@ -59,7 +59,7 @@
   background: rgba(0, 0, 0, 0.04);
 }
 
-.nav-links a.active {
+.nav-links a:global(.active) {
   color: var(--color-green);
 }
 

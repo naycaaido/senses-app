@@ -1,10 +1,11 @@
+import styles from "../../styles/patient-reservation.module.css";
+import cx from "../../utils/classNames.js";
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import DateSelector from "../../components/patient/DateSelector.jsx";
 import TimeSlotGrid from "../../components/patient/TimeSlotGrid.jsx";
 import ReservationSummary from "../../components/patient/ReservationSummary.jsx";
 import mockServices from "../../mocks/services.js";
-import "../../styles/patient-reservation.css";
 
 const doctor = {
   name: "dr. Ria Vista Sari, SpDV",
@@ -51,17 +52,17 @@ export default function PatientReservationPage() {
   };
 
   return (
-    <div className="patient-reservation__inner">
-      <header className="patient-reservation__header">
-        <h1 className="patient-reservation__title">Reservasi</h1>
-        <p className="patient-reservation__desc">
+    <div className={cx(styles, "patient-reservation__inner")}>
+      <header className={cx(styles, "patient-reservation__header")}>
+        <h1 className={cx(styles, "patient-reservation__title")}>Reservasi</h1>
+        <p className={cx(styles, "patient-reservation__desc")}>
           Bersama dr. Ria Vista Sari, SpDV. Pilih layanan, tanggal, lalu jam yang
           sesuai.
         </p>
       </header>
 
-      <div className="patient-reservation__layout">
-        <div className="reservation-card">
+      <div className={cx(styles, "patient-reservation__layout")}>
+        <div className={cx(styles, "reservation-card")}>
           <DateSelector
             dates={reservationDates}
             selectedId={selectedDateId}
@@ -74,12 +75,12 @@ export default function PatientReservationPage() {
             onSelect={setSelectedTime}
           />
 
-          <div className="reservation-actions">
-            <Link to="/pasien/layanan" className="btn-back">
+          <div className={cx(styles, "reservation-actions")}>
+            <Link to="/pasien/layanan" className={cx(styles, "btn-back")}>
               <img
                 src="/assets/icon-arrow-left.svg"
                 alt=""
-                className="btn-back__icon"
+                className={cx(styles, "btn-back__icon")}
                 aria-hidden="true"
               />
               Kembali
@@ -87,7 +88,7 @@ export default function PatientReservationPage() {
 
             <button
               type="button"
-              className="btn-continue"
+              className={cx(styles, "btn-continue")}
               onClick={handleContinue}
               disabled={!canContinue}
             >
@@ -95,7 +96,7 @@ export default function PatientReservationPage() {
               <img
                 src="/assets/icon-arrow-right.svg"
                 alt=""
-                className="btn-continue__icon"
+                className={cx(styles, "btn-continue__icon")}
                 aria-hidden="true"
               />
             </button>

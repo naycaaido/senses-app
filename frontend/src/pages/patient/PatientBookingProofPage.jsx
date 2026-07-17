@@ -1,6 +1,7 @@
+import styles from "../../styles/patient-booking-proof.module.css";
+import cx from "../../utils/classNames.js";
 import { Link } from "react-router-dom";
 import BookingProofCard from "../../components/patient/BookingProofCard.jsx";
-import "../../styles/patient-booking-proof.css";
 
 const booking = {
   doctor: "dr. Ria Vista Sari, SpDV",
@@ -12,32 +13,32 @@ const booking = {
 
 export default function PatientBookingProofPage() {
   return (
-    <div className="patient-booking-proof">
+    <div className={cx(styles, "patient-booking-proof")}>
       <BookingProofCard booking={booking} />
 
-      <div className="booking-reminder">
+      <div className={cx(styles, "booking-reminder")}>
         <img
           src="/assets/icon-booking-info.svg"
           alt=""
-          className="booking-reminder__icon"
+          className={cx(styles, "booking-reminder__icon")}
           aria-hidden="true"
         />
-        <div className="booking-reminder__text">
-          <p className="booking-reminder__title">
+        <div className={cx(styles, "booking-reminder__text")}>
+          <p className={cx(styles, "booking-reminder__title")}>
             Mohon datang 15 menit lebih awal.
           </p>
-          <p className="booking-reminder__desc">
+          <p className={cx(styles, "booking-reminder__desc")}>
             Lakukan registrasi ulang di resepsionis saat tiba agar status Anda
             berubah menjadi &ldquo;Hadir&rdquo; dan antrean berjalan tepat waktu.
           </p>
         </div>
       </div>
 
-      <div className="booking-proof__actions">
-        <Link to="/pasien/dashboard" className="btn-primary">
+      <div className={cx(styles, "booking-proof__actions")}>
+        <Link to="/pasien/dashboard" className={cx(styles, "btn-primary")}>
           Lihat Status Reservasi
         </Link>
-        <Link to="/pasien/dashboard" className="btn-outline">
+        <Link to="/pasien/dashboard" className={cx(styles, "btn-outline")}>
           Kembali ke Beranda
         </Link>
       </div>

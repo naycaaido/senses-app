@@ -1,0 +1,167 @@
+.stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 1280px) {
+  .columns {
+    grid-template-columns: 1fr 360px;
+  }
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+/* ── Menu aksi per baris ────────────────────────────────────────────────── */
+
+.actionCell {
+  position: relative;
+}
+
+.dotsButton {
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--color-muted);
+  transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dotsButton:hover {
+  background-color: var(--color-canvas);
+}
+
+.menuScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.menu {
+  position: absolute;
+  right: 20px;
+  z-index: 20;
+  width: 176px;
+  margin-top: 4px;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  background-color: #fff;
+  padding-block: 4px;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--color-ink);
+}
+
+.menuItem:hover {
+  background-color: var(--color-canvas);
+}
+
+/* ── Kalender ───────────────────────────────────────────────────────────── */
+
+.calHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.calNav {
+  display: flex;
+  gap: 4px;
+}
+
+.calArrow {
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--color-muted);
+  transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.calArrow:hover {
+  background-color: var(--color-canvas);
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  row-gap: 4px;
+  margin-top: 16px;
+  text-align: center;
+}
+
+.calWeekday {
+  padding-block: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+.calDay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-inline: auto;
+  border-radius: 9999px;
+  font-size: 13px;
+  color: var(--color-ink);
+  transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.calDay:hover:not(:disabled) {
+  background-color: var(--color-canvas);
+}
+
+.calDay.calDayMuted {
+  color: #d4d4d4;
+  cursor: default;
+}
+
+.calDay.calDaySelected {
+  background-color: var(--color-brand);
+  font-weight: 600;
+  color: #fff;
+}

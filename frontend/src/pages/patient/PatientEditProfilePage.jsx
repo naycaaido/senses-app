@@ -1,7 +1,8 @@
+import styles from "../../styles/patient-edit-profile.module.css";
+import cx from "../../utils/classNames.js";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ProfileAvatar from "../../components/patient/ProfileAvatar.jsx";
-import "../../styles/patient-edit-profile.css";
 
 const initialPatientProfile = {
   registrationNumber: "REG-2406-001",
@@ -65,40 +66,40 @@ export default function PatientEditProfilePage() {
   };
 
   return (
-    <div className='patient-edit-profile'>
-      <Link to='/pasien/profil' className='patient-edit-profile__back'>
+    <div className={cx(styles, "patient-edit-profile")}>
+      <Link to='/pasien/profil' className={cx(styles, "patient-edit-profile__back")}>
         <img
           src='/assets/icon-arrow-left.svg'
           alt=''
           aria-hidden='true'
-          className='patient-edit-profile__back-icon'
+          className={cx(styles, "patient-edit-profile__back-icon")}
         />
         Kembali ke Profil
       </Link>
 
-      <header className='patient-edit-profile__header'>
-        <h1 className='patient-edit-profile__title'>Ubah Biodata</h1>
-        <p className='patient-edit-profile__subtitle'>
+      <header className={cx(styles, "patient-edit-profile__header")}>
+        <h1 className={cx(styles, "patient-edit-profile__title")}>Ubah Biodata</h1>
+        <p className={cx(styles, "patient-edit-profile__subtitle")}>
           Perbarui informasi pribadi dan kontak Anda.
         </p>
       </header>
 
-      <div className='patient-edit-profile__identity'>
+      <div className={cx(styles, "patient-edit-profile__identity")}>
         <ProfileAvatar initials={getInitials(form.name)} size={56} />
-        <div className='patient-edit-profile__identity-text'>
-          <p className='patient-edit-profile__name'>{form.name}</p>
-          <p className='patient-edit-profile__reg'>
+        <div className={cx(styles, "patient-edit-profile__identity-text")}>
+          <p className={cx(styles, "patient-edit-profile__name")}>{form.name}</p>
+          <p className={cx(styles, "patient-edit-profile__reg")}>
             No. Registrasi: {form.registrationNumber}
           </p>
         </div>
       </div>
 
-      <form className='profile-form' onSubmit={handleSubmit} noValidate>
-        <section className='profile-form-section'>
-          <h2 className='profile-form-section__title'>Kontak</h2>
-          <div className='profile-form-grid'>
-            <div className='profile-form-field'>
-              <label className='profile-form-field__label' htmlFor='email'>
+      <form className={cx(styles, "profile-form")} onSubmit={handleSubmit} noValidate>
+        <section className={cx(styles, "profile-form-section")}>
+          <h2 className={cx(styles, "profile-form-section__title")}>Kontak</h2>
+          <div className={cx(styles, "profile-form-grid")}>
+            <div className={cx(styles, "profile-form-field")}>
+              <label className={cx(styles, "profile-form-field__label")} htmlFor='email'>
                 Email
               </label>
               <input
@@ -109,8 +110,8 @@ export default function PatientEditProfilePage() {
                 onChange={update("email")}
               />
             </div>
-            <div className='profile-form-field'>
-              <label className='profile-form-field__label' htmlFor='phone'>
+            <div className={cx(styles, "profile-form-field")}>
+              <label className={cx(styles, "profile-form-field__label")} htmlFor='phone'>
                 Nomor Telepon
               </label>
               <input
@@ -124,11 +125,11 @@ export default function PatientEditProfilePage() {
           </div>
         </section>
 
-        <section className='profile-form-section'>
-          <h2 className='profile-form-section__title'>Biodata Pasien</h2>
-          <div className='profile-form-grid'>
-            <div className='profile-form-field'>
-              <label className='profile-form-field__label' htmlFor='gender'>
+        <section className={cx(styles, "profile-form-section")}>
+          <h2 className={cx(styles, "profile-form-section__title")}>Biodata Pasien</h2>
+          <div className={cx(styles, "profile-form-grid")}>
+            <div className={cx(styles, "profile-form-field")}>
+              <label className={cx(styles, "profile-form-field__label")} htmlFor='gender'>
                 Jenis Kelamin
               </label>
               <select
@@ -144,8 +145,8 @@ export default function PatientEditProfilePage() {
                 ))}
               </select>
             </div>
-            <div className='profile-form-field'>
-              <label className='profile-form-field__label' htmlFor='birthPlace'>
+            <div className={cx(styles, "profile-form-field")}>
+              <label className={cx(styles, "profile-form-field__label")} htmlFor='birthPlace'>
                 Tempat Lahir
               </label>
               <input
@@ -156,8 +157,8 @@ export default function PatientEditProfilePage() {
                 onChange={update("birthPlace")}
               />
             </div>
-            <div className='profile-form-field'>
-              <label className='profile-form-field__label' htmlFor='birthDate'>
+            <div className={cx(styles, "profile-form-field")}>
+              <label className={cx(styles, "profile-form-field__label")} htmlFor='birthDate'>
                 Tanggal Lahir
               </label>
               <input
@@ -168,9 +169,9 @@ export default function PatientEditProfilePage() {
                 onChange={update("birthDate")}
               />
             </div>
-            <div className='profile-form-field'>
+            <div className={cx(styles, "profile-form-field")}>
               <label
-                className='profile-form-field__label'
+                className={cx(styles, "profile-form-field__label")}
                 htmlFor='lastEducation'
               >
                 Pendidikan Terakhir
@@ -188,8 +189,8 @@ export default function PatientEditProfilePage() {
                 ))}
               </select>
             </div>
-            <div className='profile-form-field'>
-              <label className='profile-form-field__label' htmlFor='occupation'>
+            <div className={cx(styles, "profile-form-field")}>
+              <label className={cx(styles, "profile-form-field__label")} htmlFor='occupation'>
                 Pekerjaan
               </label>
               <input
@@ -200,9 +201,9 @@ export default function PatientEditProfilePage() {
                 onChange={update("occupation")}
               />
             </div>
-            <div className='profile-form-field'>
+            <div className={cx(styles, "profile-form-field")}>
               <label
-                className='profile-form-field__label'
+                className={cx(styles, "profile-form-field__label")}
                 htmlFor='maritalStatus'
               >
                 Status Perkawinan
@@ -220,8 +221,8 @@ export default function PatientEditProfilePage() {
                 ))}
               </select>
             </div>
-            <div className='profile-form-field'>
-              <label className='profile-form-field__label' htmlFor='religion'>
+            <div className={cx(styles, "profile-form-field")}>
+              <label className={cx(styles, "profile-form-field__label")} htmlFor='religion'>
                 Agama
               </label>
               <select
@@ -240,11 +241,11 @@ export default function PatientEditProfilePage() {
           </div>
         </section>
 
-        <section className='profile-form-section'>
-          <h2 className='profile-form-section__title'>Alamat</h2>
-          <div className='profile-form-grid'>
-            <div className='profile-form-field profile-form-field--full'>
-              <label className='profile-form-field__label' htmlFor='address'>
+        <section className={cx(styles, "profile-form-section")}>
+          <h2 className={cx(styles, "profile-form-section__title")}>Alamat</h2>
+          <div className={cx(styles, "profile-form-grid")}>
+            <div className={cx(styles, "profile-form-field profile-form-field--full")}>
+              <label className={cx(styles, "profile-form-field__label")} htmlFor='address'>
                 Alamat Domisili
               </label>
               <textarea
@@ -254,8 +255,8 @@ export default function PatientEditProfilePage() {
                 onChange={update("address")}
               />
             </div>
-            <div className='profile-form-field'>
-              <label className='profile-form-field__label' htmlFor='city'>
+            <div className={cx(styles, "profile-form-field")}>
+              <label className={cx(styles, "profile-form-field__label")} htmlFor='city'>
                 Kota
               </label>
               <input
@@ -269,18 +270,18 @@ export default function PatientEditProfilePage() {
           </div>
         </section>
 
-        <div className='profile-form-actions'>
-          <Link to='/pasien/profil' className='profile-form-actions__cancel'>
+        <div className={cx(styles, "profile-form-actions")}>
+          <Link to='/pasien/profil' className={cx(styles, "profile-form-actions__cancel")}>
             Batal
           </Link>
-          <button type='submit' className='profile-form-actions__save'>
+          <button type='submit' className={cx(styles, "profile-form-actions__save")}>
             Simpan Perubahan
           </button>
         </div>
       </form>
 
       {showNote && (
-        <p className='patient-edit-profile__note' role='status'>
+        <p className={cx(styles, "patient-edit-profile__note")} role='status'>
           Ini adalah halaman demo. Perubahan tidak disimpan ke server (mock
           data).
         </p>

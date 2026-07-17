@@ -1,12 +1,16 @@
+import styles from "../../styles/patient-reservation.module.css";
+import cx from "../../utils/classNames.js";
 export default function TimeSlotGrid({ slots, selectedTime, onSelect }) {
   return (
-    <div className="time-slots">
+    <div className={cx(styles, "time-slots")}>
       {slots.map((slot) => {
         const isSelected = slot.time === selectedTime;
-        const classes =
-          "time-slot" +
-          (slot.available ? "" : " time-slot--disabled") +
-          (isSelected ? " time-slot--selected" : "");
+        const classes = cx(
+          styles,
+          "time-slot",
+          !slot.available && "time-slot--disabled",
+          isSelected && "time-slot--selected",
+        );
         return (
           <button
             key={slot.time}

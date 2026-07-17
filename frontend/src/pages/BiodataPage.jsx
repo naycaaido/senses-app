@@ -1,5 +1,6 @@
+import styles from "../styles/biodata.module.css";
+import cx from "../utils/classNames.js";
 import { useState } from "react";
-import "../styles/biodata.css";
 
 export default function BiodataPage() {
   const [phone, setPhone] = useState("");
@@ -18,53 +19,53 @@ export default function BiodataPage() {
   }
 
   return (
-    <div className='biodata-page'>
-      <div className='biodata-header'>
-        <div className='biodata-header__logo'>
-          <span className='biodata-header__logo-name'>SENSE&rsquo;S</span>
-          <span className='biodata-header__logo-sub'>clinic</span>
+    <div className={cx(styles, "biodata-page")}>
+      <div className={cx(styles, "biodata-header")}>
+        <div className={cx(styles, "biodata-header__logo")}>
+          <span className={cx(styles, "biodata-header__logo-name")}>SENSE&rsquo;S</span>
+          <span className={cx(styles, "biodata-header__logo-sub")}>clinic</span>
         </div>
 
-        <div className='biodata-stepper'>
-          <div className='biodata-stepper__step'>
-            <div className='biodata-stepper__circle biodata-stepper__circle--completed'>
+        <div className={cx(styles, "biodata-stepper")}>
+          <div className={cx(styles, "biodata-stepper__step")}>
+            <div className={cx(styles, "biodata-stepper__circle biodata-stepper__circle--completed")}>
               1
             </div>
-            <span className='biodata-stepper__label biodata-stepper__label--completed'>
+            <span className={cx(styles, "biodata-stepper__label biodata-stepper__label--completed")}>
               Buat Akun
             </span>
-            <div className='biodata-stepper__connector' />
+            <div className={cx(styles, "biodata-stepper__connector")} />
           </div>
-          <div className='biodata-stepper__step'>
-            <div className='biodata-stepper__circle biodata-stepper__circle--active'>
+          <div className={cx(styles, "biodata-stepper__step")}>
+            <div className={cx(styles, "biodata-stepper__circle biodata-stepper__circle--active")}>
               2
             </div>
-            <span className='biodata-stepper__label biodata-stepper__label--active'>
+            <span className={cx(styles, "biodata-stepper__label biodata-stepper__label--active")}>
               Lengkapi Biodata
             </span>
           </div>
         </div>
       </div>
 
-      <div className='biodata-content'>
-        <h1 className='biodata-heading'>Lengkapi Biodata</h1>
-        <p className='biodata-subtitle'>
+      <div className={cx(styles, "biodata-content")}>
+        <h1 className={cx(styles, "biodata-heading")}>Lengkapi Biodata</h1>
+        <p className={cx(styles, "biodata-subtitle")}>
           Satu langkah lagi sebelum masuk. Data ini membantu kami memahami
           kondisi Anda sebelum merawat.
         </p>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className='biodata-card'>
-            <h2 className='biodata-card__title'>Kontak</h2>
-            <div className='biodata-card__body'>
-              <div className='biodata-grid'>
-                <div className='biodata-field'>
-                  <label className='biodata-field__label' htmlFor='phone'>
+          <div className={cx(styles, "biodata-card")}>
+            <h2 className={cx(styles, "biodata-card__title")}>Kontak</h2>
+            <div className={cx(styles, "biodata-card__body")}>
+              <div className={cx(styles, "biodata-grid")}>
+                <div className={cx(styles, "biodata-field")}>
+                  <label className={cx(styles, "biodata-field__label")} htmlFor='phone'>
                     Nomor Telepon
                   </label>
-                  <div className='biodata-input biodata-input--icon'>
+                  <div className={cx(styles, "biodata-input biodata-input--icon")}>
                     <img
-                      className='biodata-input__icon'
+                      className={cx(styles, "biodata-input__icon")}
                       src='/assets/icon-phone.svg'
                       alt=''
                     />
@@ -78,13 +79,13 @@ export default function BiodataPage() {
                     />
                   </div>
                 </div>
-                <div className='biodata-field'>
-                  <label className='biodata-field__label' htmlFor='email'>
+                <div className={cx(styles, "biodata-field")}>
+                  <label className={cx(styles, "biodata-field__label")} htmlFor='email'>
                     Email
                   </label>
-                  <div className='biodata-input biodata-input--icon biodata-input--email'>
+                  <div className={cx(styles, "biodata-input biodata-input--icon biodata-input--email")}>
                     <img
-                      className='biodata-input__icon'
+                      className={cx(styles, "biodata-input__icon")}
                       src='/assets/icon-mail.svg'
                       alt=''
                     />
@@ -101,17 +102,17 @@ export default function BiodataPage() {
             </div>
           </div>
 
-          <div className='biodata-card'>
-            <h2 className='biodata-card__title'>Biodata Pasien</h2>
-            <div className='biodata-card__body'>
-              <div className='biodata-grid'>
-                <div className='biodata-field'>
-                  <label className='biodata-field__label' htmlFor='gender'>
+          <div className={cx(styles, "biodata-card")}>
+            <h2 className={cx(styles, "biodata-card__title")}>Biodata Pasien</h2>
+            <div className={cx(styles, "biodata-card__body")}>
+              <div className={cx(styles, "biodata-grid")}>
+                <div className={cx(styles, "biodata-field")}>
+                  <label className={cx(styles, "biodata-field__label")} htmlFor='gender'>
                     Jenis Kelamin
                   </label>
-                  <div className='biodata-input biodata-input--icon biodata-input--icon--right'>
+                  <div className={cx(styles, "biodata-input biodata-input--icon biodata-input--icon--right")}>
                     <img
-                      className='biodata-input__icon biodata-input__icon--right'
+                      className={cx(styles, "biodata-input__icon biodata-input__icon--right")}
                       src='/assets/icon-chevron-down.svg'
                       alt=''
                     />
@@ -128,11 +129,11 @@ export default function BiodataPage() {
                     </select>
                   </div>
                 </div>
-                <div className='biodata-field'>
-                  <label className='biodata-field__label' htmlFor='birthPlace'>
+                <div className={cx(styles, "biodata-field")}>
+                  <label className={cx(styles, "biodata-field__label")} htmlFor='birthPlace'>
                     Tempat Lahir
                   </label>
-                  <div className='biodata-input'>
+                  <div className={cx(styles, "biodata-input")}>
                     <input
                       id='birthPlace'
                       type='text'
@@ -143,11 +144,11 @@ export default function BiodataPage() {
                     />
                   </div>
                 </div>
-                <div className='biodata-field'>
-                  <label className='biodata-field__label' htmlFor='birthDate'>
+                <div className={cx(styles, "biodata-field")}>
+                  <label className={cx(styles, "biodata-field__label")} htmlFor='birthDate'>
                     Tanggal Lahir
                   </label>
-                  <div className='biodata-input'>
+                  <div className={cx(styles, "biodata-input")}>
                     <input
                       id='birthDate'
                       type='date'
@@ -157,16 +158,16 @@ export default function BiodataPage() {
                     />
                   </div>
                 </div>
-                <div className='biodata-field'>
+                <div className={cx(styles, "biodata-field")}>
                   <label
-                    className='biodata-field__label'
+                    className={cx(styles, "biodata-field__label")}
                     htmlFor='lastEducation'
                   >
                     Pendidikan Terakhir
                   </label>
-                  <div className='biodata-input biodata-input--icon biodata-input--icon--right'>
+                  <div className={cx(styles, "biodata-input biodata-input--icon biodata-input--icon--right")}>
                     <img
-                      className='biodata-input__icon biodata-input__icon--right'
+                      className={cx(styles, "biodata-input__icon biodata-input__icon--right")}
                       src='/assets/icon-chevron-down.svg'
                       alt=''
                     />
@@ -188,11 +189,11 @@ export default function BiodataPage() {
                     </select>
                   </div>
                 </div>
-                <div className='biodata-field'>
-                  <label className='biodata-field__label' htmlFor='occupation'>
+                <div className={cx(styles, "biodata-field")}>
+                  <label className={cx(styles, "biodata-field__label")} htmlFor='occupation'>
                     Pekerjaan
                   </label>
-                  <div className='biodata-input'>
+                  <div className={cx(styles, "biodata-input")}>
                     <input
                       id='occupation'
                       type='text'
@@ -203,16 +204,16 @@ export default function BiodataPage() {
                     />
                   </div>
                 </div>
-                <div className='biodata-field'>
+                <div className={cx(styles, "biodata-field")}>
                   <label
-                    className='biodata-field__label'
+                    className={cx(styles, "biodata-field__label")}
                     htmlFor='maritalStatus'
                   >
                     Status Perkawinan
                   </label>
-                  <div className='biodata-input biodata-input--icon biodata-input--icon--right'>
+                  <div className={cx(styles, "biodata-input biodata-input--icon biodata-input--icon--right")}>
                     <img
-                      className='biodata-input__icon biodata-input__icon--right'
+                      className={cx(styles, "biodata-input__icon biodata-input__icon--right")}
                       src='/assets/icon-chevron-down.svg'
                       alt=''
                     />
@@ -229,11 +230,11 @@ export default function BiodataPage() {
                     </select>
                   </div>
                 </div>
-                <div className='biodata-field'>
-                  <label className='biodata-field__label' htmlFor='religion'>
+                <div className={cx(styles, "biodata-field")}>
+                  <label className={cx(styles, "biodata-field__label")} htmlFor='religion'>
                     Agama
                   </label>
-                  <div className='biodata-input'>
+                  <div className={cx(styles, "biodata-input")}>
                     <input
                       id='religion'
                       type='text'
@@ -248,20 +249,20 @@ export default function BiodataPage() {
             </div>
           </div>
 
-          <div className='biodata-card'>
-            <h2 className='biodata-card__title'>
-              <span className='biodata-card__title-icon'>
+          <div className={cx(styles, "biodata-card")}>
+            <h2 className={cx(styles, "biodata-card__title")}>
+              <span className={cx(styles, "biodata-card__title-icon")}>
                 <img src='/assets/icon-location.svg' alt='' />
               </span>
               Alamat
             </h2>
-            <div className='biodata-card__body'>
-              <div className='biodata-grid biodata-grid--full'>
-                <div className='biodata-field'>
-                  <label className='biodata-field__label' htmlFor='address'>
+            <div className={cx(styles, "biodata-card__body")}>
+              <div className={cx(styles, "biodata-grid biodata-grid--full")}>
+                <div className={cx(styles, "biodata-field")}>
+                  <label className={cx(styles, "biodata-field__label")} htmlFor='address'>
                     Alamat Domisili
                   </label>
-                  <div className='biodata-input'>
+                  <div className={cx(styles, "biodata-input")}>
                     <input
                       id='address'
                       type='text'
@@ -273,12 +274,12 @@ export default function BiodataPage() {
                   </div>
                 </div>
               </div>
-              <div className='biodata-grid' style={{ marginTop: 16 }}>
-                <div className='biodata-field'>
-                  <label className='biodata-field__label' htmlFor='city'>
+              <div className={cx(styles, "biodata-grid")} style={{ marginTop: 16 }}>
+                <div className={cx(styles, "biodata-field")}>
+                  <label className={cx(styles, "biodata-field__label")} htmlFor='city'>
                     Kota
                   </label>
-                  <div className='biodata-input'>
+                  <div className={cx(styles, "biodata-input")}>
                     <input
                       id='city'
                       type='text'
@@ -293,9 +294,9 @@ export default function BiodataPage() {
             </div>
           </div>
 
-          <div className='biodata-actions'>
-            <button type='submit' className='biodata-actions__btn'>
-              <span className='biodata-actions__btn-icon'>
+          <div className={cx(styles, "biodata-actions")}>
+            <button type='submit' className={cx(styles, "biodata-actions__btn")}>
+              <span className={cx(styles, "biodata-actions__btn-icon")}>
                 <img src='/assets/icon-check.svg' alt='' />
               </span>
               Simpan

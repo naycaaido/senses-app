@@ -1,21 +1,21 @@
+import styles from "../styles/service-catalog.module.css";
+import cx from "../utils/classNames.js";
 import ServiceCard from "../components/service/ServiceCard.jsx";
 import mockServices from "../mocks/services.js";
-import "../styles/service-card.css";
-import "../styles/service-catalog.css";
 
 export default function ServiceCatalogPage() {
   return (
-    <div className="service-catalog">
-      <div className="service-catalog__inner">
-        <header className="service-catalog__header">
-          <h1 className="service-catalog__title">Layanan Sense&rsquo;s</h1>
-          <p className="service-catalog__desc">
+    <div className={cx(styles, "service-catalog")}>
+      <div className={cx(styles, "service-catalog__inner")}>
+        <header className={cx(styles, "service-catalog__header")}>
+          <h1 className={cx(styles, "service-catalog__title")}>Layanan Sense&rsquo;s</h1>
+          <p className={cx(styles, "service-catalog__desc")}>
             Dua layanan utama yang bisa Anda pesan secara mandiri. Setiap
             perawatan ditangani dengan prinsip memahami dulu, baru merawat.
           </p>
         </header>
 
-        <div className="service-catalog__grid">
+        <div className={cx(styles, "service-catalog__grid")}>
           {mockServices.map((service) => (
             <ServiceCard
               key={service.id}
@@ -25,11 +25,11 @@ export default function ServiceCatalogPage() {
           ))}
         </div>
 
-        <aside className="service-catalog__info">
-          <div className="service-catalog__info-icon">
+        <aside className={cx(styles, "service-catalog__info")}>
+          <div className={cx(styles, "service-catalog__info-icon")}>
             <img src="/assets/icon-info.svg" alt="" />
           </div>
-          <p className="service-catalog__info-text">
+          <p className={cx(styles, "service-catalog__info-text")}>
             <strong>Tindakan medis lain ditentukan oleh dokter saat konsultasi.</strong>{" "}
             Untuk kondisi tertentu, dr. Ria Vista Sari, SpDV akan menyusun
             rencana perawatan yang sesuai dengan kebutuhan Anda, bukan paket

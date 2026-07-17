@@ -1,3 +1,5 @@
+import styles from "../../styles/service-card.module.css";
+import cx from "../../utils/classNames.js";
 import { Link } from "react-router-dom";
 
 export default function ServiceCard({
@@ -6,32 +8,32 @@ export default function ServiceCard({
   actionLabel = "Reservasi",
 }) {
   return (
-    <article className="service-card">
-      <div className="service-card__header">
-        <div className="service-card__header-left">
-          <h2 className="service-card__title">{service.name}</h2>
-          <span className="service-card__duration">
+    <article className={cx(styles, "service-card")}>
+      <div className={cx(styles, "service-card__header")}>
+        <div className={cx(styles, "service-card__header-left")}>
+          <h2 className={cx(styles, "service-card__title")}>{service.name}</h2>
+          <span className={cx(styles, "service-card__duration")}>
             <img
               src="/assets/icon-clock.svg"
               alt=""
-              className="service-card__duration-icon"
+              className={cx(styles, "service-card__duration-icon")}
               aria-hidden="true"
             />
             {service.duration}
           </span>
         </div>
-        <span className="service-card__price">{service.price}</span>
+        <span className={cx(styles, "service-card__price")}>{service.price}</span>
       </div>
 
-      <div className="service-card__body">
-        <p className="service-card__description">{service.description}</p>
-        <div className="service-card__action">
-          <Link to={reservationPath} className="service-card__btn">
+      <div className={cx(styles, "service-card__body")}>
+        <p className={cx(styles, "service-card__description")}>{service.description}</p>
+        <div className={cx(styles, "service-card__action")}>
+          <Link to={reservationPath} className={cx(styles, "service-card__btn")}>
             {actionLabel}
             <img
               src="/assets/icon-arrow.svg"
               alt=""
-              className="service-card__btn-icon"
+              className={cx(styles, "service-card__btn-icon")}
               aria-hidden="true"
             />
           </Link>

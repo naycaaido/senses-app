@@ -73,7 +73,7 @@
   background: rgba(0, 0, 0, 0.04);
 }
 
-.patient-header .nav-links a.active {
+.patient-header .nav-links a:global(.active) {
   color: var(--color-green);
 }
 
