@@ -49,7 +49,7 @@ export default function DataPasien() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px]">
             <thead>
-              <tr className={shared.theadRow}>
+              <tr className="border-b border-[#e6e6e2] bg-[#f5f5f3]/60 text-left">
                 {['Pasien', 'Telepon', 'Email', 'Kota', 'Aksi'].map((h) => (
                   <th key={h} className="bg-[#f5f5f3]/60 px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.05em] text-[#434655]">
                     {h}

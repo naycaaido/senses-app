@@ -13,8 +13,52 @@ import {
 import { Avatar, Card, Chip, PageHeader, StatCard, Button } from '../components/ui.jsx'
 import { useStore } from '../data/store.jsx'
 import { cx } from '../utils/cx.js'
-import shared from '../styles/shared.module.css'
-import styles from '../styles/ReceptionistDashboardPage.module.css'
+const shared = {
+  page: 'flex flex-col gap-5',
+  narrow3xl: 'mx-auto max-w-3xl',
+  narrow4xl: 'mx-auto max-w-4xl',
+  narrow5xl: 'mx-auto max-w-5xl',
+  backLink: 'self-start text-[13px] font-semibold text-[#434655] transition-colors hover:text-[#191c1e]',
+  titleSans: 'text-[22px] font-bold text-[#191c1e]',
+  titleSerif: 'font-serif text-[34px] text-[#191c1e]',
+  subtitle: 'text-[13px] text-[#434655]',
+  eyebrowGold: 'text-[11px] font-semibold uppercase tracking-[1.5px] text-[#a8945e]',
+  tableWrap: 'overflow-x-auto',
+  table: 'w-full',
+  tableMin600: 'min-w-[600px]',
+  tableMin720: 'min-w-[720px]',
+  theadRow: 'border-b border-[#e6e6e2] bg-[#f5f5f3]/60 text-left',
+  theadRowY: 'border-y border-[#e6e6e2] bg-[#f5f5f3]/60 text-left',
+  th: 'px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#434655]',
+  tr: 'border-b border-[#e6e6e2] last:border-b-0',
+  td: 'px-5 py-4 text-[13px] text-[#191c1e]',
+  cellPerson: 'flex items-center gap-3',
+  personName: 'text-[13px] font-semibold text-[#191c1e]',
+  personMeta: 'text-xs text-[#434655]',
+  toolbar: 'flex flex-wrap items-center justify-between gap-3 border-b border-[#e6e6e2] p-5',
+  toolbarFilters: 'flex flex-wrap items-center gap-3',
+  toolbarNote: 'text-xs text-[#434655]',
+  pagination: 'flex flex-wrap items-center justify-between gap-3 px-5 py-4',
+  paginationInfo: 'text-xs text-[#434655]',
+  pager: 'flex items-center gap-1',
+  pagerArrow: 'rounded-lg p-1.5 text-[#434655] transition-colors hover:not-disabled:bg-[#f5f5f3] disabled:opacity-35',
+  pagerPage: 'size-8 rounded-lg text-[13px] font-medium text-[#191c1e] transition-colors hover:bg-[#f5f5f3]',
+  pagerPageActive: 'bg-[#3d4940] text-white hover:bg-[#3d4940]',
+  infoBox: 'rounded-xl bg-[#f5f5f3] px-4 py-3',
+  infoBoxTitle: 'text-[13px] font-semibold text-[#191c1e]',
+  infoBoxMeta: 'text-xs text-[#434655]',
+  modalNote: 'mt-3 text-xs text-[#434655]',
+  iconActions: 'flex gap-1',
+  iconButton: 'rounded-lg p-2 text-[#434655] transition-colors hover:bg-[#f5f5f3] hover:text-[#191c1e]',
+  iconButtonDanger: 'hover:text-[#a03d4a]',
+  linkBlue: 'text-[13px] font-semibold text-blue-600 hover:underline',
+  searchWrap: 'relative',
+  searchIcon: 'pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#a3a3a3]',
+}
+
+const styles = {
+  stats: 'grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4', columns: 'grid grid-cols-1 gap-5 xl:grid-cols-[1fr_360px]', cardHead: 'flex items-center justify-between px-5 py-4', cardTitle: 'text-[15px] font-bold text-[#191c1e]', actionCell: 'relative', dotsButton: 'rounded-lg p-1.5 text-[#434655] transition-colors hover:bg-[#f5f5f3]', menuScrim: 'fixed inset-0 z-10', menu: 'absolute right-5 z-20 mt-1 w-44 overflow-hidden rounded-xl border border-[#e6e6e2] bg-white py-1 shadow-[0_10px_15px_-3px_rgb(0_0_0_/_0.1),0_4px_6px_-4px_rgb(0_0_0_/_0.1)]', menuItem: 'block w-full px-4 py-2 text-left text-[13px] text-[#191c1e] hover:bg-[#f5f5f3]', calHead: 'flex items-center justify-between', calTitle: 'text-[15px] font-bold text-[#191c1e]', calNav: 'flex gap-1', calArrow: 'rounded-lg p-1.5 text-[#434655] transition-colors hover:bg-[#f5f5f3]', calGrid: 'mt-4 grid grid-cols-7 gap-y-1 text-center', calWeekday: 'py-1 text-xs font-medium text-[#434655]', calDay: 'flex size-8 items-center justify-center rounded-full text-[13px] text-[#191c1e] transition-colors hover:not-disabled:bg-[#f5f5f3]', calDayMuted: 'cursor-default text-neutral-300 hover:bg-transparent', calDaySelected: 'bg-[#3d4940] font-semibold text-white hover:bg-[#3d4940]',
+}
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 const MONTHS = [

@@ -8,7 +8,6 @@ import {
   IconReceipt,
   IconUsers,
 } from './Icons.jsx'
-import '../styles/receptionist-global.css'
 
 const navItems = [
   { to: '/resepsionis/dashboard', label: 'Dashboard', icon: IconHome },
@@ -79,7 +78,7 @@ function Topbar() {
 
 export default function ReceptionistLayout() {
   return (
-    <div className="receptionist-shell flex min-h-screen">
+    <div className="flex min-h-screen font-sans text-[#191c1e]">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />
