@@ -60,3 +60,4 @@ export default function Placeholder({ title, note }) {
     </div>
   )
 }
+
