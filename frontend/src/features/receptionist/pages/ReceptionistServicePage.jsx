@@ -12,84 +12,25 @@ import {
 import { Button, Card, Chip, EmptyRow, Input, Modal, PageHeader, Select } from '../components/ui.jsx'
 import { formatRupiah, useStore } from '../data/store.jsx'
 import { cx } from '../utils/cx.js'
-const shared = {
-  page: 'flex flex-col gap-5',
-  narrow3xl: 'mx-auto max-w-3xl',
-  narrow4xl: 'mx-auto max-w-4xl',
-  narrow5xl: 'mx-auto max-w-5xl',
-  backLink: 'self-start text-[13px] font-semibold text-[#434655] transition-colors hover:text-[#191c1e]',
-  titleSans: 'text-[22px] font-bold text-[#191c1e]',
-  titleSerif: 'font-serif text-[34px] text-[#191c1e]',
-  subtitle: 'text-[13px] text-[#434655]',
-  eyebrowGold: 'text-[11px] font-semibold uppercase tracking-[1.5px] text-[#a8945e]',
-  tableWrap: 'overflow-x-auto',
-  table: 'w-full',
-  tableMin600: 'min-w-[600px]',
-  tableMin720: 'min-w-[720px]',
-  theadRow: 'border-b border-[#e6e6e2] bg-[#f5f5f3]/60 text-left',
-  theadRowY: 'border-y border-[#e6e6e2] bg-[#f5f5f3]/60 text-left',
-  th: 'px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#434655]',
-  tr: 'border-b border-[#e6e6e2] last:border-b-0',
-  td: 'px-5 py-4 text-[13px] text-[#191c1e]',
-  cellPerson: 'flex items-center gap-3',
-  personName: 'text-[13px] font-semibold text-[#191c1e]',
-  personMeta: 'text-xs text-[#434655]',
-  toolbar: 'flex flex-wrap items-center justify-between gap-3 border-b border-[#e6e6e2] p-5',
-  toolbarFilters: 'flex flex-wrap items-center gap-3',
-  toolbarNote: 'text-xs text-[#434655]',
-  pagination: 'flex flex-wrap items-center justify-between gap-3 px-5 py-4',
-  paginationInfo: 'text-xs text-[#434655]',
-  pager: 'flex items-center gap-1',
-  pagerArrow: 'rounded-lg p-1.5 text-[#434655] transition-colors hover:not-disabled:bg-[#f5f5f3] disabled:opacity-35',
-  pagerPage: 'size-8 rounded-lg text-[13px] font-medium text-[#191c1e] transition-colors hover:bg-[#f5f5f3]',
-  pagerPageActive: 'bg-[#3d4940] text-white hover:bg-[#3d4940]',
-  infoBox: 'rounded-xl bg-[#f5f5f3] px-4 py-3',
-  infoBoxTitle: 'text-[13px] font-semibold text-[#191c1e]',
-  infoBoxMeta: 'text-xs text-[#434655]',
-  modalNote: 'mt-3 text-xs text-[#434655]',
-  iconActions: 'flex gap-1',
-  iconButton: 'rounded-lg p-2 text-[#434655] transition-colors hover:bg-[#f5f5f3] hover:text-[#191c1e]',
-  iconButtonDanger: 'hover:text-[#a03d4a]',
-  linkBlue: 'text-[13px] font-semibold text-blue-600 hover:underline',
-  searchWrap: 'relative',
-  searchIcon: 'pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#a3a3a3]',
-}
 
-const styles = {
-  stats: 'grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4',
-  statTop: 'flex items-start justify-between',
-  statLabel: 'text-xs text-[#434655]',
-  statIcon: 'text-[#434655]',
-  statValue: 'mt-1 text-[26px] font-bold text-[#191c1e]',
-  statNote: 'mt-1 text-xs',
-  noteMuted: 'text-[#434655]',
-  noteGreen: 'text-emerald-600',
-  noteRed: 'text-[#a03d4a]',
-  filters: 'flex flex-wrap gap-4',
-  search: 'w-72',
-  statusFilter: 'w-44',
-  nameCell: 'text-sm font-bold',
-  priceCell: 'font-semibold',
-  modalIconMark: 'text-xl font-bold',
-}
 
 const PER_PAGE = 5
 
 const noteTones = {
-  muted: styles.noteMuted,
-  green: styles.noteGreen,
-  red: styles.noteRed,
+  muted: 'text-[#434655]',
+  green: 'text-emerald-600',
+  red: 'text-[#a03d4a]',
 }
 
 function StatBox({ label, value, note, noteTone = 'muted', icon }) {
   return (
     <Card pad="md">
-      <div className={styles.statTop}>
-        <p className={styles.statLabel}>{label}</p>
-        <span className={styles.statIcon}>{icon}</span>
+      <div className="flex items-start justify-between">
+        <p className="text-xs text-[#434655]">{label}</p>
+        <span className="text-[#434655]">{icon}</span>
       </div>
-      <p className={styles.statValue}>{value}</p>
-      <p className={cx(styles.statNote, noteTones[noteTone])}>{note}</p>
+      <p className="mt-1 text-[26px] font-bold text-[#191c1e]">{value}</p>
+      <p className={cx('mt-1 text-xs', noteTones[noteTone])}>{note}</p>
     </Card>
   )
 }
@@ -122,7 +63,7 @@ export default function Layanan() {
     : 0
 
   return (
-    <div className={shared.page}>
+    <div className="flex flex-col gap-5">
       <PageHeader
         eyebrow="Manajemen daftar layanan medis, tarif, dan durasi operasional."
         title="Kelola Layanan"
@@ -134,7 +75,7 @@ export default function Layanan() {
         }
       />
 
-      <div className={styles.stats}>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <StatBox
           label="Total Layanan"
           value={services.length}
@@ -164,9 +105,9 @@ export default function Layanan() {
       </div>
 
       <Card pad="md">
-        <div className={styles.filters}>
-          <div className={cx(shared.searchWrap, styles.search)}>
-            <span className={shared.searchIcon}>
+        <div className="flex flex-wrap gap-4">
+          <div className={cx('relative', 'w-72')}>
+            <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#a3a3a3]">
               <IconSearch size={16} />
             </span>
             <Input
@@ -179,7 +120,7 @@ export default function Layanan() {
               placeholder="Cari nama layanan..."
             />
           </div>
-          <div className={styles.statusFilter}>
+          <div className="w-44">
             <Select
               value={status}
               onChange={(e) => {
@@ -197,12 +138,12 @@ export default function Layanan() {
       </Card>
 
       <Card>
-        <div className={shared.tableWrap}>
-          <table className={cx(shared.table, shared.tableMin720)}>
+        <div className="overflow-x-auto">
+          <table className={cx('w-full', 'min-w-[720px]')}>
             <thead>
-              <tr className={shared.theadRow}>
+              <tr className="border-b border-[#e6e6e2] bg-[#f5f5f3]/60 text-left">
                 {['Nama Layanan', 'Harga', 'Estimasi Durasi', 'Status', 'Aksi'].map((h) => (
-                  <th key={h} className={shared.th}>
+                  <th key={h} className="px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#434655]">
                     {h}
                   </th>
                 ))}
@@ -211,26 +152,26 @@ export default function Layanan() {
             <tbody>
               {rows.length === 0 && <EmptyRow colSpan={5} />}
               {rows.map((s) => (
-                <tr key={s.id} className={shared.tr}>
-                  <td className={cx(shared.td, styles.nameCell)}>{s.name}</td>
-                  <td className={cx(shared.td, styles.priceCell)}>{formatRupiah(s.price)}</td>
-                  <td className={shared.td}>{s.duration} Menit</td>
-                  <td className={shared.td}>
+                <tr key={s.id} className="border-b border-[#e6e6e2] last:border-b-0">
+                  <td className={cx('px-5 py-4 text-[13px] text-[#191c1e]', 'text-sm font-bold')}>{s.name}</td>
+                  <td className={cx('px-5 py-4 text-[13px] text-[#191c1e]', 'font-semibold')}>{formatRupiah(s.price)}</td>
+                  <td className="px-5 py-4 text-[13px] text-[#191c1e]">{s.duration} Menit</td>
+                  <td className="px-5 py-4 text-[13px] text-[#191c1e]">
                     <Chip>{s.status}</Chip>
                   </td>
-                  <td className={shared.td}>
-                    <div className={shared.iconActions}>
+                  <td className="px-5 py-4 text-[13px] text-[#191c1e]">
+                    <div className="flex gap-1">
                       <button
                         aria-label={`Edit ${s.name}`}
                         onClick={() => navigate(`/resepsionis/layanan/${s.id}/edit`)}
-                        className={shared.iconButton}
+                        className="rounded-lg p-2 text-[#434655] transition-colors hover:bg-[#f5f5f3] hover:text-[#191c1e]"
                       >
                         <IconPencil size={16} />
                       </button>
                       <button
                         aria-label={`Hapus ${s.name}`}
                         onClick={() => setPendingDelete(s)}
-                        className={cx(shared.iconButton, shared.iconButtonDanger)}
+                        className={cx('rounded-lg p-2 text-[#434655] transition-colors hover:bg-[#f5f5f3] hover:text-[#191c1e]', 'hover:text-[#a03d4a]')}
                       >
                         <IconTrash size={16} />
                       </button>
@@ -242,17 +183,17 @@ export default function Layanan() {
           </table>
         </div>
 
-        <div className={shared.pagination}>
-          <p className={shared.paginationInfo}>
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+          <p className="text-xs text-[#434655]">
             Showing {rows.length === 0 ? 0 : (current - 1) * PER_PAGE + 1} to{' '}
             {(current - 1) * PER_PAGE + rows.length} of {filtered.length} entries
           </p>
-          <div className={shared.pager}>
+          <div className="flex items-center gap-1">
             <button
               disabled={current === 1}
               onClick={() => setPage(current - 1)}
               aria-label="Halaman sebelumnya"
-              className={shared.pagerArrow}
+              className="rounded-lg p-1.5 text-[#434655] transition-colors hover:not-disabled:bg-[#f5f5f3] disabled:opacity-35"
             >
               <IconChevronLeft size={16} />
             </button>
@@ -260,7 +201,7 @@ export default function Layanan() {
               <button
                 key={n}
                 onClick={() => setPage(n)}
-                className={cx(shared.pagerPage, n === current && shared.pagerPageActive)}
+                className={cx('size-8 rounded-lg text-[13px] font-medium text-[#191c1e] transition-colors hover:bg-[#f5f5f3]', n === current && 'bg-[#3d4940] text-white hover:bg-[#3d4940]')}
               >
                 {n}
               </button>
@@ -269,7 +210,7 @@ export default function Layanan() {
               disabled={current === totalPages}
               onClick={() => setPage(current + 1)}
               aria-label="Halaman berikutnya"
-              className={shared.pagerArrow}
+              className="rounded-lg p-1.5 text-[#434655] transition-colors hover:not-disabled:bg-[#f5f5f3] disabled:opacity-35"
             >
               <IconChevronRight size={16} />
             </button>
@@ -279,7 +220,7 @@ export default function Layanan() {
 
       {pendingDelete && (
         <Modal
-          icon={<span className={styles.modalIconMark}>!</span>}
+          icon={<span className="text-xl font-bold">!</span>}
           iconTone="red"
           title="Hapus Layanan"
           subtitle="Anda akan menghapus layanan berikut:"
@@ -301,13 +242,13 @@ export default function Layanan() {
             </>
           }
         >
-          <div className={shared.infoBox}>
-            <p className={shared.infoBoxTitle}>{pendingDelete.name}</p>
-            <p className={shared.infoBoxMeta}>
+          <div className="rounded-xl bg-[#f5f5f3] px-4 py-3">
+            <p className="text-[13px] font-semibold text-[#191c1e]">{pendingDelete.name}</p>
+            <p className="text-xs text-[#434655]">
               {formatRupiah(pendingDelete.price)} · {pendingDelete.duration} menit
             </p>
           </div>
-          <p className={shared.modalNote}>
+          <p className="mt-3 text-xs text-[#434655]">
             Layanan yang dihapus tidak dapat dipilih lagi saat membuat reservasi baru.
           </p>
         </Modal>
@@ -315,4 +256,3 @@ export default function Layanan() {
     </div>
   )
 }
-
