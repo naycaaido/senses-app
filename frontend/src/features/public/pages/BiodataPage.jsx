@@ -1,6 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function BiodataPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState(
+    () => localStorage.getItem("pendingProfileEmail") || "",
+  );
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState("");
   const [birthPlace, setBirthPlace] = useState("");
@@ -11,9 +16,63 @@ export default function BiodataPage() {
   const [religion, setReligion] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  function handleSubmit(e) {
+  if (!email) {
+    navigate("/register");
+    return null;
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
+    setError("");
+    setSuccess(false);
+
+    if (!email) {
+      setError("Email wajib diisi.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/profile`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            telepon: phone,
+            jenis_kelamin: gender,
+            tempat_lahir: birthPlace,
+            tanggal_lahir: birthDate,
+            pendidikan_terakhir: lastEducation,
+            pekerjaan: occupation,
+            status_perkawinan: maritalStatus,
+            agama: religion,
+            alamat_domisili: address,
+            kota: city,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Gagal menyimpan biodata.");
+        return;
+      }
+
+      setSuccess(true);
+      localStorage.removeItem("pendingProfileEmail");
+      navigate("/login");
+    } catch {
+      setError("Terjadi kesalahan. Coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -90,9 +149,11 @@ export default function BiodataPage() {
                     <input
                       id='email'
                       type='email'
-                      value='nama@email.com'
+                      placeholder='nama@email.com'
+                      value={email}
                       readOnly
                       tabIndex={-1}
+                      autoComplete='email'
                     />
                   </div>
                 </div>
@@ -292,8 +353,19 @@ export default function BiodataPage() {
             </div>
           </div>
 
+          {error && (
+            <p className="mb-4 text-center text-sm leading-5 text-[#9e5860]">
+              {error}
+            </p>
+          )}
+          {success && (
+            <p className="mb-4 text-center text-sm leading-5 text-[#3d4940]">
+              Biodata berhasil disimpan.
+            </p>
+          )}
+
           <div className={"mt-6 flex justify-end"}>
-            <button type='submit' className={"inline-flex h-[54px] items-center gap-2 rounded-full bg-[#3d4940] px-7 py-3.5 text-base font-medium leading-[26.4px] text-[#fbf8f3] shadow-[0_1px_2px_0_rgba(44,44,44,0.04),0_8px_24px_0_rgba(61,73,64,0.18)] hover:bg-[#0c3320]"}>
+            <button type='submit' disabled={loading} className={"inline-flex h-[54px] items-center gap-2 rounded-full bg-[#3d4940] px-7 py-3.5 text-base font-medium leading-[26.4px] text-[#fbf8f3] shadow-[0_1px_2px_0_rgba(44,44,44,0.04),0_8px_24px_0_rgba(61,73,64,0.18)] hover:bg-[#0c3320] disabled:opacity-50"}>
               <span className={"size-[18px] shrink-0 [&_img]:size-[18px]"}>
                 <img src='/assets/icon-check.svg' alt='' />
               </span>

@@ -35,10 +35,43 @@ export default function LoginPage() {
   const [identifierLogin, setIdentifierLogin] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    navigate("/pasien/beranda");
+    setError("");
+
+    if (!identifierLogin || !password) {
+      setError("Email dan kata sandi wajib diisi.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: identifierLogin, password }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Login gagal.");
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      navigate("/pasien/beranda");
+    } catch {
+      setError("Terjadi kesalahan. Coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -132,8 +165,18 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <button type="submit" className="mt-4 h-[54px] w-full rounded-full bg-[#3d4940] px-7 py-3.5 text-base font-medium leading-[26.4px] text-[#fbf8f3] shadow-[0_1px_2px_0_rgba(44,44,44,0.04),0_8px_24px_0_rgba(61,73,64,0.18)] hover:bg-[#0c3320]">
-              Masuk
+            {error && (
+              <p className="mb-3 text-center text-sm leading-5 text-[#9e5860]">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-4 h-[54px] w-full rounded-full bg-[#3d4940] px-7 py-3.5 text-base font-medium leading-[26.4px] text-[#fbf8f3] shadow-[0_1px_2px_0_rgba(44,44,44,0.04),0_8px_24px_0_rgba(61,73,64,0.18)] hover:bg-[#0c3320] disabled:opacity-50"
+            >
+              {loading ? "Memproses..." : "Masuk"}
             </button>
           </form>
 

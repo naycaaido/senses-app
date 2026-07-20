@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 function EyeIcon({ open }) {
   if (open) {
@@ -37,9 +37,67 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem("pendingProfileEmail")) {
+      navigate("/lengkapi-biodata");
+    }
+  }, [navigate]);
+
+  async function handleSubmit(e) {
     e.preventDefault();
+    setError("");
+
+    if (!name || !email || !password || !confirmPassword) {
+      setError("Semua field wajib diisi.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Konfirmasi kata sandi tidak cocok.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            nama_lengkap: name,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.profile_incomplete) {
+          localStorage.setItem(
+            "pendingProfileEmail",
+            data.email || email,
+          );
+          navigate("/lengkapi-biodata");
+          return;
+        }
+        setError(data.message || "Pendaftaran gagal.");
+        return;
+      }
+
+      localStorage.setItem("pendingProfileEmail", email);
+      navigate("/lengkapi-biodata");
+    } catch {
+      setError("Terjadi kesalahan. Coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -181,8 +239,18 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <button type="submit" className={"mt-4 h-[54px] w-full rounded-full bg-[#3d4940] px-7 py-3.5 text-base font-medium leading-[26.4px] text-[#fbf8f3] shadow-[0_1px_2px_0_rgba(44,44,44,0.04),0_8px_24px_0_rgba(61,73,64,0.18)] hover:bg-[#0c3320]"}>
-              Daftar
+            {error && (
+              <p className="mb-3 text-center text-sm leading-5 text-[#9e5860]">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={"mt-4 h-[54px] w-full rounded-full bg-[#3d4940] px-7 py-3.5 text-base font-medium leading-[26.4px] text-[#fbf8f3] shadow-[0_1px_2px_0_rgba(44,44,44,0.04),0_8px_24px_0_rgba(61,73,64,0.18)] hover:bg-[#0c3320] disabled:opacity-50"}
+            >
+              {loading ? "Mendaftarkan..." : "Daftar"}
             </button>
 
             <p className={"mt-4 text-center text-xs leading-4 tracking-[0.06em] text-[#6b6b6b]"}>
