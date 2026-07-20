@@ -1,26 +1,11 @@
 import bcrypt from "bcrypt";
-import pool from "../config/db.js";
-
-const PROFILE_FIELDS = [
-  "telepon",
-  "jenis_kelamin",
-  "tempat_lahir",
-  "tanggal_lahir",
-  "pendidikan_terakhir",
-  "pekerjaan",
-  "status_perkawinan",
-  "agama",
-  "alamat_domisili",
-  "kota",
-];
+import pasienRepository, {
+  PROFILE_FIELDS,
+} from "../repositories/pasienRepository.js";
 
 const registerPasien = async ({ email, password, nama_lengkap }) => {
-  const existing = await pool.query(
-    "SELECT email, profil_lengkap FROM pasien WHERE email = $1",
-    [email],
-  );
-  if (existing.rows.length > 0) {
-    const patient = existing.rows[0];
+  const patient = await pasienRepository.findRegistrationByEmail(email);
+  if (patient) {
     if (!patient.profil_lengkap) {
       const error = new Error(
         "Account already registered but profile is incomplete",
@@ -37,27 +22,23 @@ const registerPasien = async ({ email, password, nama_lengkap }) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  await pool.query(
-    "INSERT INTO pasien (email, password, nama_lengkap) VALUES ($1, $2, $3)",
-    [email, hashedPassword, nama_lengkap],
-  );
+  await pasienRepository.createPasien({
+    email,
+    password: hashedPassword,
+    nama_lengkap,
+  });
 
   return { email, nama_lengkap, profil_lengkap: false };
 };
 
 const loginPasien = async ({ email, password }) => {
-  const result = await pool.query(
-    "SELECT email, password, nama_lengkap, profil_lengkap FROM pasien WHERE email = $1",
-    [email],
-  );
+  const patient = await pasienRepository.findLoginByEmail(email);
 
-  if (result.rows.length === 0) {
+  if (!patient) {
     const error = new Error("Password atau email salah");
     error.statusCode = 401;
     throw error;
   }
-
-  const patient = result.rows[0];
 
   const valid = await bcrypt.compare(password, patient.password);
   if (!valid) {
@@ -81,10 +62,8 @@ const completeProfilePasien = async ({ email, ...rest }) => {
     throw error;
   }
 
-  const found = await pool.query("SELECT email FROM pasien WHERE email = $1", [
-    email,
-  ]);
-  if (found.rows.length === 0) {
+  const patient = await pasienRepository.findByEmail(email);
+  if (!patient) {
     const error = new Error("Patient not found");
     error.statusCode = 404;
     throw error;
@@ -97,22 +76,9 @@ const completeProfilePasien = async ({ email, ...rest }) => {
     throw error;
   }
 
-  const setClauses = PROFILE_FIELDS.map((field, i) => `${field} = $${i + 2}`);
-  const values = [email, ...PROFILE_FIELDS.map((field) => rest[field])];
+  await pasienRepository.updateProfile(email, rest);
 
-  await pool.query(
-    `UPDATE pasien SET ${setClauses.join(", ")}, profil_lengkap = true WHERE email = $1`,
-    values,
-  );
-
-  const updated = await pool.query(
-    `SELECT email, nama_lengkap, ${PROFILE_FIELDS.join(
-      ", ",
-    )}, profil_lengkap FROM pasien WHERE email = $1`,
-    [email],
-  );
-
-  return updated.rows[0];
+  return pasienRepository.findProfileByEmail(email);
 };
 
 export default {
