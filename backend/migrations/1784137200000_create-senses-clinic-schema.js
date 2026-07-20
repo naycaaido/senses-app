@@ -9,6 +9,12 @@ export const shorthands = undefined;
  */
 export const up = (pgm) => {
   // =====================================================
+  // SEQUENCE UNTUK KODE OTOMATIS
+  // =====================================================
+  pgm.sql("CREATE SEQUENCE reservasi_no_seq START 1");
+  pgm.sql("CREATE SEQUENCE pembayaran_id_seq START 1");
+
+  // =====================================================
   // RESEPSIONIS
   // =====================================================
   pgm.createTable("resepsionis", {
@@ -16,13 +22,17 @@ export const up = (pgm) => {
       type: "serial",
       primaryKey: true,
     },
+
     nama_lengkap: {
       type: "varchar(100)",
       notNull: true,
     },
+
     telepon: {
       type: "varchar(20)",
+      notNull: true,
     },
+
     password: {
       type: "varchar(255)",
       notNull: true,
@@ -37,43 +47,53 @@ export const up = (pgm) => {
       type: "varchar(100)",
       primaryKey: true,
     },
+
     password: {
       type: "varchar(255)",
       notNull: true,
     },
+
     nama_lengkap: {
       type: "varchar(100)",
       notNull: true,
     },
 
-    // Data pribadi boleh kosong pada tahap pertama registrasi
     telepon: {
       type: "varchar(20)",
     },
+
     jenis_kelamin: {
       type: "varchar(15)",
     },
+
     tempat_lahir: {
       type: "varchar(50)",
     },
+
     tanggal_lahir: {
       type: "date",
     },
+
     pendidikan_terakhir: {
       type: "varchar(50)",
     },
+
     pekerjaan: {
       type: "varchar(50)",
     },
+
     status_perkawinan: {
       type: "varchar(20)",
     },
+
     agama: {
       type: "varchar(20)",
     },
+
     alamat_domisili: {
       type: "varchar(255)",
     },
+
     kota: {
       type: "varchar(50)",
     },
@@ -93,56 +113,29 @@ export const up = (pgm) => {
       type: "serial",
       primaryKey: true,
     },
+
     nama_layanan: {
       type: "varchar(100)",
       notNull: true,
     },
+
     estimasi_durasi: {
       type: "integer",
       notNull: true,
     },
+
     deskripsi_layanan: {
       type: "varchar(255)",
+      notNull: true,
     },
+
     harga: {
       type: "decimal(10,2)",
       notNull: true,
       default: 0,
     },
+
     status_layanan: {
-      type: "varchar(20)",
-      notNull: true,
-      default: "Aktif",
-    },
-  });
-
-  // =====================================================
-  // JADWAL
-  // =====================================================
-  pgm.createTable("jadwal", {
-    id_jadwal: {
-      type: "serial",
-      primaryKey: true,
-    },
-
-    // Ditambahkan constraint FK setelah reservasi dibuat
-    id_reservasi: {
-      type: "integer",
-    },
-
-    tanggal: {
-      type: "date",
-      notNull: true,
-    },
-    jam_mulai: {
-      type: "time",
-      notNull: true,
-    },
-    jam_selesai: {
-      type: "time",
-      notNull: true,
-    },
-    status_jadwal: {
       type: "varchar(20)",
       notNull: true,
       default: "Aktif",
@@ -153,15 +146,12 @@ export const up = (pgm) => {
   // RESERVASI
   // =====================================================
   pgm.createTable("reservasi", {
-    id_reservasi: {
-      type: "serial",
-      primaryKey: true,
-    },
-
     no_reservasi: {
-      type: "varchar(20)",
-      notNull: true,
-      unique: true,
+      type: "varchar(11)",
+      primaryKey: true,
+      default: pgm.func(
+        "'RSV-' || LPAD(nextval('reservasi_no_seq')::text, 6, '0')",
+      ),
     },
 
     email_pasien: {
@@ -193,21 +183,6 @@ export const up = (pgm) => {
       default: pgm.func("CURRENT_DATE"),
     },
 
-    tanggal_kunjungan: {
-      type: "date",
-      notNull: true,
-    },
-
-    waktu_mulai: {
-      type: "time",
-      notNull: true,
-    },
-
-    waktu_selesai: {
-      type: "time",
-      notNull: true,
-    },
-
     status_reservasi: {
       type: "varchar(20)",
       notNull: true,
@@ -224,14 +199,40 @@ export const up = (pgm) => {
   });
 
   // =====================================================
-  // RELASI RESERVASI 1 : N JADWAL
+  // JADWAL
   // =====================================================
-  pgm.addConstraint("jadwal", "fk_jadwal_reservasi", {
-    foreignKeys: {
-      columns: "id_reservasi",
-      references: "reservasi(id_reservasi)",
+  pgm.createTable("jadwal", {
+    id_jadwal: {
+      type: "serial",
+      primaryKey: true,
+    },
+
+    no_reservasi: {
+      type: "varchar(11)",
+      references: "reservasi(no_reservasi)",
       onDelete: "SET NULL",
       onUpdate: "CASCADE",
+    },
+
+    tanggal: {
+      type: "date",
+      notNull: true,
+    },
+
+    jam_mulai: {
+      type: "time",
+      notNull: true,
+    },
+
+    jam_selesai: {
+      type: "time",
+      notNull: true,
+    },
+
+    status_jadwal: {
+      type: "varchar(20)",
+      notNull: true,
+      default: "Aktif",
     },
   });
 
@@ -240,33 +241,33 @@ export const up = (pgm) => {
   // =====================================================
   pgm.createTable("pembayaran", {
     id_pembayaran: {
-      type: "varchar(20)",
+      type: "varchar(11)",
       primaryKey: true,
+      default: pgm.func(
+        "'PAY-' || LPAD(nextval('pembayaran_id_seq')::text, 6, '0')",
+      ),
     },
+
     no_reservasi: {
-      type: "varchar(20)",
+      type: "varchar(11)",
       notNull: true,
       unique: true,
       references: "reservasi(no_reservasi)",
       onDelete: "RESTRICT",
       onUpdate: "CASCADE",
     },
-    id_resepsionis: {
-      type: "integer",
-      notNull: true,
-      references: "resepsionis(id_resepsionis)",
-      onDelete: "RESTRICT",
-      onUpdate: "CASCADE",
-    },
+
     tanggal_bayar: {
       type: "timestamp",
       notNull: true,
       default: pgm.func("CURRENT_TIMESTAMP"),
     },
+
     total_biaya: {
       type: "decimal(10,2)",
       notNull: true,
     },
+
     metode_pembayaran: {
       type: "varchar(20)",
       notNull: true,
@@ -274,7 +275,7 @@ export const up = (pgm) => {
   });
 
   // =====================================================
-  // CHECK CONSTRAINTS
+  // CHECK CONSTRAINTS - LAYANAN
   // =====================================================
   pgm.addConstraint("layanan", "check_harga_layanan", {
     check: "harga >= 0",
@@ -288,16 +289,11 @@ export const up = (pgm) => {
     check: "status_layanan IN ('Aktif', 'Nonaktif')",
   });
 
-  pgm.addConstraint("jadwal", "check_status_jadwal", {
-    check: "status_jadwal IN ('Aktif', 'Nonaktif')",
-  });
-
-  pgm.addConstraint("jadwal", "check_waktu_jadwal", {
-    check: "jam_selesai > jam_mulai",
-  });
-
-  pgm.addConstraint("reservasi", "check_waktu_reservasi", {
-    check: "waktu_selesai > waktu_mulai",
+  // =====================================================
+  // CHECK CONSTRAINTS - RESERVASI
+  // =====================================================
+  pgm.addConstraint("reservasi", "check_no_reservasi_format", {
+    check: "no_reservasi ~ '^RSV-[0-9]{6}$'",
   });
 
   pgm.addConstraint("reservasi", "check_status_reservasi", {
@@ -310,6 +306,24 @@ export const up = (pgm) => {
         'Tidak Hadir'
       )
     `,
+  });
+
+  // =====================================================
+  // CHECK CONSTRAINTS - JADWAL
+  // =====================================================
+  pgm.addConstraint("jadwal", "check_status_jadwal", {
+    check: "status_jadwal IN ('Aktif', 'Nonaktif')",
+  });
+
+  pgm.addConstraint("jadwal", "check_waktu_jadwal", {
+    check: "jam_selesai > jam_mulai",
+  });
+
+  // =====================================================
+  // CHECK CONSTRAINTS - PEMBAYARAN
+  // =====================================================
+  pgm.addConstraint("pembayaran", "check_id_pembayaran_format", {
+    check: "id_pembayaran ~ '^PAY-[0-9]{6}$'",
   });
 
   pgm.addConstraint("pembayaran", "check_total_biaya", {
@@ -333,16 +347,16 @@ export const up = (pgm) => {
   pgm.createIndex("reservasi", "email_pasien");
   pgm.createIndex("reservasi", "id_layanan");
   pgm.createIndex("reservasi", "id_resepsionis");
-  pgm.createIndex("reservasi", ["tanggal_kunjungan", "waktu_mulai"]);
+  pgm.createIndex("reservasi", "status_reservasi");
 
-  pgm.createIndex("jadwal", "id_reservasi");
+  pgm.createIndex("jadwal", "no_reservasi");
 
   pgm.createIndex("jadwal", ["tanggal", "jam_mulai"], {
     unique: true,
   });
 
-  // no_reservasi sudah unique, sehingga PostgreSQL otomatis
-  // membuat index untuk kolom tersebut.
+  // no_reservasi pada pembayaran sudah unique,
+  // sehingga PostgreSQL otomatis membuat index.
 };
 
 /**
@@ -351,10 +365,12 @@ export const up = (pgm) => {
  */
 export const down = (pgm) => {
   pgm.dropTable("pembayaran");
-  pgm.dropConstraint("jadwal", "fk_jadwal_reservasi");
-  pgm.dropTable("reservasi");
   pgm.dropTable("jadwal");
+  pgm.dropTable("reservasi");
   pgm.dropTable("layanan");
   pgm.dropTable("pasien");
   pgm.dropTable("resepsionis");
+
+  pgm.sql("DROP SEQUENCE IF EXISTS pembayaran_id_seq");
+  pgm.sql("DROP SEQUENCE IF EXISTS reservasi_no_seq");
 };
