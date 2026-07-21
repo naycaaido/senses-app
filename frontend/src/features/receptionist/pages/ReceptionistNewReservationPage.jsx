@@ -1,32 +1,13 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Button, Card, Chip, Field, Input } from '../components/ui.jsx'
-import { bookedSlots, formatRupiah, TIME_SLOTS, useStore } from '../data/store.jsx'
+import { Link, useNavigate } from 'react-router-dom'
+import { IconChevronLeft, IconSearch } from '../components/Icons.jsx'
+import { Button, Card, Chip, Field, Input, Textarea } from '../components/ui.jsx'
+import { formatRupiah, useStore, bookedSlots, TIME_SLOTS } from '../data/store.jsx'
 import { cx } from '../utils/cx.js'
 
-
-function Step({ number, title, subtitle, children }) {
-  return (
-    <Card pad="lg">
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-[#f5f5f3] text-xs font-semibold text-[#3d4940]">{number}</span>
-        <div>
-          <h2 className="font-serif text-xl text-[#191c1e]">{title}</h2>
-          <p className="text-[13px] text-[#434655]">{subtitle}</p>
-        </div>
-      </div>
-      <div className="mt-5">{children}</div>
-    </Card>
-  )
-}
-
-function initials(name) {
-  return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()
-}
-
-function formatTanggal(iso) {
-  if (!iso) return '—'
-  return new Date(`${iso}T00:00:00`).toLocaleDateString('id-ID', {
+function formatDateDisplay(dateStr) {
+  if (!dateStr) return ''
+  return new Date(`${dateStr}T00:00:00`).toLocaleDateString('id-ID', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -34,252 +15,405 @@ function formatTanggal(iso) {
   })
 }
 
-function endOf(time, duration) {
-  const [h, m] = time.split('.').map(Number)
-  const total = h * 60 + m + duration
-  return `${String(Math.floor(total / 60)).padStart(2, '0')}.${String(total % 60).padStart(2, '0')}`
+function Avatar42({ name }) {
+  const initials = name
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+  return (
+    <div className="flex size-[42px] shrink-0 items-center justify-center rounded-full bg-[#ebf0eb] text-[12px] font-bold text-[#3d4940]">
+      {initials}
+    </div>
+  )
 }
 
 export default function ReservasiBaru() {
   const navigate = useNavigate()
-  const { patients, services, reservations, schedule, addReservation } = useStore()
+  const { patients, services, reservations, addReservation } = useStore()
 
-  const [patientQuery, setPatientQuery] = useState('')
-  const [patientId, setPatientId] = useState(null)
-  const [serviceQuery, setServiceQuery] = useState('')
-  const [serviceId, setServiceId] = useState(null)
-  const [date, setDate] = useState('2026-07-20')
-  const [time, setTime] = useState(null)
-
-  const activeServices = services.filter((s) => s.status === 'Aktif')
+  const [searchPatient, setSearchPatient] = useState('')
+  const [selectedPatient, setSelectedPatient] = useState(null)
+  const [searchService, setSearchService] = useState('')
+  const [selectedService, setSelectedService] = useState(null)
+  const [selectedDate, setSelectedDate] = useState('')
+  const [selectedTime, setSelectedTime] = useState('')
+  const [notes, setNotes] = useState('')
 
   const filteredPatients = useMemo(() => {
-    const q = patientQuery.trim().toLowerCase()
-    if (!q) return patients.slice(0, 3)
-    return patients.filter((p) =>
-      [p.name, p.id, p.email, p.phone].some((f) => f.toLowerCase().includes(q)),
+    const q = searchPatient.trim().toLowerCase()
+    if (!q) return []
+    return patients.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.id.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q) ||
+        p.phone.replace(/\D/g, '').includes(q.replace(/\D/g, '')),
     )
-  }, [patients, patientQuery])
+  }, [patients, searchPatient])
 
   const filteredServices = useMemo(() => {
-    const q = serviceQuery.trim().toLowerCase()
-    if (!q) return activeServices.slice(0, 3)
-    return activeServices.filter((s) => s.name.toLowerCase().includes(q))
-  }, [activeServices, serviceQuery])
+    const q = searchService.trim().toLowerCase()
+    return services.filter(
+      (s) => s.status === 'Aktif' && (!q || s.name.toLowerCase().includes(q)),
+    )
+  }, [services, searchService])
 
-  const patient = patients.find((p) => p.id === patientId)
-  const service = services.find((s) => s.id === serviceId)
-  const booked = bookedSlots(reservations, date)
+  const bookedForDate = useMemo(() => {
+    if (!selectedDate) return []
+    return bookedSlots(reservations, selectedDate)
+  }, [reservations, selectedDate])
 
-  const complete = patient && service && date && time
+  const canSubmit = selectedPatient && selectedService && selectedDate && selectedTime
 
-  const handleSave = () => {
-    if (!complete) return
-    addReservation({
-      patientId: patient.id,
-      patientName: patient.name,
+  const today = new Date().toISOString().split('T')[0]
+
+  function handleSubmit() {
+    if (!canSubmit) return
+    const startMinutes = parseInt(selectedTime.split('.')[0]) * 60 + parseInt(selectedTime.split('.')[1])
+    const endMinutes = startMinutes + selectedService.duration
+    const endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}.${String(endMinutes % 60).padStart(2, '0')}`
+    const id = addReservation({
+      patientId: selectedPatient.id,
+      patientName: selectedPatient.name,
       doctor: 'Dr. Sarah Wijaya',
-      service: service.name,
-      price: service.price,
-      date,
-      time,
-      endTime: endOf(time, service.duration),
-      complaint: '',
+      service: selectedService.name,
+      price: selectedService.price,
+      date: selectedDate,
+      time: selectedTime,
+      endTime,
+      complaint: notes,
     })
-    navigate('/resepsionis/reservasi')
+    navigate(`/resepsionis/reservasi/${id}`)
   }
 
   return (
     <div className="flex flex-col gap-5">
-      <button onClick={() => navigate('/resepsionis/reservasi')} className="self-start text-[13px] font-semibold text-[#434655] transition-colors hover:text-[#191c1e]">
-        ← Kembali ke Reservasi
-      </button>
-
       <div>
-        <h1 className="font-serif text-[34px] text-[#191c1e]">Reservasi Baru</h1>
-        <p className="text-[13px] text-[#434655]">
+        <Link
+          to="/resepsionis/reservasi"
+          className="inline-flex items-center gap-1 text-[13px] font-bold text-[#3d4940] hover:underline"
+        >
+          <IconChevronLeft size={14} />
+          Kembali ke Reservasi
+        </Link>
+        <h1 className="mt-2 font-serif text-[36px] leading-tight text-[#3d4940]">
+          Reservasi Baru
+        </h1>
+        <p className="mt-2 text-[14px] text-[#6b6b6b]">
           Buat reservasi baru dengan memilih pasien, layanan, tanggal, dan jam yang tersedia.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_340px] xl:items-start">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_360px] lg:items-start">
         <div className="flex flex-col gap-5">
-          <Step number="1" title="Pilih Pasien" subtitle="Cari pasien yang sudah terdaftar.">
-            <Field label="Cari pasien">
-              <Input
-                value={patientQuery}
-                onChange={(e) => setPatientQuery(e.target.value)}
-                placeholder="Nama, nomor registrasi, email, atau telepon"
-              />
-            </Field>
-            <div className="mt-3 flex flex-col gap-2">
-              {filteredPatients.length === 0 && (
-                <p className="py-4 text-center text-[13px] text-[#434655]">Pasien tidak ditemukan.</p>
-              )}
-              {filteredPatients.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setPatientId(p.id)}
-                  className={cx('flex w-full items-center justify-between rounded-xl border border-[#e6e6e2] px-4 py-3 text-left transition-colors hover:bg-[#f5f5f3]/60', patientId === p.id && 'border-[#3d4940] bg-[#f5f5f3] hover:bg-[#f5f5f3]')}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-9 items-center justify-center rounded-full bg-[#f5f5f3] text-[11px] font-semibold text-[#3d4940]">{initials(p.name)}</span>
-                    <div>
-                      <p className="text-[13px] font-semibold text-[#191c1e]">{p.name}</p>
-                      <p className="text-xs text-[#434655]">
-                        {p.id} · {p.phone}
-                      </p>
+          {/* ── Section 1: Pilih Pasien ── */}
+          <div className="rounded-2xl border border-[#f0ede7] bg-white p-[24.8px] shadow-[0_14px_18px_rgba(61,73,64,0.08)]">
+            <div className="flex items-start gap-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#ebf0eb] text-[13px] font-bold text-[#3d4940]">
+                1
+              </div>
+              <div>
+                <h2 className="font-serif text-[22px] text-[#3d4940]">Pilih Pasien</h2>
+                <p className="mt-[6px] text-[13px] text-[#6b6b6b]">
+                  Cari pasien yang sudah terdaftar.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-[22px]">
+              <Field label="Cari pasien">
+                <div className="relative">
+                  <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#a3a3a3]">
+                    <IconSearch size={16} />
+                  </span>
+                  <Input
+                    hasIcon
+                    value={searchPatient}
+                    onChange={(e) => {
+                      setSearchPatient(e.target.value)
+                      if (selectedPatient) setSelectedPatient(null)
+                    }}
+                    placeholder="Nama, nomor registrasi, email, atau telepon"
+                    className="rounded-[11px] border-[#f0ede7] text-[16px]"
+                  />
+                </div>
+              </Field>
+            </div>
+
+            {filteredPatients.length > 0 && !selectedPatient && (
+              <div className="mt-3 flex flex-col gap-2">
+                {filteredPatients.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPatient(p)
+                      setSearchPatient('')
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl border border-[#f0ede7] bg-white p-3 text-left transition-colors hover:bg-[#f5f5f3]"
+                  >
+                    <div className="flex size-[42px] shrink-0 items-center justify-center rounded-full bg-[#ebf0eb] text-[12px] font-bold text-[#3d4940]">
+                      {p.name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()}
                     </div>
-                  </div>
-                  {patientId === p.id && <Chip tone="gray">DIPILIH</Chip>}
-                </button>
-              ))}
-            </div>
-          </Step>
-
-          <Step number="2" title="Pilih Layanan" subtitle="Pilih layanan yang akan dilakukan pasien.">
-            <Field label="Cari Layanan">
-              <Input
-                value={serviceQuery}
-                onChange={(e) => setServiceQuery(e.target.value)}
-                placeholder="Nama Layanan"
-              />
-            </Field>
-            <div className="mt-3 flex flex-col gap-2">
-              {filteredServices.length === 0 && (
-                <p className="py-4 text-center text-[13px] text-[#434655]">Layanan tidak ditemukan.</p>
-              )}
-              {filteredServices.map((s) => (
-                <label
-                  key={s.id}
-                  className={cx(
-                    'flex w-full items-center justify-between rounded-xl border border-[#e6e6e2] px-4 py-3 text-left transition-colors hover:bg-[#f5f5f3]/60',
-                    'cursor-pointer',
-                    serviceId === s.id && 'border-[#3d4940] bg-[#f5f5f3] hover:bg-[#f5f5f3]',
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="layanan"
-                      checked={serviceId === s.id}
-                      onChange={() => setServiceId(s.id)}
-                      className="size-4 accent-[#3d4940]"
-                    />
-                    <div>
-                      <p className="text-[13px] font-semibold text-[#191c1e]">{s.name}</p>
-                      <p className="text-xs text-[#434655]">± {s.duration} menit</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px] font-bold text-[#2c2c2c]">{p.name}</p>
+                      <p className="text-[12px] text-[#6b6b6b]">{p.id} · {p.phone}</p>
                     </div>
-                  </div>
-                  <p className="text-[13px] font-semibold text-[#191c1e]">{formatRupiah(s.price)}</p>
-                </label>
-              ))}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {selectedPatient && (
+              <div className="mt-[16px] flex items-center gap-3 rounded-xl border border-[#cbd6cd] bg-[#fbfdfb] p-[14.8px]">
+                <Avatar42 name={selectedPatient.name} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[14px] font-bold text-[#2c2c2c]">{selectedPatient.name}</p>
+                  <p className="mt-[4px] text-[12px] text-[#6b6b6b]">
+                    {selectedPatient.id} · {selectedPatient.phone}
+                  </p>
+                </div>
+                <Chip className="rounded-full bg-[#ebf0eb] px-[10px] py-[6px] text-[10px] font-bold uppercase text-[#3d4940]">
+                  Dipilih
+                </Chip>
+              </div>
+            )}
+          </div>
+
+          {/* ── Section 2: Pilih Layanan ── */}
+          <div className="rounded-2xl border border-[#f0ede7] bg-white p-[24.8px] shadow-[0_14px_18px_rgba(61,73,64,0.08)]">
+            <div className="flex items-start gap-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#ebf0eb] text-[13px] font-bold text-[#3d4940]">
+                2
+              </div>
+              <div>
+                <h2 className="font-serif text-[22px] text-[#3d4940]">Pilih Layanan</h2>
+                <p className="mt-[6px] text-[13px] text-[#6b6b6b]">
+                  Pilih layanan yang akan dilakukan pasien.
+                </p>
+              </div>
             </div>
-          </Step>
 
-          <Step
-            number="3"
-            title="Pilih Jadwal"
-            subtitle="Jam operasional klinik tetap pukul 09.00–17.00."
-          >
-            <Field label="Tanggal reservasi">
-              <Input
-                type="date"
-                value={date}
-                onChange={(e) => {
-                  setDate(e.target.value)
-                  setTime(null)
-                }}
-              />
-            </Field>
-
-            <div className="mt-5 flex items-center justify-between">
-              <p className="text-[13px] font-semibold text-[#191c1e]">{formatTanggal(date)}</p>
-              <p className="text-xs text-[#434655]">Interval 30 menit</p>
+            <div className="mt-[22px]">
+              <Field label="Cari Layanan">
+                <div className="relative">
+                  <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#a3a3a3]">
+                    <IconSearch size={16} />
+                  </span>
+                  <Input
+                    hasIcon
+                    value={searchService}
+                    onChange={(e) => setSearchService(e.target.value)}
+                    placeholder="Nama Layanan"
+                    className="rounded-[11px] border-[#f0ede7] text-[16px]"
+                  />
+                </div>
+              </Field>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
-              {TIME_SLOTS.map((slot) => {
-                const isBooked = booked.includes(slot)
-                const doctorOff = !schedule[slot].active
-                const disabled = isBooked || doctorOff
+            <div className="mt-[22px] flex flex-col gap-[10px]">
+              {filteredServices.map((s) => {
+                const picked = selectedService?.id === s.id
                 return (
                   <button
-                    key={slot}
-                    disabled={disabled}
-                    onClick={() => setTime(slot)}
-                    title={isBooked ? 'Sudah dipesan' : doctorOff ? 'Dokter tidak tersedia' : 'Tersedia'}
+                    key={s.id}
+                    type="button"
+                    onClick={() => setSelectedService(s)}
                     className={cx(
-                      'rounded-xl border border-[#e6e6e2] bg-white px-3 py-2.5 text-[13px] font-semibold text-[#191c1e] transition-colors hover:not-disabled:border-[#3d4940]',
-                      time === slot && 'border-[#3d4940] bg-[#3d4940] text-white hover:bg-[#3d4940]',
-                      isBooked && 'cursor-not-allowed border-[#f0e6cc] bg-[#faf5e8] text-[#b09a63]',
-                      !isBooked && doctorOff && 'cursor-not-allowed bg-[#f5f5f3] text-[#a3a3a3]',
+                      'flex w-full items-center gap-3 rounded-xl border p-[15.8px] text-left transition-all',
+                      picked
+                        ? 'border-[#cbd6cd] bg-[#fbfdfb]'
+                        : 'border-[#f0ede7] bg-white hover:bg-[#f5f5f3]',
                     )}
                   >
-                    {slot}
+                    <div
+                      className={cx(
+                        'flex size-[18px] shrink-0 items-center justify-center rounded-full border',
+                        picked ? 'border-[#0075ff]' : 'border-[#767676]',
+                      )}
+                    >
+                      {picked && <div className="size-[10px] rounded-full bg-[#0075ff]" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px] font-bold text-[#2c2c2c]">{s.name}</p>
+                      <p className="mt-[4px] text-[13.3px] text-[#6b6b6b]">± {s.duration} menit</p>
+                    </div>
+                    <p className="shrink-0 text-[13px] font-bold text-[#3d4940]">
+                      {formatRupiah(s.price)}
+                    </p>
                   </button>
                 )
               })}
+              {filteredServices.length === 0 && (
+                <p className="py-4 text-center text-[13px] text-[#6b6b6b]">
+                  Tidak ada layanan yang cocok.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* ── Section 3: Pilih Jadwal ── */}
+          <div className="rounded-2xl border border-[#f0ede7] bg-white p-[24.8px] shadow-[0_14px_18px_rgba(61,73,64,0.08)]">
+            <div className="flex items-start gap-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#ebf0eb] text-[13px] font-bold text-[#3d4940]">
+                3
+              </div>
+              <div>
+                <h2 className="font-serif text-[22px] text-[#3d4940]">Pilih Jadwal</h2>
+                <p className="mt-[6px] text-[13px] text-[#6b6b6b]">
+                  Jam operasional klinik tetap pukul 09.00–17.00.
+                </p>
+              </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-4 text-[11px] text-[#434655]">
-              {[
-                ['border border-[#e6e6e2] bg-white', 'Tersedia'],
-                ['bg-[#3d4940]', 'Dipilih'],
-                ['bg-[#e3c97f]', 'Dipesan'],
-                ['bg-neutral-300', 'Dokter tidak tersedia'],
-              ].map(([dot, label]) => (
-                <span key={label} className="flex items-center gap-1.5">
-                  <span className={cx('size-2.5 rounded-full', dot)} />
-                  {label}
-                </span>
-              ))}
+            <div className="mt-[22px]">
+              <Field label="Tanggal reservasi">
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  min={today}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value)
+                    setSelectedTime('')
+                  }}
+                  className="rounded-[11px] border-[#f0ede7] text-[16px]"
+                />
+              </Field>
             </div>
-          </Step>
+
+            {selectedDate && (
+              <>
+                <div className="mt-[16px] flex items-center justify-between">
+                  <p className="text-[16px] font-bold text-[#2c2c2c]">
+                    {formatDateDisplay(selectedDate)}
+                  </p>
+                  <p className="text-[12px] text-[#6b6b6b]">Interval 30 menit</p>
+                </div>
+
+                <div className="mt-[14px] grid grid-cols-5 gap-[10px]">
+                  {TIME_SLOTS.map((slot) => {
+                    const isBooked = bookedForDate.includes(slot)
+                    const isSelected = selectedTime === slot
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        disabled={isBooked}
+                        onClick={() => setSelectedTime(slot)}
+                        className={cx(
+                          'flex min-h-[42px] items-center justify-center rounded-[10px] border text-[13px] font-medium transition-all',
+                          isBooked
+                            ? 'cursor-not-allowed border-[#e6e6e2] bg-[#f5f5f3] text-[#a3a3a3]'
+                            : isSelected
+                              ? 'border-[#3d4940] bg-[#3d4940] text-white'
+                              : 'border-[#f0ede7] bg-white text-[#191c1e] hover:border-[#3d4940] hover:bg-[#f5f5f3]',
+                        )}
+                      >
+                        {slot.replace('.', ':')}
+                      </button>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
-        <Card className={cx('overflow-hidden', 'xl:sticky xl:top-0')}>
-          <div className="bg-[#3d4940] px-5 py-4">
-            <h2 className="font-serif text-xl text-[#fbf8f3]">Ringkasan Reservasi</h2>
-            <p className="text-xs text-[#fbf8f3]/60">Pastikan semua data sudah benar.</p>
-          </div>
-          <div className="flex flex-col gap-3 px-5 py-4">
-            {[
-              ['Pasien', patient?.name ?? '—'],
-              ['Layanan', service?.name ?? '—'],
-              ['Tanggal', formatTanggal(date)],
-              ['Jam', time && service ? `${time}–${endOf(time, service.duration)}` : '—'],
-              ['Durasi', service ? `± ${service.duration} menit` : '—'],
-            ].map(([label, value]) => (
-              <div key={label} className="flex items-center justify-between gap-4">
-                <span className="text-xs text-[#434655]">{label}</span>
-                <span className="text-right text-[13px] font-semibold text-[#191c1e]">{value}</span>
+        {/* ── Right Column: Ringkasan Reservasi ── */}
+        <div className="lg:sticky lg:top-5">
+          <div className="rounded-2xl border border-[#f0ede7] bg-white p-[24.8px] shadow-[0_14px_18px_rgba(61,73,64,0.08)]">
+            <h2 className="font-serif text-[22px] text-[#3d4940]">Ringkasan Reservasi</h2>
+
+            <div className="mt-5 space-y-4 border-t border-[#f0ede7] pt-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#6b6b6b]">
+                  Pasien
+                </p>
+                {selectedPatient ? (
+                  <>
+                    <p className="mt-1 text-[14px] font-bold text-[#191c1e]">
+                      {selectedPatient.name}
+                    </p>
+                    <p className="text-[12px] text-[#6b6b6b]">{selectedPatient.id}</p>
+                    <p className="text-[12px] text-[#6b6b6b]">{selectedPatient.phone}</p>
+                  </>
+                ) : (
+                  <p className="mt-1 text-[13px] text-[#a3a3a3]">Belum dipilih</p>
+                )}
               </div>
-            ))}
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-xs text-[#434655]">Status awal</span>
-              <Chip tone="gray">TERJADWAL</Chip>
+
+              <div className="border-t border-[#f0ede7] pt-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#6b6b6b]">
+                  Layanan
+                </p>
+                {selectedService ? (
+                  <>
+                    <p className="mt-1 text-[14px] font-bold text-[#191c1e]">
+                      {selectedService.name}
+                    </p>
+                    <p className="text-[12px] text-[#6b6b6b]">
+                      ± {selectedService.duration} menit
+                    </p>
+                    <p className="mt-1 text-[14px] font-bold text-[#3d4940]">
+                      {formatRupiah(selectedService.price)}
+                    </p>
+                  </>
+                ) : (
+                  <p className="mt-1 text-[13px] text-[#a3a3a3]">Belum dipilih</p>
+                )}
+              </div>
+
+              <div className="border-t border-[#f0ede7] pt-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#6b6b6b]">
+                  Jadwal
+                </p>
+                {selectedDate && selectedTime ? (
+                  <>
+                    <p className="mt-1 text-[14px] font-bold text-[#191c1e]">
+                      {formatDateDisplay(selectedDate)}
+                    </p>
+                    <p className="text-[12px] text-[#6b6b6b]">
+                      {selectedTime.replace('.', ':')}
+                    </p>
+                  </>
+                ) : (
+                  <p className="mt-1 text-[13px] text-[#a3a3a3]">Belum dipilih</p>
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center justify-between border-t border-[#e6e6e2] pt-4">
-              <span className="text-xs text-[#434655]">Total biaya</span>
-              <span className="font-serif text-[22px] font-bold text-[#191c1e]">
-                {service ? formatRupiah(service.price) : '—'}
-              </span>
+            <div className="mt-4 border-t border-[#f0ede7] pt-4">
+              <Field label="Catatan">
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Tuliskan keluhan atau catatan tambahan..."
+                  rows={3}
+                  className="text-[13px]"
+                />
+              </Field>
             </div>
 
-            <p className="rounded-lg bg-[#faf5e8] px-3 py-2 text-[11px] text-[#8a7745]">Pembayaran dicatat setelah layanan selesai.</p>
+            <div className="mt-4 border-t border-[#f0ede7] pt-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[14px] font-bold text-[#191c1e]">Total</span>
+                <span className="text-[22px] font-bold text-[#191c1e]">
+                  {selectedService ? formatRupiah(selectedService.price) : formatRupiah(0)}
+                </span>
+              </div>
 
-            <div className="flex flex-col gap-2 pt-1">
-              <Button variant="outline" fullWidth onClick={() => navigate('/resepsionis/reservasi')}>
-                Batal
-              </Button>
-              <Button fullWidth disabled={!complete} onClick={handleSave}>
-                Simpan Reservasi
+              <Button
+                className="mt-4 w-full"
+                disabled={!canSubmit}
+                onClick={handleSubmit}
+              >
+                Buat Reservasi
               </Button>
             </div>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   )
