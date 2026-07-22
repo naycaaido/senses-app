@@ -1,10 +1,34 @@
 import bcrypt from "bcrypt";
-import pasienRepository, {
-  PROFILE_FIELDS,
-} from "../repositories/pasienRepository.js";
+import prisma from "../config/prisma.js";
+import { PROFILE_FIELDS } from "../constants/pasien.js";
+import UnauthorizedError from "../exceptions/UnauthorizedError.js";
+import BadRequestError from "../exceptions/BadRequestError.js";
+import NotFoundError from "../exceptions/NotFoundError.js";
+
+const invalidCredentials = () =>
+  new UnauthorizedError("Password atau identitas login salah");
+
+const PATIENT_PROFILE_SELECT = {
+  email: true,
+  nama_lengkap: true,
+  telepon: true,
+  jenis_kelamin: true,
+  tempat_lahir: true,
+  tanggal_lahir: true,
+  pendidikan_terakhir: true,
+  pekerjaan: true,
+  status_perkawinan: true,
+  agama: true,
+  alamat_domisili: true,
+  kota: true,
+  profil_lengkap: true,
+};
 
 const registerPasien = async ({ email, password, nama_lengkap }) => {
-  const patient = await pasienRepository.findRegistrationByEmail(email);
+  const patient = await prisma.pasien.findUnique({
+    where: { email },
+    select: { email: true, profil_lengkap: true },
+  });
   if (patient) {
     if (!patient.profil_lengkap) {
       const error = new Error(
@@ -22,29 +46,31 @@ const registerPasien = async ({ email, password, nama_lengkap }) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  await pasienRepository.createPasien({
-    email,
-    password: hashedPassword,
-    nama_lengkap,
+  await prisma.pasien.create({
+    data: { email, password: hashedPassword, nama_lengkap },
   });
 
   return { email, nama_lengkap, profil_lengkap: false };
 };
 
 const loginPasien = async ({ email, password }) => {
-  const patient = await pasienRepository.findLoginByEmail(email);
+  const patient = await prisma.pasien.findUnique({
+    where: { email },
+    select: {
+      email: true,
+      password: true,
+      nama_lengkap: true,
+      profil_lengkap: true,
+    },
+  });
 
   if (!patient) {
-    const error = new Error("Password atau email salah");
-    error.statusCode = 401;
-    throw error;
+    throw invalidCredentials();
   }
 
   const valid = await bcrypt.compare(password, patient.password);
   if (!valid) {
-    const error = new Error("Password atau email salah");
-    error.statusCode = 401;
-    throw error;
+    throw invalidCredentials();
   }
 
   return {
@@ -55,6 +81,32 @@ const loginPasien = async ({ email, password }) => {
   };
 };
 
+const loginResepsionis = async ({ id_resepsionis, password }) => {
+  const resepsionis = await prisma.resepsionis.findUnique({
+    where: { id_resepsionis },
+    select: {
+      id_resepsionis: true,
+      nama_lengkap: true,
+      password: true,
+    },
+  });
+
+  if (!resepsionis) {
+    throw invalidCredentials();
+  }
+
+  const valid = await bcrypt.compare(password, resepsionis.password);
+  if (!valid) {
+    throw invalidCredentials();
+  }
+
+  return {
+    id_resepsionis: resepsionis.id_resepsionis,
+    nama_lengkap: resepsionis.nama_lengkap,
+    role: "resepsionis",
+  };
+};
+
 const completeProfilePasien = async ({ email, ...rest }) => {
   if (!email) {
     const error = new Error("Email is required");
@@ -62,7 +114,10 @@ const completeProfilePasien = async ({ email, ...rest }) => {
     throw error;
   }
 
-  const patient = await pasienRepository.findByEmail(email);
+  const patient = await prisma.pasien.findUnique({
+    where: { email },
+    select: { email: true },
+  });
   if (!patient) {
     const error = new Error("Patient not found");
     error.statusCode = 404;
@@ -76,14 +131,69 @@ const completeProfilePasien = async ({ email, ...rest }) => {
     throw error;
   }
 
-  await pasienRepository.updateProfile(email, rest);
+  await prisma.pasien.update({
+    where: { email },
+    data: {
+      ...Object.fromEntries(PROFILE_FIELDS.map((field) => [field, rest[field]])),
+      profil_lengkap: true,
+    },
+  });
 
-  return pasienRepository.findProfileByEmail(email);
+  return prisma.pasien.findUnique({
+    where: { email },
+    select: PATIENT_PROFILE_SELECT,
+  });
+};
+
+const changePasswordPasien = async ({
+  email,
+  password_lama,
+  password_baru,
+  konfirmasi_password,
+}) => {
+  if (!password_lama || !password_baru || !konfirmasi_password) {
+    throw new BadRequestError(
+      "password_lama, password_baru, and konfirmasi_password are required",
+    );
+  }
+
+  if (password_baru !== konfirmasi_password) {
+    throw new BadRequestError("Password baru dan konfirmasi password tidak cocok");
+  }
+
+  const pasien = await prisma.pasien.findUnique({
+    where: { email },
+    select: { email: true, password: true },
+  });
+  if (!pasien) {
+    throw new NotFoundError("Patient not found");
+  }
+
+  const oldPasswordMatches = await bcrypt.compare(password_lama, pasien.password);
+  if (!oldPasswordMatches) {
+    throw new UnauthorizedError("Password lama salah");
+  }
+
+  const newPasswordMatchesOld = await bcrypt.compare(
+    password_baru,
+    pasien.password,
+  );
+  if (newPasswordMatchesOld) {
+    throw new BadRequestError("Password baru harus berbeda dari password lama");
+  }
+
+  const hashedPassword = await bcrypt.hash(password_baru, 10);
+  await prisma.pasien.update({
+    where: { email },
+    data: { password: hashedPassword },
+  });
 };
 
 export default {
   registerPasien,
   loginPasien,
+  loginResepsionis,
   completeProfilePasien,
+  changePasswordPasien,
   PROFILE_FIELDS,
 };

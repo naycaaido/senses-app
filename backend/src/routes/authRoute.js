@@ -1,5 +1,7 @@
 import { Router } from "express";
 import pasienController from "../controller/pasienController.js";
+import validateToken from "../middleware/validateToken.js";
+import requireRole from "../middleware/requireRole.js";
 
 const authRoute = Router();
 
@@ -101,7 +103,7 @@ authRoute.post("/auth/register", pasienController.registerPasien);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-authRoute.post("/auth/login", pasienController.loginPasien);
+authRoute.post("/auth/login", pasienController.login);
 
 /**
  * @openapi
@@ -147,6 +149,11 @@ authRoute.post("/auth/login", pasienController.loginPasien);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-authRoute.put("/auth/profile", pasienController.completeProfilePasien);
+authRoute.put(
+  "/auth/profile",
+  validateToken,
+  requireRole("pasien"),
+  pasienController.completeProfilePasien,
+);
 
 export default authRoute;

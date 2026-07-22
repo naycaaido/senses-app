@@ -1,40 +1,33 @@
 import jwt from "jsonwebtoken";
 import UnauthorizedError from "../exceptions/UnauthorizedError.js";
-import config from "../config/index.js";
 
-const validateToken = async (req, res, next) => {
+const validateToken = (req, _res, next) => {
   try {
-    let token;
-    let authHeader = req.headers.authorization || req.headers.Authorization;
-
-    if (authHeader && authHeader.startsWith("Bearer")) {
-      token = authHeader.split(" ")[1];
-
-      if (!token) {
-        const error = new UnauthorizedError(
-          "User is not authorized or token is missing",
-        );
-        return next(error);
-      }
-
-      jwt.verify(token, config.jwt_key.access_key, (err, decoded) => {
-        if (err) {
-          if (err.message === "jwt expired") {
-            throw new UnauthorizedError("Token already expired");
-          } else if (err) {
-            throw new UnauthorizedError("User is not authorized");
-          }
-        }
-
-        req.user = decoded.user;
-        return next();
-      });
-
-      return;
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET NOT FOUND");
     }
 
-    throw new UnauthorizedError("Authorization header missing or malformed");
+    const authHeader = req.get("authorization");
+    const [scheme, token] = authHeader?.split(" ") || [];
+
+    if (scheme !== "Bearer" || !token) {
+      throw new UnauthorizedError("Authorization header missing or malformed");
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded?.user?.role) {
+      throw new UnauthorizedError("Token payload is invalid");
+    }
+
+    req.user = decoded.user;
+    return next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return next(new UnauthorizedError("Token already expired"));
+    }
+    if (error.name === "JsonWebTokenError") {
+      return next(new UnauthorizedError("User is not authorized"));
+    }
     return next(error);
   }
 };

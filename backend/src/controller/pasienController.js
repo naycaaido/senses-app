@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import authService from "../services/authService.js";
+import BadRequestError from "../exceptions/BadRequestError.js";
 
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET NOT FOUND");
@@ -37,21 +38,39 @@ const registerPasien = async (req, res) => {
   }
 };
 
-const loginPasien = async (req, res) => {
+const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { role, email, id_resepsionis, password } = req.body;
+    const selectedRole = role || (email ? "pasien" : undefined);
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
+    if (!password || !selectedRole) {
+      throw new BadRequestError("role and password are required");
     }
 
-    const user = await authService.loginPasien({ email, password });
+    let user;
+    if (selectedRole === "pasien") {
+      if (!email) {
+        throw new BadRequestError("email is required for patient login");
+      }
+      user = await authService.loginPasien({ email, password });
+    } else if (selectedRole === "resepsionis") {
+      const receptionistId = Number(id_resepsionis);
+      if (!Number.isSafeInteger(receptionistId) || receptionistId < 1) {
+        throw new BadRequestError(
+          "id_resepsionis must be a positive integer for receptionist login",
+        );
+      }
+      user = await authService.loginResepsionis({
+        id_resepsionis: receptionistId,
+        password,
+      });
+    } else {
+      throw new BadRequestError("role must be pasien or resepsionis");
+    }
 
     const token = jwt.sign({ user }, JWT_SECRET, { expiresIn: "7d" });
 
-    res.status(200).json({ token });
+    res.status(200).json({ token, user });
   } catch (error) {
     if (error.statusCode) {
       return res.status(error.statusCode).json({ message: error.message });
@@ -62,7 +81,11 @@ const loginPasien = async (req, res) => {
 
 const completeProfilePasien = async (req, res) => {
   try {
-    const user = await authService.completeProfilePasien(req.body);
+    const { email: _ignoredEmail, ...profile } = req.body;
+    const user = await authService.completeProfilePasien({
+      email: req.user.email,
+      ...profile,
+    });
 
     res
       .status(200)
@@ -75,4 +98,26 @@ const completeProfilePasien = async (req, res) => {
   }
 };
 
-export default { registerPasien, loginPasien, completeProfilePasien };
+const changePasswordPasien = async (req, res) => {
+  try {
+    const { email: _ignoredEmail, ...passwordPayload } = req.body;
+    await authService.changePasswordPasien({
+      email: req.user.email,
+      ...passwordPayload,
+    });
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export default {
+  registerPasien,
+  login,
+  completeProfilePasien,
+  changePasswordPasien,
+};
