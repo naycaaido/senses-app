@@ -1,5 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { loginPatient } from "../../../shared/services/authApi.js";
+import {
+  setAuthSession,
+  getAuthUser,
+  getToken,
+  clearAuthSession,
+} from "../../../shared/utils/authStorage.js";
+import { ApiError } from "../../../shared/utils/api.js";
 
 function EyeIcon({ open }) {
   if (open) {
@@ -35,10 +43,59 @@ export default function LoginPage() {
   const [identifierLogin, setIdentifierLogin] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e) {
+  useEffect(() => {
+    const token = getToken();
+    const user = getAuthUser();
+    if (token && user && user.role === "pasien") {
+      if (user.profil_lengkap) {
+        navigate("/pasien/beranda", { replace: true });
+      } else {
+        navigate("/lengkapi-biodata", { replace: true });
+      }
+    }
+  }, [navigate]);
+
+  async function handleSubmit(e) {
     e.preventDefault();
-    navigate("/pasien/beranda");
+    setError("");
+
+    if (!identifierLogin || !password) {
+      setError("Email dan kata sandi wajib diisi.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await loginPatient({
+        email: identifierLogin,
+        password,
+      });
+
+      if (data.user.role !== "pasien") {
+        clearAuthSession();
+        setError("Akun ini bukan akun pasien.");
+        return;
+      }
+
+      setAuthSession(data.token, data.user);
+
+      if (data.user.profil_lengkap) {
+        navigate("/pasien/beranda", { replace: true });
+      } else {
+        navigate("/lengkapi-biodata", { replace: true });
+      }
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError("Terjadi kesalahan. Coba lagi.");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -132,8 +189,18 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <button type="submit" className="mt-4 h-[54px] w-full rounded-full bg-[#3d4940] px-7 py-3.5 text-base font-medium leading-[26.4px] text-[#fbf8f3] shadow-[0_1px_2px_0_rgba(44,44,44,0.04),0_8px_24px_0_rgba(61,73,64,0.18)] hover:bg-[#0c3320]">
-              Masuk
+            {error && (
+              <p className="mb-3 text-center text-sm leading-5 text-[#9e5860]">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-4 h-[54px] w-full rounded-full bg-[#3d4940] px-7 py-3.5 text-base font-medium leading-[26.4px] text-[#fbf8f3] shadow-[0_1px_2px_0_rgba(44,44,44,0.04),0_8px_24px_0_rgba(61,73,64,0.18)] hover:bg-[#0c3320] disabled:opacity-50"
+            >
+              {loading ? "Memproses..." : "Masuk"}
             </button>
           </form>
 

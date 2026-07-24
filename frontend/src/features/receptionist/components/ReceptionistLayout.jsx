@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { clearAuthSession } from '../../../shared/utils/authStorage.js'
 import {
   IconCalendar,
   IconCheckCircle,
@@ -18,7 +19,7 @@ const navItems = [
   { to: '/resepsionis/pembayaran', label: 'Pembayaran', icon: IconReceipt },
 ]
 
-function Sidebar() {
+function Sidebar({ onLogout }) {
   return (
     <aside className="flex w-64 shrink-0 flex-col bg-[#3d4940] px-4 py-5">
       <div className="px-2">
@@ -47,13 +48,13 @@ function Sidebar() {
       </nav>
 
       <div className="mt-auto border-t border-[#fbf8f3]/15 pt-4">
-        <NavLink
-          to="/resepsionis/keluar"
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium text-[#fbf8f3]/75 transition-colors hover:bg-white/5"
+        <button
+          onClick={onLogout}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium text-[#fbf8f3]/75 transition-colors hover:bg-white/5"
         >
           <IconLogout />
           Keluar
-        </NavLink>
+        </button>
       </div>
     </aside>
   )
@@ -77,9 +78,16 @@ function Topbar() {
 }
 
 export default function ReceptionistLayout() {
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    clearAuthSession();
+    navigate("/resepsionis/login", { replace: true });
+  }
+
   return (
     <div className="flex min-h-screen font-sans text-[#191c1e]">
-      <Sidebar />
+      <Sidebar onLogout={handleLogout} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />
         <main className="flex-1 overflow-y-auto bg-[#f5f5f3] px-5 py-6">

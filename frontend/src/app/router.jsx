@@ -1,6 +1,7 @@
 import { Navigate, Routes, Route } from "react-router-dom";
 import PublicLayout from "../features/public/layouts/PublicLayout.jsx";
 import PatientLayout from "../features/patient/layouts/PatientLayout.jsx";
+import ProtectedRoute from "../shared/components/auth/ProtectedRoute.jsx";
 import LandingPage from "../features/public/pages/LandingPage.jsx";
 import ServiceCatalogPage from "../features/public/pages/ServiceCatalogPage.jsx";
 import LoginPage from "../features/public/pages/LoginPage.jsx";
@@ -27,6 +28,7 @@ import ReceptionistOperationalSchedulePage from "../features/receptionist/pages/
 import ReceptionistServicePage from "../features/receptionist/pages/ReceptionistServicePage.jsx";
 import ReceptionistServiceFormPage from "../features/receptionist/pages/ReceptionistServiceFormPage.jsx";
 import ReceptionistPlaceholderPage from "../features/receptionist/pages/ReceptionistPlaceholderPage.jsx";
+import ReceptionistLoginPage from "../features/receptionist/pages/ReceptionistLoginPage.jsx";
 
 export default function AppRouter() {
   return (
@@ -35,7 +37,7 @@ export default function AppRouter() {
           <Route path='/' element={<LandingPage />} />
           <Route path='/layanan' element={<ServiceCatalogPage />} />
         </Route>
-        <Route element={<PatientLayout />}>
+        <Route element={<ProtectedRoute allowedRoles={["pasien"]}><PatientLayout /></ProtectedRoute>}>
           <Route path='/pasien/beranda' element={<PatientDashboardPage />} />
           <Route path='/pasien/layanan' element={<PatientServicePage />} />
           <Route
@@ -53,12 +55,15 @@ export default function AppRouter() {
             element={<PatientEditProfilePage />}
           />
         </Route>
+        <Route path="/resepsionis/login" element={<ReceptionistLoginPage />} />
         <Route
           path="/resepsionis"
           element={
-            <ReceptionistStoreProvider>
-              <ReceptionistLayout />
-            </ReceptionistStoreProvider>
+            <ProtectedRoute allowedRoles={["resepsionis"]}>
+              <ReceptionistStoreProvider>
+                <ReceptionistLayout />
+              </ReceptionistStoreProvider>
+            </ProtectedRoute>
           }
         >
           <Route index element={<Navigate to="dashboard" replace />} />
@@ -107,20 +112,11 @@ export default function AppRouter() {
               />
             }
           />
-          <Route
-            path="keluar"
-            element={
-              <ReceptionistPlaceholderPage
-                title="Keluar"
-                note="Alur logout belum didesain di page Resepsionis Final."
-              />
-            }
-          />
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Route>
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
-        <Route path='/lengkapi-biodata' element={<BiodataPage />} />
+        <Route path='/lengkapi-biodata' element={<ProtectedRoute allowedRoles={["pasien"]}><BiodataPage /></ProtectedRoute>} />
         <Route path='*' element={<NotFoundPage />} />
     </Routes>
   );
