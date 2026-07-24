@@ -1,11 +1,41 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { completePatientProfile } from "../../../shared/services/authApi.js";
+import {
+  getToken,
+  getAuthUser,
+  updateAuthUser,
+  clearAuthSession,
+} from "../../../shared/utils/authStorage.js";
+import { ApiError } from "../../../shared/utils/api.js";
 
 export default function BiodataPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState(
-    () => localStorage.getItem("pendingProfileEmail") || "",
-  );
+
+  const token = getToken();
+  const sessionUser = getAuthUser();
+
+  if (!token || !sessionUser) {
+    navigate("/login", { replace: true });
+    return null;
+  }
+
+  if (sessionUser.role !== "pasien") {
+    clearAuthSession();
+    navigate("/login", { replace: true });
+    return null;
+  }
+
+  if (sessionUser.profil_lengkap) {
+    navigate("/pasien/beranda", { replace: true });
+    return null;
+  }
+
+  const displayEmail =
+    sessionUser.email ||
+    localStorage.getItem("pendingProfileEmail") ||
+    "";
+
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState("");
   const [birthPlace, setBirthPlace] = useState("");
@@ -20,56 +50,38 @@ export default function BiodataPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  if (!email) {
-    navigate("/register");
-    return null;
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setSuccess(false);
 
-    if (!email) {
-      setError("Email wajib diisi.");
-      return;
-    }
-
     setLoading(true);
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/profile`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            telepon: phone,
-            jenis_kelamin: gender,
-            tempat_lahir: birthPlace,
-            tanggal_lahir: birthDate,
-            pendidikan_terakhir: lastEducation,
-            pekerjaan: occupation,
-            status_perkawinan: maritalStatus,
-            agama: religion,
-            alamat_domisili: address,
-            kota: city,
-          }),
-        }
-      );
+      const data = await completePatientProfile({
+        telepon: phone,
+        jenis_kelamin: gender,
+        tempat_lahir: birthPlace,
+        tanggal_lahir: birthDate,
+        pendidikan_terakhir: lastEducation,
+        pekerjaan: occupation,
+        status_perkawinan: maritalStatus,
+        agama: religion,
+        alamat_domisili: address,
+        kota: city,
+      });
 
-      const data = await res.json();
+      updateAuthUser({ ...data.user, profil_lengkap: true });
 
-      if (!res.ok) {
-        setError(data.message || "Gagal menyimpan biodata.");
-        return;
-      }
+      localStorage.removeItem("pendingProfileEmail");
 
       setSuccess(true);
-      localStorage.removeItem("pendingProfileEmail");
-      navigate("/login");
-    } catch {
-      setError("Terjadi kesalahan. Coba lagi.");
+      navigate("/pasien/beranda", { replace: true });
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError("Terjadi kesalahan. Coba lagi.");
+      }
     } finally {
       setLoading(false);
     }
@@ -150,7 +162,7 @@ export default function BiodataPage() {
                       id='email'
                       type='email'
                       placeholder='nama@email.com'
-                      value={email}
+                      value={displayEmail}
                       readOnly
                       tabIndex={-1}
                       autoComplete='email'

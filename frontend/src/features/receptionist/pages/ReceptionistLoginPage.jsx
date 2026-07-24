@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { loginPatient } from "../../../shared/services/authApi.js";
+import { loginReceptionist } from "../../../shared/services/authApi.js";
 import {
   setAuthSession,
   getAuthUser,
@@ -38,9 +38,9 @@ function EyeIcon({ open }) {
   );
 }
 
-export default function LoginPage() {
+export default function ReceptionistLoginPage() {
   const navigate = useNavigate();
-  const [identifierLogin, setIdentifierLogin] = useState("");
+  const [idResepsionis, setIdResepsionis] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,12 +49,14 @@ export default function LoginPage() {
   useEffect(() => {
     const token = getToken();
     const user = getAuthUser();
-    if (token && user && user.role === "pasien") {
-      if (user.profil_lengkap) {
-        navigate("/pasien/beranda", { replace: true });
-      } else {
-        navigate("/lengkapi-biodata", { replace: true });
-      }
+    if (!token || !user) return;
+
+    if (user.role === "resepsionis") {
+      navigate("/resepsionis/dashboard", { replace: true });
+    } else if (user.role === "pasien") {
+      navigate("/pasien/beranda", { replace: true });
+    } else {
+      clearAuthSession();
     }
   }, [navigate]);
 
@@ -62,36 +64,41 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    if (!identifierLogin || !password) {
-      setError("Email dan kata sandi wajib diisi.");
+    if (!idResepsionis || !password) {
+      setError("ID Resepsionis dan kata sandi wajib diisi.");
+      return;
+    }
+
+    const parsedId = Number(idResepsionis);
+    if (!Number.isInteger(parsedId) || parsedId <= 0) {
+      setError("ID Resepsionis harus berupa angka positif.");
       return;
     }
 
     setLoading(true);
     try {
-      const data = await loginPatient({
-        email: identifierLogin,
+      const data = await loginReceptionist({
+        id_resepsionis: parsedId,
         password,
       });
 
-      if (data.user.role !== "pasien") {
+      if (
+        !data?.token ||
+        !data?.user ||
+        data.user.role !== "resepsionis" ||
+        !data.user.id_resepsionis
+      ) {
         clearAuthSession();
-        setError("Akun ini bukan akun pasien.");
-        return;
+        throw new Error("Respons autentikasi tidak valid");
       }
 
       setAuthSession(data.token, data.user);
-
-      if (data.user.profil_lengkap) {
-        navigate("/pasien/beranda", { replace: true });
-      } else {
-        navigate("/lengkapi-biodata", { replace: true });
-      }
+      navigate("/resepsionis/dashboard", { replace: true });
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
       } else {
-        setError("Terjadi kesalahan. Coba lagi.");
+        setError(err.message || "Terjadi kesalahan. Coba lagi.");
       }
     } finally {
       setLoading(false);
@@ -108,13 +115,13 @@ export default function LoginPage() {
 
         <div className="flex flex-1 flex-col justify-center">
           <h1 className="m-0 font-serif text-[28px] font-bold leading-9 text-[#fbf8f3] md:text-[32px] md:leading-10 lg:text-[40px] lg:leading-[50px]">
-            Memahami dulu,
+            Selamat datang,
             <br />
-            baru merawat.
+            Resepsionis.
           </h1>
           <p className="mt-4 max-w-96 text-base leading-[26.4px] text-[#fbf8f3]/80">
-            Klinik kesehatan kulit &amp; kesejahteraan perempuan. Perawatan
-            tenang berbasis bukti, bukan janji instan.
+            Kelola reservasi, data pasien, jadwal, dan pembayaran dalam satu
+            panel terpadu.
           </p>
           <p className="mt-8 font-serif text-[22px] italic leading-[28.6px] text-[#a8945e]">Healthy Skin. Live Well.</p>
         </div>
@@ -127,9 +134,9 @@ export default function LoginPage() {
 
       <div className="flex flex-1 items-start justify-center px-6 py-8 md:items-center md:px-12 md:py-10">
         <div className="w-full max-w-md">
-          <h2 className="m-0 font-serif text-[28px] font-bold leading-[35px] text-[#2c2c2c]">Masuk ke akun Anda</h2>
+          <h2 className="m-0 font-serif text-[28px] font-bold leading-[35px] text-[#2c2c2c]">Masuk Panel Resepsionis</h2>
           <p className="mt-2 text-[15px] leading-6 text-[#6b6b6b]">
-            Selamat datang kembali di Sense&rsquo;s clinic.
+            Gunakan akun resepsionis yang diberikan oleh admin.
           </p>
 
           <form
@@ -138,21 +145,17 @@ export default function LoginPage() {
             noValidate
           >
             <div className="mb-4">
-              <label className="mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]" htmlFor="identifierLogin">
-                Email atau ID Resepsionis
+              <label className="mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]" htmlFor="idResepsionis">
+                ID Resepsionis
               </label>
               <div className="relative">
-                <img
-                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
-                  src="/assets/icon-mail.svg"
-                  alt=""
-                />
-                <input className="h-[46px] w-full rounded-xl border border-[#f0ede7] bg-white py-[11px] pl-[37px] pr-[15px] text-[15px] leading-6 text-[#2c2c2c] outline-none placeholder:text-[#6b6b6b] focus:border-[#3d4940]"
-                  id="identifierLogin"
+                <input className="h-[46px] w-full rounded-xl border border-[#f0ede7] bg-white px-[15px] py-[11px] pl-[37px] text-[15px] leading-6 text-[#2c2c2c] outline-none placeholder:text-[#6b6b6b] focus:border-[#3d4940]"
+                  id="idResepsionis"
                   type="text"
-                  placeholder="Masukkan email atau ID resepsionis"
-                  value={identifierLogin}
-                  onChange={(e) => setIdentifierLogin(e.target.value)}
+                  inputMode="numeric"
+                  placeholder="Masukkan ID resepsionis"
+                  value={idResepsionis}
+                  onChange={(e) => setIdResepsionis(e.target.value)}
                   autoComplete="username"
                 />
               </div>
@@ -184,9 +187,6 @@ export default function LoginPage() {
                   <EyeIcon open={showPassword} />
                 </button>
               </div>
-              <p className="mt-1.5 text-xs leading-4 tracking-[0.06em] text-[#6b6b6b]">
-                Coba kata sandi &quot;salah&quot; untuk melihat state error.
-              </p>
             </div>
 
             {error && (
@@ -205,7 +205,10 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-6 text-center text-[15px] leading-6 text-[#6b6b6b]">
-            Belum punya akun? <Link className="font-semibold text-[#3d4940] underline" to="/register">Daftar sekarang</Link>
+            Bukan resepsionis?{" "}
+            <Link className="font-semibold text-[#3d4940] underline" to="/login">
+              Masuk sebagai pasien
+            </Link>
           </p>
 
           <Link to="/" className="mt-10 block text-center text-xs leading-4 tracking-[0.06em] text-[#6b6b6b] underline">

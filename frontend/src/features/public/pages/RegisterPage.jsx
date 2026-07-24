@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { registerPatient, loginPatient } from "../../../shared/services/authApi.js";
+import { setAuthSession, clearAuthSession } from "../../../shared/utils/authStorage.js";
+import { ApiError } from "../../../shared/utils/api.js";
 
 function EyeIcon({ open }) {
   if (open) {
@@ -63,38 +66,27 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/register`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            password,
-            nama_lengkap: name,
-          }),
-        }
-      );
+      await registerPatient({ email, password, nama_lengkap: name });
 
-      const data = await res.json();
+      const loginData = await loginPatient({ email, password });
 
-      if (!res.ok) {
-        if (data.profile_incomplete) {
-          localStorage.setItem(
-            "pendingProfileEmail",
-            data.email || email,
-          );
-          navigate("/lengkapi-biodata");
-          return;
-        }
-        setError(data.message || "Pendaftaran gagal.");
-        return;
-      }
+      setAuthSession(loginData.token, loginData.user);
 
       localStorage.setItem("pendingProfileEmail", email);
-      navigate("/lengkapi-biodata");
-    } catch {
-      setError("Terjadi kesalahan. Coba lagi.");
+
+      navigate("/lengkapi-biodata", { replace: true });
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.statusCode === 409 && err.data?.profile_incomplete) {
+          setError(
+            "Akun dengan email ini sudah terdaftar namun belum melengkapi profil. Silakan login.",
+          );
+          return;
+        }
+        setError(err.message);
+      } else {
+        setError("Terjadi kesalahan. Coba lagi.");
+      }
     } finally {
       setLoading(false);
     }

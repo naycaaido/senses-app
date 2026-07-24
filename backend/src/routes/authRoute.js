@@ -1,5 +1,6 @@
 import { Router } from "express";
 import pasienController from "../controller/pasienController.js";
+import resepsionisAuthController from "../controller/resepsionisAuthController.js";
 import validateToken from "../middleware/validateToken.js";
 import requireRole from "../middleware/requireRole.js";
 
@@ -62,9 +63,128 @@ authRoute.post("/auth/register", pasienController.registerPasien);
 
 /**
  * @openapi
+ * /auth/pasien/login:
+ *   post:
+ *     summary: Login as a patient (new dedicated endpoint)
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     email:
+ *                       type: string
+ *                     nama_lengkap:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       example: pasien
+ *                     profil_lengkap:
+ *                       type: boolean
+ *       400:
+ *         description: Required fields are missing
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Email or password is invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+authRoute.post("/auth/pasien/login", pasienController.loginPasien);
+
+/**
+ * @openapi
+ * /auth/resepsionis/login:
+ *   post:
+ *     summary: Login as a receptionist
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id_resepsionis:
+ *                 type: number
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id_resepsionis:
+ *                       type: number
+ *                     nama_lengkap:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       example: resepsionis
+ *       400:
+ *         description: Required fields are missing
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: ID or password is invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+authRoute.post("/auth/resepsionis/login", resepsionisAuthController.loginResepsionis);
+
+/**
+ * @deprecated Will be replaced by /auth/pasien/login and /auth/resepsionis/login
+ * @openapi
  * /auth/login:
  *   post:
- *     summary: Login as a patient
+ *     summary: Login as a patient (deprecated — use /auth/pasien/login for pasien)
  *     tags: [Auth]
  *     requestBody:
  *       required: true
