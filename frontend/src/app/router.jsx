@@ -26,6 +26,7 @@ import ReceptionistPatientDetailPage from "../features/receptionist/pages/Recept
 import ReceptionistOperationalSchedulePage from "../features/receptionist/pages/ReceptionistOperationalScheduleApiPage.jsx";
 import ReceptionistServicePage from "../features/receptionist/pages/ReceptionistServiceApiPage.jsx";
 import ReceptionistServiceFormPage from "../features/receptionist/pages/ReceptionistServiceFormApiPage.jsx";
+import ReceptionistPaymentPage from "../features/receptionist/pages/ReceptionistPaymentApiPage.jsx";
 import ReceptionistPlaceholderPage from "../features/receptionist/pages/ReceptionistPlaceholderPage.jsx";
 import ReceptionistLoginPage from "../features/receptionist/pages/ReceptionistLoginPage.jsx";
 
@@ -100,15 +101,7 @@ export default function AppRouter() {
             path="layanan/:id/edit"
             element={<ReceptionistServiceFormPage />}
           />
-          <Route
-            path="pembayaran"
-            element={
-              <ReceptionistPlaceholderPage
-                title="Pembayaran"
-                note="Halaman ini belum tersedia di design Figma (page Resepsionis Final), jadi belum diimplementasikan."
-              />
-            }
-          />
+          <Route path="pembayaran" element={<ReceptionistPaymentPage />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Route>
         <Route path='/login' element={<LoginPage />} />
