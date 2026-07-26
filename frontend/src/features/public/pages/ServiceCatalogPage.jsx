@@ -1,7 +1,28 @@
+import { useCallback, useEffect, useState } from "react";
 import ServiceCard from "../../../shared/components/service/ServiceCard.jsx";
-import mockServices from "../../../shared/data/services.js";
+import { getActiveServices } from "../../../shared/services/layananApi.js";
 
 export default function ServiceCatalogPage() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadServices = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      setServices(await getActiveServices());
+    } catch (requestError) {
+      setError(requestError.message || "Layanan belum dapat dimuat.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadServices();
+  }, [loadServices]);
+
   return (
     <div className="bg-[#fbf8f3]">
       <div className="mx-auto max-w-[1200px] px-4 pb-10 pt-6 md:px-6 md:pb-12">
@@ -14,7 +35,25 @@ export default function ServiceCatalogPage() {
         </header>
 
         <div className="grid grid-cols-1 gap-2.5 pt-8 lg:grid-cols-2">
-          {mockServices.map((service) => (
+          {loading && (
+            <p className="col-span-full py-8 text-center text-[#6b6b6b]" role="status">
+              Memuat layanan...
+            </p>
+          )}
+          {!loading && error && (
+            <div className="col-span-full rounded-2xl border border-[#e5c7c1] bg-[#fff5f2] p-5 text-center text-[#8a3324]" role="alert">
+              <p className="m-0">{error}</p>
+              <button type="button" className="mt-3 rounded-full bg-[#3d4940] px-4 py-2 text-sm font-medium text-[#fbf8f3] hover:bg-[#0c3320]" onClick={loadServices}>
+                Coba lagi
+              </button>
+            </div>
+          )}
+          {!loading && !error && services.length === 0 && (
+            <p className="col-span-full py-8 text-center text-[#6b6b6b]">
+              Belum ada layanan yang tersedia saat ini.
+            </p>
+          )}
+          {!loading && !error && services.map((service) => (
             <ServiceCard
               key={service.id}
               service={service}

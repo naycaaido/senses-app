@@ -228,6 +228,34 @@ authRoute.post("/auth/login", pasienController.login);
 /**
  * @openapi
  * /auth/profile:
+ *   get:
+ *     summary: Get the authenticated patient's profile
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Patient profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [user]
+ *               properties:
+ *                 user:
+ *                   $ref: '#/components/schemas/Pasien'
+ *       401:
+ *         description: Missing, invalid, or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Patient not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *   put:
  *     summary: Complete patient profile
  *     tags: [Auth]
@@ -269,6 +297,12 @@ authRoute.post("/auth/login", pasienController.login);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
+authRoute.get(
+  "/auth/profile",
+  validateToken,
+  requireRole("pasien"),
+  pasienController.getProfilePasien,
+);
 authRoute.put(
   "/auth/profile",
   validateToken,

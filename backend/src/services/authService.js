@@ -145,6 +145,22 @@ const completeProfilePasien = async ({ email, ...rest }) => {
   });
 };
 
+const getProfilePasien = async ({ email }) => {
+  if (!email) {
+    throw new BadRequestError("Email is required");
+  }
+
+  const patient = await prisma.pasien.findUnique({
+    where: { email },
+    select: PATIENT_PROFILE_SELECT,
+  });
+  if (!patient) {
+    throw new NotFoundError("Patient not found");
+  }
+
+  return patient;
+};
+
 const changePasswordPasien = async ({
   email,
   password_lama,
@@ -194,6 +210,7 @@ export default {
   loginPasien,
   loginResepsionis,
   completeProfilePasien,
+  getProfilePasien,
   changePasswordPasien,
   PROFILE_FIELDS,
 };

@@ -705,6 +705,22 @@ const options = {
         },
       },
       "/auth/profile": {
+        get: {
+          tags: ["Auth"],
+          summary: "Profil pasien terautentikasi",
+          description: "Pasien ditentukan dari email pada JWT.",
+          security: bearerSecurity,
+          responses: {
+            200: jsonResponse("Profil pasien.", {
+              type: "object",
+              required: ["user"],
+              properties: { user: schemaRef("Pasien") },
+            }),
+            401: errorResponse("Token tidak ada atau tidak valid."),
+            403: errorResponse("Role tidak diizinkan."),
+            404: errorResponse("Pasien tidak ditemukan."),
+          },
+        },
         put: {
           tags: ["Auth"],
           summary: "Lengkapi profil pasien",

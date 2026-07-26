@@ -92,7 +92,7 @@ export default function Dashboard() {
 
   const recent = reservations.slice(0, 3)
   const todayPayments = payments.reduce((sum, p) => sum + p.amount, 0)
-  const waiting = reservations.filter((r) => ['Menunggu', 'Hadir'].includes(r.status)).length
+  const presentPatients = reservations.filter((r) => r.status === 'Hadir').length
 
   return (
     <div className="flex flex-col gap-5">
@@ -122,7 +122,7 @@ export default function Dashboard() {
           badge="Today"
           badgeTone="blue"
         />
-        <StatCard icon={<IconClock />} label="Waiting Room" value={waiting} badge="Current" badgeTone="yellow" />
+        <StatCard icon={<IconClock />} label="Pasien Hadir" value={presentPatients} badge="Saat Ini" badgeTone="yellow" />
         <StatCard
           icon={<IconWallet />}
           label="Today's Payments"

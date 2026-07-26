@@ -120,6 +120,18 @@ const completeProfilePasien = async (req, res) => {
   }
 };
 
+const getProfilePasien = async (req, res) => {
+  try {
+    const user = await authService.getProfilePasien({ email: req.user.email });
+    return res.status(200).json({ user });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const changePasswordPasien = async (req, res) => {
   try {
     const { email: _ignoredEmail, ...passwordPayload } = req.body;
@@ -142,5 +154,6 @@ export default {
   loginPasien,
   login,
   completeProfilePasien,
+  getProfilePasien,
   changePasswordPasien,
 };

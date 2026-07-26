@@ -9,6 +9,7 @@ const expectedOperations = [
   ["GET", "/api/health"],
   ["POST", "/auth/register"],
   ["POST", "/auth/login"],
+  ["GET", "/auth/profile"],
   ["PUT", "/auth/profile"],
   ["PUT", "/pasien/password"],
   ["GET", "/layanan"],

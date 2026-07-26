@@ -74,7 +74,6 @@ export default function FormLayanan() {
             <Select value={form.status} onChange={set('status')}>
               <option>Aktif</option>
               <option>Nonaktif</option>
-              <option>Draft</option>
             </Select>
           </Field>
 

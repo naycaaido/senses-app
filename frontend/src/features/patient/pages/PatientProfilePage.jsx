@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ProfileAvatar from "../components/ProfileAvatar.jsx";
 import ProfileInfoRow from "../components/ProfileInfoRow.jsx";
 import ProfileSectionCard from "../components/ProfileSectionCard.jsx";
+import { getPatientProfile } from "../../../shared/services/profileApi.js";
 
 const MONTHS_ID = [
   "Januari",
@@ -19,29 +21,66 @@ const MONTHS_ID = [
 ];
 
 function formatBirthDate(iso) {
-  const [year, month, day] = iso.split("-").map(Number);
+  if (!iso) return "—";
+  const [year, month, day] = iso.slice(0, 10).split("-").map(Number);
   return `${day} ${MONTHS_ID[month - 1]} ${year}`;
 }
 
-const patientProfile = {
-  registrationNumber: "REG-2406-001",
-  name: "Annisa Rahmawati",
-  initials: "AR",
-  email: "annisa.rahma@gmail.com",
-  phone: "0812-3344-5566",
-  gender: "Perempuan",
-  birthPlace: "Bandung",
-  birthDate: "1995-03-14",
-  lastEducation: "S1",
-  occupation: "Guru",
-  maritalStatus: "Menikah",
-  religion: "Islam",
-  address: "Jl. Cihampelas No. 121, Coblong",
-  city: "Bandung",
-};
+function getInitials(name) {
+  return (name || "?").split(" ").map((word) => word[0]).join("").slice(0, 2).toUpperCase();
+}
+
+function toDisplayProfile(user) {
+  return {
+    name: user.nama_lengkap || "—",
+    initials: getInitials(user.nama_lengkap),
+    email: user.email || "—",
+    phone: user.telepon || "—",
+    gender: user.jenis_kelamin || "—",
+    birthPlace: user.tempat_lahir || "—",
+    birthDate: user.tanggal_lahir,
+    lastEducation: user.pendidikan_terakhir || "—",
+    occupation: user.pekerjaan || "—",
+    maritalStatus: user.status_perkawinan || "—",
+    religion: user.agama || "—",
+    address: user.alamat_domisili || "—",
+    city: user.kota || "—",
+  };
+}
 
 export default function PatientProfilePage() {
-  const profile = patientProfile;
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadProfile = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      setProfile(toDisplayProfile(await getPatientProfile()));
+    } catch (requestError) {
+      setError(requestError.message || "Profil belum dapat dimuat.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  if (loading) {
+    return <p className="mx-auto max-w-3xl px-4 py-12 text-center text-[#6b6b6b]" role="status">Memuat profil...</p>;
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-12 text-center">
+        <p className="text-[#8a3324]" role="alert">{error || "Profil tidak tersedia."}</p>
+        <button type="button" className="rounded-full bg-[#3d4940] px-5 py-2.5 text-sm font-medium text-[#fbf8f3] hover:bg-[#0c3320]" onClick={loadProfile}>Coba lagi</button>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-8 pt-4 md:px-6 md:pb-12 md:pt-6">
@@ -50,9 +89,7 @@ export default function PatientProfilePage() {
           <ProfileAvatar initials={profile.initials} size={56} />
           <div className="min-w-0">
             <h1 className="m-0 font-serif text-2xl font-bold leading-[30px] text-[#3d4940] md:text-[28px] md:leading-[35px]">{profile.name}</h1>
-            <p className="mt-1 text-[13px] leading-4 tracking-[0.06em] text-[#6b6b6b]">
-              No. Registrasi: {profile.registrationNumber}
-            </p>
+            <p className="mt-1 text-[13px] leading-4 tracking-[0.06em] text-[#6b6b6b]">Profil Pasien</p>
           </div>
         </div>
         <Link to="/pasien/profil/ubah" className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#d8c7b5] bg-white px-5 py-[11px] text-sm font-semibold leading-6 tracking-[0.02em] text-[#3d4940] hover:bg-[#faf7f2]">

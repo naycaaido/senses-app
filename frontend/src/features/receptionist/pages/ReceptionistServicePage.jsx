@@ -7,7 +7,6 @@ import {
   IconPencil,
   IconPlus,
   IconSearch,
-  IconTrash,
 } from "../components/Icons.jsx";
 import {
   Button,
@@ -44,12 +43,12 @@ function StatBox({ label, value, note, noteTone = "muted", icon }) {
 }
 
 export default function Layanan() {
-  const { services, removeService } = useStore();
+  const { services, setServiceStatus } = useStore();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
-  const [pendingDelete, setPendingDelete] = useState(null);
+  const [pendingStatusChange, setPendingStatusChange] = useState(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -65,7 +64,7 @@ export default function Layanan() {
   const rows = filtered.slice((current - 1) * PER_PAGE, current * PER_PAGE);
 
   const activeCount = services.filter((s) => s.status === "Aktif").length;
-  const draftCount = services.filter((s) => s.status === "Draft").length;
+  const inactiveCount = services.filter((s) => s.status === "Nonaktif").length;
   const avgPrice = services.length
     ? Math.round(
         services.reduce((sum, s) => sum + s.price, 0) / services.length,
@@ -106,10 +105,10 @@ export default function Layanan() {
           icon={<IconGrid size={16} />}
         />
         <StatBox
-          label='Draft Layanan'
-          value={draftCount}
-          note='Perlu review medis'
-          noteTone='red'
+          label='Layanan Nonaktif'
+          value={inactiveCount}
+          note='Tidak dapat dipilih untuk reservasi baru'
+          noteTone='muted'
           icon={<IconGrid size={16} />}
         />
       </div>
@@ -141,7 +140,6 @@ export default function Layanan() {
               <option value=''>Semua Status</option>
               <option>Aktif</option>
               <option>Nonaktif</option>
-              <option>Draft</option>
             </Select>
           </div>
         </div>
@@ -209,14 +207,14 @@ export default function Layanan() {
                         <IconPencil size={16} />
                       </button>
                       <button
-                        aria-label={`Hapus ${s.name}`}
-                        onClick={() => setPendingDelete(s)}
+                        aria-label={`${s.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"} ${s.name}`}
+                        onClick={() => setPendingStatusChange(s)}
                         className={cx(
-                          "rounded-lg p-2 text-[#434655] transition-colors hover:bg-[#f5f5f3] hover:text-[#191c1e]",
-                          "hover:text-[#a03d4a]",
+                          "rounded-lg px-2 py-1 text-xs font-semibold transition-colors hover:bg-[#f5f5f3]",
+                          s.status === "Aktif" ? "text-[#a03d4a]" : "text-emerald-600",
                         )}
                       >
-                        <IconTrash size={16} />
+                        {s.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"}
                       </button>
                     </div>
                   </td>
@@ -265,42 +263,46 @@ export default function Layanan() {
         </div>
       </Card>
 
-      {pendingDelete && (
+      {pendingStatusChange && (
         <Modal
           icon={<span className='text-xl font-bold'>!</span>}
-          iconTone='red'
-          title='Hapus Layanan'
-          subtitle='Anda akan menghapus layanan berikut:'
-          onClose={() => setPendingDelete(null)}
+          iconTone={pendingStatusChange.status === "Aktif" ? 'red' : 'brand'}
+          title={`${pendingStatusChange.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"} Layanan`}
+          subtitle={`Anda akan ${pendingStatusChange.status === "Aktif" ? "menonaktifkan" : "mengaktifkan"} layanan berikut:`}
+          onClose={() => setPendingStatusChange(null)}
           footer={
             <>
-              <Button variant='outline' onClick={() => setPendingDelete(null)}>
+              <Button variant='outline' onClick={() => setPendingStatusChange(null)}>
                 Kembali
               </Button>
               <Button
-                variant='danger'
+                variant={pendingStatusChange.status === "Aktif" ? 'danger' : 'primary'}
                 onClick={() => {
-                  removeService(pendingDelete.id);
-                  setPendingDelete(null);
+                  setServiceStatus(
+                    pendingStatusChange.id,
+                    pendingStatusChange.status === "Aktif" ? "Nonaktif" : "Aktif",
+                  );
+                  setPendingStatusChange(null);
                 }}
               >
-                Konfirmasi Hapus
+                {pendingStatusChange.status === "Aktif" ? "Konfirmasi Nonaktifkan" : "Konfirmasi Aktifkan"}
               </Button>
             </>
           }
         >
           <div className='rounded-xl bg-[#f5f5f3] px-4 py-3'>
             <p className='text-[13px] font-semibold text-[#191c1e]'>
-              {pendingDelete.name}
+              {pendingStatusChange.name}
             </p>
             <p className='text-xs text-[#434655]'>
-              {formatRupiah(pendingDelete.price)} · {pendingDelete.duration}{" "}
+              {formatRupiah(pendingStatusChange.price)} · {pendingStatusChange.duration}{" "}
               menit
             </p>
           </div>
           <p className='mt-3 text-xs text-[#434655]'>
-            Layanan yang dihapus tidak dapat dipilih lagi saat membuat reservasi
-            baru.
+            {pendingStatusChange.status === "Aktif"
+              ? "Layanan tetap tersimpan, tetapi tidak dapat dipilih untuk reservasi baru."
+              : "Layanan dapat dipilih kembali untuk reservasi baru."}
           </p>
         </Modal>
       )}
