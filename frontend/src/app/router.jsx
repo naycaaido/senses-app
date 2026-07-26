@@ -16,17 +16,16 @@ import PatientHistoryPage from "../features/patient/pages/PatientHistoryPage.jsx
 import PatientProfilePage from "../features/patient/pages/PatientProfilePage.jsx";
 import PatientEditProfilePage from "../features/patient/pages/PatientEditProfilePage.jsx";
 import ReceptionistLayout from "../features/receptionist/components/ReceptionistLayout.jsx";
-import { StoreProvider as ReceptionistStoreProvider } from "../features/receptionist/data/store.jsx";
-import ReceptionistDashboardPage from "../features/receptionist/pages/ReceptionistDashboardPage.jsx";
-import ReceptionistReservationPage from "../features/receptionist/pages/ReceptionistReservationPage.jsx";
-import ReceptionistNewReservationPage from "../features/receptionist/pages/ReceptionistNewReservationPage.jsx";
-import ReceptionistReservationDetailPage from "../features/receptionist/pages/ReceptionistReservationDetailPage.jsx";
-import ReceptionistPatientDataPage from "../features/receptionist/pages/ReceptionistPatientDataPage.jsx";
-import ReceptionistPatientRegistrationPage from "../features/receptionist/pages/ReceptionistPatientRegistrationPage.jsx";
-import ReceptionistPatientDetailPage from "../features/receptionist/pages/ReceptionistPatientDetailPage.jsx";
-import ReceptionistOperationalSchedulePage from "../features/receptionist/pages/ReceptionistOperationalSchedulePage.jsx";
-import ReceptionistServicePage from "../features/receptionist/pages/ReceptionistServicePage.jsx";
-import ReceptionistServiceFormPage from "../features/receptionist/pages/ReceptionistServiceFormPage.jsx";
+import ReceptionistDashboardPage from "../features/receptionist/pages/ReceptionistDashboardApiPage.jsx";
+import ReceptionistReservationPage from "../features/receptionist/pages/ReceptionistReservationApiPage.jsx";
+import ReceptionistNewReservationPage from "../features/receptionist/pages/ReceptionistNewReservationApiPage.jsx";
+import ReceptionistReservationDetailPage from "../features/receptionist/pages/ReceptionistReservationDetailApiPage.jsx";
+import ReceptionistPatientDataPage from "../features/receptionist/pages/ReceptionistPatientDataApiPage.jsx";
+import ReceptionistPatientRegistrationPage from "../features/receptionist/pages/ReceptionistPatientRegistrationApiPage.jsx";
+import ReceptionistPatientDetailPage from "../features/receptionist/pages/ReceptionistPatientDetailApiPage.jsx";
+import ReceptionistOperationalSchedulePage from "../features/receptionist/pages/ReceptionistOperationalScheduleApiPage.jsx";
+import ReceptionistServicePage from "../features/receptionist/pages/ReceptionistServiceApiPage.jsx";
+import ReceptionistServiceFormPage from "../features/receptionist/pages/ReceptionistServiceFormApiPage.jsx";
 import ReceptionistPlaceholderPage from "../features/receptionist/pages/ReceptionistPlaceholderPage.jsx";
 import ReceptionistLoginPage from "../features/receptionist/pages/ReceptionistLoginPage.jsx";
 
@@ -60,9 +59,7 @@ export default function AppRouter() {
           path="/resepsionis"
           element={
             <ProtectedRoute allowedRoles={["resepsionis"]}>
-              <ReceptionistStoreProvider>
-                <ReceptionistLayout />
-              </ReceptionistStoreProvider>
+              <ReceptionistLayout />
             </ProtectedRoute>
           }
         >

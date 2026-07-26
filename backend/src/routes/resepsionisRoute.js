@@ -52,6 +52,12 @@ resepsionisRoute.patch(
   requireRole("resepsionis"),
   resepsionisLayananController.nonaktifkanLayanan,
 );
+resepsionisRoute.patch(
+  "/resepsionis/layanan/:id_layanan/aktif",
+  validateToken,
+  requireRole("resepsionis"),
+  resepsionisLayananController.aktifkanLayanan,
+);
 
 resepsionisRoute.get(
   "/resepsionis/jadwal",
@@ -64,6 +70,12 @@ resepsionisRoute.post(
   validateToken,
   requireRole("resepsionis"),
   resepsionisJadwalController.createJadwal,
+);
+resepsionisRoute.patch(
+  "/resepsionis/jadwal/batch-status",
+  validateToken,
+  requireRole("resepsionis"),
+  resepsionisJadwalController.setAllJadwalStatus,
 );
 resepsionisRoute.patch(
   "/resepsionis/jadwal/:id_jadwal/aktif",

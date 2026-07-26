@@ -5,6 +5,7 @@ import prisma from "../config/prisma.js";
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+const SCHEDULE_STATUS = ["Aktif", "Nonaktif"];
 
 const JADWAL_SELECT = {
   id_jadwal: true,
@@ -139,9 +140,52 @@ const setJadwalStatus = async (id_jadwal, status_jadwal) => {
   );
 };
 
+const setAllJadwalStatusByDate = async ({ tanggal, status }) => {
+  if (!SCHEDULE_STATUS.includes(status)) {
+    throw new BadRequestError("status must be Aktif or Nonaktif");
+  }
+
+  const parsedTanggal = parseTanggal(tanggal);
+  return prisma.$transaction(async (tx) => {
+    const slots = await tx.jadwal.findMany({
+      where: { tanggal: parsedTanggal },
+      orderBy: { jam_mulai: "asc" },
+      select: JADWAL_SELECT,
+    });
+
+    if (slots.length === 0) {
+      throw new NotFoundError("No schedule slots found for this date");
+    }
+
+    const mutableSlotIds = slots
+      .filter((slot) => slot.no_reservasi === null)
+      .map((slot) => slot.id_jadwal);
+
+    if (mutableSlotIds.length > 0) {
+      await tx.jadwal.updateMany({
+        where: { id_jadwal: { in: mutableSlotIds } },
+        data: { status_jadwal: status },
+      });
+    }
+
+    const data = await tx.jadwal.findMany({
+      where: { tanggal: parsedTanggal },
+      orderBy: { jam_mulai: "asc" },
+      select: JADWAL_SELECT,
+    });
+
+    return {
+      data: data.map(serializeJadwal),
+      updated_count: mutableSlotIds.length,
+      skipped_booked_count: slots.length - mutableSlotIds.length,
+    };
+  });
+};
+
 export default {
   getJadwalTersedia,
   getJadwalByResepsionis,
   createJadwal,
   setJadwalStatus,
+  setAllJadwalStatusByDate,
 };

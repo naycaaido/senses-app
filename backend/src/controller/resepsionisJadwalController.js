@@ -60,9 +60,22 @@ const nonaktifkanJadwal = async (req, res, next) => {
   }
 };
 
+const setAllJadwalStatus = async (req, res, next) => {
+  try {
+    const result = await jadwalService.setAllJadwalStatusByDate(req.body);
+    return res.status(200).json({
+      message: "Schedule slots updated successfully",
+      ...result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export default {
   getJadwal,
   createJadwal,
   aktifkanJadwal,
   nonaktifkanJadwal,
+  setAllJadwalStatus,
 };
