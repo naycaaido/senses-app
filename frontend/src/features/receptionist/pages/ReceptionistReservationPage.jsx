@@ -5,7 +5,7 @@ import { Button, Card, Chip, EmptyRow, Field, Input, PageHeader, Select } from '
 import { useStore } from '../data/store.jsx'
 
 const PER_PAGE = 6
-const STATUSES = ['Baru', 'Menunggu', 'Terkonfirmasi', 'Hadir', 'Selesai', 'Dibatalkan']
+const STATUSES = ['Baru', 'Terkonfirmasi', 'Hadir', 'Selesai', 'Dibatalkan']
 
 export default function Reservasi() {
   const { reservations } = useStore()

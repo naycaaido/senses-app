@@ -95,13 +95,13 @@ const initialServices = [
   { id: 'SVC-02', name: 'Acne Starter Pack', price: 450000, duration: 60, status: 'Aktif', description: 'Paket perawatan awal untuk kulit berjerawat.' },
   { id: 'SVC-03', name: 'Essential Facial', price: 525000, duration: 60, status: 'Aktif', description: 'Facial dasar untuk membersihkan dan menyegarkan kulit.' },
   { id: 'SVC-04', name: 'Chemical Peeling', price: 450000, duration: 60, status: 'Nonaktif', description: 'Eksfoliasi kimia untuk meratakan tekstur kulit.' },
-  { id: 'SVC-05', name: 'Laser Rejuvenation', price: 900000, duration: 90, status: 'Draft', description: 'Peremajaan kulit dengan teknologi laser.' },
+  { id: 'SVC-05', name: 'Laser Rejuvenation', price: 900000, duration: 90, status: 'Nonaktif', description: 'Peremajaan kulit dengan teknologi laser.' },
 ]
 
 const initialReservations = [
   { id: 'RSV-2026-001', patientId: 'P-9077', patientName: 'Annisa Rahmawati', doctor: 'Dr. Sarah Wijaya', service: 'Konsultasi Kulit', price: 150000, date: '2026-07-20', time: '10.00', endTime: '10.30', status: 'Terkonfirmasi', complaint: 'Muncul kemerahan di area pipi sejak 2 minggu terakhir.' },
   { id: 'RSV-2026-002', patientId: 'P-9021', patientName: 'Amanda Putri', doctor: 'Dr. Sarah Wijaya', service: 'General Checkup', price: 450000, date: '2026-07-20', time: '09.30', endTime: '10.00', status: 'Terkonfirmasi', complaint: 'Pemeriksaan rutin bulanan.' },
-  { id: 'RSV-2026-003', patientId: 'P-8954', patientName: 'Budi Kusuma', doctor: 'Dr. Andi Pratama', service: 'Acne Starter Pack', price: 350000, date: '2026-07-20', time: '10.15', endTime: '11.15', status: 'Menunggu', complaint: 'Jerawat meradang di dahi.' },
+  { id: 'RSV-2026-003', patientId: 'P-8954', patientName: 'Budi Kusuma', doctor: 'Dr. Andi Pratama', service: 'Acne Starter Pack', price: 350000, date: '2026-07-20', time: '10.15', endTime: '11.15', status: 'Terkonfirmasi', complaint: 'Jerawat meradang di dahi.' },
   { id: 'RSV-2026-004', patientId: 'P-9042', patientName: 'Lina Marlina', doctor: 'Dr. Sarah Wijaya', service: 'Essential Facial', price: 250000, date: '2026-07-21', time: '11.00', endTime: '11.45', status: 'Baru', complaint: 'Kulit kusam.' },
   { id: 'RSV-2026-005', patientId: 'P-9103', patientName: 'Rizky Ramadhan', doctor: 'Dr. Andi Pratama', service: 'Chemical Peeling', price: 450000, date: '2026-07-21', time: '13.00', endTime: '14.00', status: 'Hadir', complaint: 'Bekas jerawat membandel.' },
   { id: 'RSV-2026-006', patientId: 'P-9021', patientName: 'Amanda Putri', doctor: 'Dr. Sarah Wijaya', service: 'Konsultasi Kulit', price: 150000, date: '2026-06-14', time: '14.30', endTime: '15.00', status: 'Selesai', complaint: 'Kontrol lanjutan.' },
@@ -167,8 +167,8 @@ export function StoreProvider({ children }) {
       updateService(id, data) {
         setServices((prev) => prev.map((s) => (s.id === id ? { ...s, ...data } : s)))
       },
-      removeService(id) {
-        setServices((prev) => prev.filter((s) => s.id !== id))
+      setServiceStatus(id, status) {
+        setServices((prev) => prev.map((s) => (s.id === id ? { ...s, status } : s)))
       },
       getService(id) {
         return services.find((s) => s.id === id)

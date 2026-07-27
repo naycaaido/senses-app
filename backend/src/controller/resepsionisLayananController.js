@@ -86,9 +86,25 @@ const nonaktifkanLayanan = async (req, res, next) => {
   }
 };
 
+const aktifkanLayanan = async (req, res, next) => {
+  try {
+    const layanan = await layananService.setLayananStatus(
+      parseServiceId(req.params.id_layanan),
+      "Aktif",
+    );
+    return res.status(200).json({
+      message: "Service activated successfully",
+      layanan,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export default {
   listLayanan,
   createLayanan,
   updateLayanan,
   nonaktifkanLayanan,
+  aktifkanLayanan,
 };

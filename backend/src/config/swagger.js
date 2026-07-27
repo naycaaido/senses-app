@@ -705,6 +705,30 @@ const options = {
         },
       },
       "/auth/profile": {
+        get: {
+          tags: ["Auth"],
+          summary: "Profil pasien terautentikasi",
+          description: "Pasien ditentukan dari email pada JWT.",
+          security: bearerSecurity,
+          responses: {
+            200: jsonResponse("Profil pasien.", {
+              type: "object",
+              required: ["user"],
+              properties: { user: schemaRef("Pasien") },
+            }),
+            401: errorResponse("Token tidak ada atau tidak valid."),
+            403: errorResponse("Role tidak diizinkan."),
+            404: errorResponse("Pasien tidak ditemukan."),
+          },
+        },
+        JadwalBatchStatusRequest: {
+          type: "object",
+          required: ["tanggal", "status"],
+          properties: {
+            tanggal: { type: "string", format: "date" },
+            status: { type: "string", enum: ["Aktif", "Nonaktif"] },
+          },
+        },
         put: {
           tags: ["Auth"],
           summary: "Lengkapi profil pasien",
@@ -1058,6 +1082,24 @@ const options = {
           },
         },
       },
+      "/resepsionis/layanan/{id_layanan}/aktif": {
+        patch: {
+          tags: ["Resepsionis - Layanan"],
+          summary: "Aktifkan layanan",
+          security: bearerSecurity,
+          parameters: [parameterRef("ServiceId")],
+          responses: {
+            200: jsonResponse(
+              "Layanan berhasil diaktifkan.",
+              messageSchema("layanan", schemaRef("Layanan")),
+            ),
+            400: errorResponse("ID layanan tidak valid."),
+            401: errorResponse("Token tidak ada atau tidak valid."),
+            403: errorResponse("Hanya resepsionis yang dapat mengakses."),
+            404: errorResponse("Layanan tidak ditemukan."),
+          },
+        },
+      },
       "/resepsionis/jadwal": {
         get: {
           tags: ["Resepsionis - Jadwal"],
@@ -1096,6 +1138,37 @@ const options = {
             401: errorResponse("Token tidak ada atau tidak valid."),
             403: errorResponse("Hanya resepsionis yang dapat mengakses."),
             409: errorResponse("Slot pada tanggal dan waktu tersebut sudah ada."),
+          },
+        },
+      },
+      "/resepsionis/jadwal/batch-status": {
+        patch: {
+          tags: ["Resepsionis - Jadwal"],
+          summary: "Ubah status semua slot pada satu tanggal",
+          description:
+            "Slot yang sudah terhubung ke reservasi tidak diubah dan dikembalikan dalam data respons.",
+          security: bearerSecurity,
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": { schema: schemaRef("JadwalBatchStatusRequest") },
+            },
+          },
+          responses: {
+            200: jsonResponse("Status slot berhasil diperbarui.", {
+              type: "object",
+              required: ["message", "data", "updated_count", "skipped_booked_count"],
+              properties: {
+                message: { type: "string" },
+                data: { type: "array", items: schemaRef("Jadwal") },
+                updated_count: { type: "integer", minimum: 0 },
+                skipped_booked_count: { type: "integer", minimum: 0 },
+              },
+            }),
+            400: errorResponse("Tanggal atau status tidak valid."),
+            401: errorResponse("Token tidak ada atau tidak valid."),
+            403: errorResponse("Hanya resepsionis yang dapat mengakses."),
+            404: errorResponse("Tidak ada slot pada tanggal tersebut."),
           },
         },
       },

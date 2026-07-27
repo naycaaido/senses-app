@@ -1,21 +1,22 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import ProfileAvatar from "../components/ProfileAvatar.jsx";
+import { updateAuthUser } from "../../../shared/utils/authStorage.js";
+import { getPatientProfile, updatePatientProfile } from "../../../shared/services/profileApi.js";
 
 const initialPatientProfile = {
-  registrationNumber: "REG-2406-001",
-  name: "Annisa Rahmawati",
-  email: "annisa.rahma@gmail.com",
-  phone: "0812-3344-5566",
-  gender: "Perempuan",
-  birthPlace: "Bandung",
-  birthDate: "1995-03-14",
-  lastEducation: "D4/S1",
-  occupation: "Guru",
-  maritalStatus: "Menikah",
-  religion: "Islam",
-  address: "Jl. Cihampelas No. 121, Coblong",
-  city: "Bandung",
+  name: "",
+  email: "",
+  phone: "",
+  gender: "",
+  birthPlace: "",
+  birthDate: "",
+  lastEducation: "",
+  occupation: "",
+  maritalStatus: "",
+  religion: "",
+  address: "",
+  city: "",
 };
 
 const GENDER_OPTIONS = ["Perempuan", "Laki-laki"];
@@ -43,7 +44,7 @@ const RELIGION_OPTIONS = [
 ];
 
 function getInitials(name) {
-  return name
+  return (name || "?")
     .split(" ")
     .map((word) => word[0])
     .join("")
@@ -51,17 +52,93 @@ function getInitials(name) {
     .toUpperCase();
 }
 
+function toForm(user) {
+  return {
+    name: user.nama_lengkap || "",
+    email: user.email || "",
+    phone: user.telepon || "",
+    gender: user.jenis_kelamin || "",
+    birthPlace: user.tempat_lahir || "",
+    birthDate: user.tanggal_lahir ? user.tanggal_lahir.slice(0, 10) : "",
+    lastEducation: user.pendidikan_terakhir || "",
+    occupation: user.pekerjaan || "",
+    maritalStatus: user.status_perkawinan || "",
+    religion: user.agama || "",
+    address: user.alamat_domisili || "",
+    city: user.kota || "",
+  };
+}
+
+function toProfilePayload(form) {
+  return {
+    telepon: form.phone,
+    jenis_kelamin: form.gender,
+    tempat_lahir: form.birthPlace,
+    tanggal_lahir: form.birthDate,
+    pendidikan_terakhir: form.lastEducation,
+    pekerjaan: form.occupation,
+    status_perkawinan: form.maritalStatus,
+    agama: form.religion,
+    alamat_domisili: form.address,
+    kota: form.city,
+  };
+}
+
 export default function PatientEditProfilePage() {
+  const navigate = useNavigate();
   const [form, setForm] = useState(initialPatientProfile);
-  const [showNote, setShowNote] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const update = (key) => (event) =>
     setForm((prev) => ({ ...prev, [key]: event.target.value }));
 
-  const handleSubmit = (event) => {
+  useEffect(() => {
+    let active = true;
+    getPatientProfile()
+      .then((user) => {
+        if (active) setForm(toForm(user));
+      })
+      .catch((requestError) => {
+        if (active) setError(requestError.message || "Profil belum dapat dimuat.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setShowNote(true);
+    setSaving(true);
+    setError("");
+    try {
+      const user = await updatePatientProfile(toProfilePayload(form));
+      updateAuthUser(user);
+      navigate("/pasien/profil");
+    } catch (requestError) {
+      setError(requestError.message || "Profil belum dapat disimpan.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return <p className="mx-auto max-w-3xl px-4 py-12 text-center text-[#6b6b6b]" role="status">Memuat profil...</p>;
+  }
+
+  if (error && !form.email) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-12 text-center">
+        <p className="text-[#8a3324]" role="alert">{error}</p>
+        <Link to="/pasien/profil" className="inline-flex rounded-full bg-[#3d4940] px-5 py-2.5 text-sm font-medium text-[#fbf8f3] hover:bg-[#0c3320]">Kembali ke profil</Link>
+      </div>
+    );
+  }
 
   return (
     <div className={"mx-auto max-w-3xl px-4 pb-8 pt-4 md:px-6 md:pb-12 md:pt-6"}>
@@ -86,9 +163,7 @@ export default function PatientEditProfilePage() {
         <ProfileAvatar initials={getInitials(form.name)} size={56} />
         <div className={"min-w-0"}>
           <p className={"m-0 font-serif text-lg font-bold leading-6 text-[#3d4940]"}>{form.name}</p>
-          <p className={"mt-1 text-[13px] leading-4 tracking-[0.06em] text-[#6b6b6b]"}>
-            No. Registrasi: {form.registrationNumber}
-          </p>
+          <p className={"mt-1 text-[13px] leading-4 tracking-[0.06em] text-[#6b6b6b]"}>Profil Pasien</p>
         </div>
       </div>
 
@@ -105,7 +180,7 @@ export default function PatientEditProfilePage() {
                 type='email'
                 required
                 value={form.email}
-                onChange={update("email")}
+                disabled
               />
             </div>
             <div className={"flex min-w-0 flex-col [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940] [&_textarea]:min-h-24 [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-xl [&_textarea]:border [&_textarea]:border-[#f0ede7] [&_textarea]:bg-white [&_textarea]:px-[15px] [&_textarea]:py-[11px] [&_textarea]:text-[15px] [&_textarea]:leading-6 [&_textarea]:text-[#2c2c2c] [&_textarea]:outline-none [&_textarea:focus]:border-[#3d4940]"}>
@@ -272,18 +347,13 @@ export default function PatientEditProfilePage() {
           <Link to='/pasien/profil' className={"inline-flex w-full items-center justify-center rounded-full border border-[#3d4940] px-7 py-3 text-[15px] font-semibold leading-6 text-[#3d4940] hover:bg-[#3d4940]/5 md:w-auto"}>
             Batal
           </Link>
-          <button type='submit' className={"inline-flex w-full items-center justify-center rounded-full border border-[#3d4940] bg-[#3d4940] px-7 py-3 text-[15px] font-semibold leading-6 text-[#fbf8f3] shadow-[0_1px_2px_rgba(44,44,44,0.04),0_8px_24px_rgba(61,73,64,0.18)] hover:bg-[#0c3320] md:w-auto"}>
-            Simpan Perubahan
+          <button type='submit' disabled={saving} className={"inline-flex w-full items-center justify-center rounded-full border border-[#3d4940] bg-[#3d4940] px-7 py-3 text-[15px] font-semibold leading-6 text-[#fbf8f3] shadow-[0_1px_2px_rgba(44,44,44,0.04),0_8px_24px_rgba(61,73,64,0.18)] hover:bg-[#0c3320] disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"}>
+            {saving ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
       </form>
 
-      {showNote && (
-        <p className={"mt-4 rounded-2xl border border-[#f5edd6] bg-[#f5edd6] p-4 text-sm leading-[22px] text-[#2c2c2c]"} role='status'>
-          Ini adalah halaman demo. Perubahan tidak disimpan ke server (mock
-          data).
-        </p>
-      )}
+      {error && <p className={"mt-4 rounded-2xl border border-[#e5c7c1] bg-[#fff5f2] p-4 text-sm leading-[22px] text-[#8a3324]"} role='alert'>{error}</p>}
     </div>
   );
 }

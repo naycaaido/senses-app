@@ -1,0 +1,15 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Button, Card, Field, Input, Textarea } from "../components/ui.jsx";
+import { createReceptionistService, getReceptionistServices, updateReceptionistService } from "../../../shared/services/receptionistApi.js";
+
+const empty = { name: "", price: "", duration: "30", description: "" };
+
+export default function ReceptionistServiceFormApiPage() {
+  const { id } = useParams(); const navigate = useNavigate(); const [form, setForm] = useState(empty); const [existing, setExisting] = useState(null); const [loading, setLoading] = useState(Boolean(id)); const [saving, setSaving] = useState(false); const [error, setError] = useState("");
+  useEffect(() => { if (!id) return; (async () => { try { const item = (await getReceptionistServices({ limit: 100 })).data.find((service) => String(service.id) === id); if (!item) throw new Error("Layanan tidak ditemukan."); setExisting(item); setForm({ name: item.name, price: String(item.price), duration: String(item.duration), description: item.description }); } catch (requestError) { setError(requestError.message); } finally { setLoading(false); } })(); }, [id]);
+  const set = (key) => (event) => setForm((current) => ({ ...current, [key]: event.target.value }));
+  const submit = async (event) => { event.preventDefault(); setSaving(true); setError(""); const payload = { nama_layanan: form.name, harga: Number(form.price), estimasi_durasi: Number(form.duration), deskripsi_layanan: form.description }; try { if (existing) await updateReceptionistService(existing.id, payload); else await createReceptionistService(payload); navigate("/resepsionis/layanan"); } catch (requestError) { setError(requestError.message || "Layanan tidak dapat disimpan."); } finally { setSaving(false); } };
+  if (loading) return <p className="py-10 text-center text-sm">Memuat layanan…</p>;
+  return <form onSubmit={submit} className="mx-auto flex max-w-3xl flex-col gap-5"><div><h1 className="text-[28px] font-bold">{id ? "Edit Layanan" : "Tambah Layanan"}</h1></div><Card pad="lg"><div className="grid gap-4 sm:grid-cols-2"><Field label="Nama layanan" required className="sm:col-span-2"><Input value={form.name} onChange={set("name")} /></Field><Field label="Harga" required><Input type="number" min="0" value={form.price} onChange={set("price")} /></Field><Field label="Durasi (menit)" required><Input type="number" min="30" step="30" value={form.duration} onChange={set("duration")} /></Field><Field label="Deskripsi" className="sm:col-span-2"><Textarea rows={4} value={form.description} onChange={set("description")} /></Field></div>{error && <p className="mt-4 rounded-lg bg-[#fdf1f1] p-3 text-sm text-[#a03d4a]">{error}</p>}</Card><div className="flex justify-end gap-3"><Button type="button" variant="outline" onClick={() => navigate("/resepsionis/layanan")}>Batal</Button><Button type="submit" disabled={saving || !form.name || !form.price || !form.duration || !form.description}>{saving ? "Menyimpan…" : "Simpan"}</Button></div></form>;
+}
