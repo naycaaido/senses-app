@@ -13,26 +13,13 @@ export default function ReservationSummary({
       </div>
 
       <div className='bg-white p-5'>
-        <div className='flex items-start gap-3'>
-          <div className='mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-white'>
-            <img src='/assets/icon-reservation-doctor.svg' alt='' />
-          </div>
-          <div>
-            <p className='mb-0.5 text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]'>
-              Dokter
-            </p>
-            <p className='m-0 text-[15px] font-semibold leading-6 text-[#2c2c2c]'>
-              {doctor.name}
-            </p>
-            <p className='m-0 text-xs leading-4 tracking-[0.06em] text-[#6b6b6b]'>
-              {doctor.specialization}
-            </p>
-          </div>
-        </div>
-
         <div className='mt-4 flex items-start gap-3'>
           <div className='mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-white'>
-            <img src='/assets/icon-reservation-check.svg' alt='' />
+            <img
+              className='w-7 h-7'
+              src='/assets/icon-reservation-check.svg'
+              alt=''
+            />
           </div>
           <div>
             <p className='mb-0.5 text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]'>
@@ -46,7 +33,7 @@ export default function ReservationSummary({
 
         <div className='mt-4 flex items-start gap-3'>
           <div className='mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-white'>
-            <img src='/assets/icon-clock.svg' alt='' />
+            <img className='w-7 h-7' src='/assets/icon-estimation.svg' alt='' />
           </div>
           <div>
             <p className='mb-0.5 text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]'>
@@ -60,7 +47,11 @@ export default function ReservationSummary({
 
         <div className='mt-4 flex items-start gap-3'>
           <div className='mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-white'>
-            <img src='/assets/icon-reservation-calendar.svg' alt='' />
+            <img
+              className='w-7 h-7'
+              src='/assets/icon-reservation-calendar.svg'
+              alt=''
+            />
           </div>
           <div>
             <p className='mb-0.5 text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]'>
@@ -76,7 +67,7 @@ export default function ReservationSummary({
 
         <div className='mt-4 flex items-start gap-3'>
           <div className='mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-white'>
-            <img src='/assets/icon-clock.svg' alt='' />
+            <img className='w-7 h-7' src='/assets/icon-clock.svg' alt='' />
           </div>
           <div>
             <p className='mb-0.5 text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]'>

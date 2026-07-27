@@ -1,6 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { IconChevronLeft, IconChevronRight } from "../components/Icons.jsx";
-import { TIME_SLOTS, useStore } from "../data/store.jsx";
+import { Button, Modal } from "../components/ui.jsx";
+import {
+  getReceptionistSchedules,
+  setAllReceptionistScheduleStatus,
+  setReceptionistScheduleStatus,
+} from "../../../shared/services/receptionistApi.js";
 import { cx } from "../utils/cx.js";
 
 const WEEKDAYS = ["MIN", "SEN", "SEL", "RAB", "KAM", "JUM", "SAB"];
@@ -19,11 +24,11 @@ const MONTHS_ID = [
   "Desember",
 ];
 
-function endOf(slot) {
-  const [h, m] = slot.split(".").map(Number);
-  const total = h * 60 + m + 30;
-  return `${String(Math.floor(total / 60)).padStart(2, "0")}.${String(total % 60).padStart(2, "0")}`;
-}
+const formatDate = (date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+const dateFromString = (value) => new Date(`${value}T00:00:00`);
+const time = (value) => value?.replace(":", ".") || "—";
 
 function Toggle({ checked, disabled, onChange, label }) {
   return (
@@ -50,11 +55,32 @@ function Toggle({ checked, disabled, onChange, label }) {
 }
 
 export default function JadwalOperasional() {
-  const { schedule, toggleSlot, setAllSlots, resetSchedule, reservations } =
-    useStore();
-  const [cursor, setCursor] = useState(new Date(2026, 6, 1));
-  const [selectedDate, setSelectedDate] = useState(new Date(2026, 6, 7));
-  const [saved, setSaved] = useState(false);
+  const initialDate = formatDate(new Date());
+  const [cursor, setCursor] = useState(() => dateFromString(initialDate));
+  const [selectedDate, setSelectedDate] = useState(initialDate);
+  const [slots, setSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState("");
+  const [batchStatus, setBatchStatus] = useState(null);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  const load = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      setSlots(await getReceptionistSchedules(selectedDate));
+    } catch (requestError) {
+      setSlots([]);
+      setError(requestError.message || "Jadwal tidak dapat dimuat.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, [selectedDate]);
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
@@ -71,26 +97,62 @@ export default function JadwalOperasional() {
     return result;
   }, [firstWeekday, daysInPrev, daysInMonth]);
 
-  const bookingDates = useMemo(() => {
-    const dates = new Set();
-    reservations
-      .filter((r) => r.status !== "Dibatalkan")
-      .forEach((r) => {
-        const d = new Date(r.date + "T00:00:00");
-        if (d.getFullYear() === year && d.getMonth() === month)
-          dates.add(r.date);
-      });
-    return dates;
-  }, [reservations, year, month]);
+  const summary = useMemo(
+    () => ({
+      active: slots.filter(
+        (slot) => slot.status_jadwal === "Aktif" && !slot.no_reservasi,
+      ).length,
+      inactive: slots.filter((slot) => slot.status_jadwal === "Nonaktif")
+        .length,
+      booked: slots.filter((slot) => slot.no_reservasi).length,
+    }),
+    [slots],
+  );
 
-  const activeCount = TIME_SLOTS.filter((s) => schedule[s].active).length;
-  const inactiveCount = TIME_SLOTS.filter((s) => !schedule[s].active).length;
-  const bookedCount = TIME_SLOTS.filter((s) => schedule[s].booked).length;
-
-  const flash = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const toggleSlot = async (slot) => {
+    if (slot.no_reservasi) return;
+    const nextStatus = slot.status_jadwal === "Aktif" ? "Nonaktif" : "Aktif";
+    setBusy(String(slot.id_jadwal));
+    setError("");
+    try {
+      const updated = await setReceptionistScheduleStatus(
+        slot.id_jadwal,
+        nextStatus,
+      );
+      setSlots((current) =>
+        current.map((item) =>
+          item.id_jadwal === updated.id_jadwal ? updated : item,
+        ),
+      );
+      // setNotice("Status slot berhasil diperbarui.");
+    } catch (requestError) {
+      // setError(requestError.message || "Status slot tidak dapat diubah.");
+    } finally {
+      setBusy("");
+    }
   };
+
+  const confirmBatch = async () => {
+    setBusy("batch");
+    setError("");
+    try {
+      const result = await setAllReceptionistScheduleStatus({
+        tanggal: selectedDate,
+        status: batchStatus,
+      });
+      setSlots(result.data);
+      // setNotice(
+      //   `${result.updated_count} slot diperbarui${result.skipped_booked_count ? `; ${result.skipped_booked_count} slot terpesan tetap terkunci.` : "."}`,
+      // );
+      setBatchStatus(null);
+    } catch (requestError) {
+      // setError(requestError.message || "Status jadwal tidak dapat diubah.");
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const selectedDateObject = dateFromString(selectedDate);
 
   return (
     <div className='flex flex-col gap-[22px]'>
@@ -148,12 +210,7 @@ export default function JadwalOperasional() {
               const dateStr = cell.muted
                 ? ""
                 : `${year}-${String(month + 1).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
-              const hasBooking = dateStr && bookingDates.has(dateStr);
-              const isSelected =
-                !cell.muted &&
-                selectedDate.getDate() === cell.day &&
-                selectedDate.getMonth() === month &&
-                selectedDate.getFullYear() === year;
+              const isSelected = !cell.muted && selectedDate === dateStr;
 
               return (
                 <div
@@ -162,9 +219,10 @@ export default function JadwalOperasional() {
                 >
                   <button
                     disabled={cell.muted}
-                    onClick={() =>
-                      setSelectedDate(new Date(year, month, cell.day))
-                    }
+                    onClick={() => {
+                      setNotice("");
+                      setSelectedDate(dateStr);
+                    }}
                     className={cx(
                       "flex size-10 items-center justify-center text-[14px] transition-colors",
                       cell.muted
@@ -176,9 +234,6 @@ export default function JadwalOperasional() {
                   >
                     {cell.day}
                   </button>
-                  {hasBooking && !isSelected && !cell.muted && (
-                    <span className='absolute bottom-[4px] left-1/2 size-[4px] -translate-x-1/2 rounded-full bg-[#f59e0b]' />
-                  )}
                 </div>
               );
             })}
@@ -193,16 +248,18 @@ export default function JadwalOperasional() {
                 Total Slot
               </p>
               <p className='font-serif text-[30px] text-[#3d4940]'>
-                {TIME_SLOTS.length}
+                {slots.length}
               </p>
-              <p className='text-[14px] text-[#747873]'>09.00 sampai 17.00</p>
+              <p className='text-[14px] text-[#747873]'>
+                Pada tanggal terpilih
+              </p>
             </div>
             <div className='flex w-[calc(50%-7px)] flex-col gap-[5px] rounded-[16px] border border-[#ece7df] bg-[rgba(255,255,255,0.75)] p-5'>
               <p className='text-[11px] font-bold uppercase tracking-[1px] text-[#747873]'>
                 Slot Aktif
               </p>
               <p className='font-serif text-[30px] text-[#3d4940]'>
-                {activeCount}
+                {summary.active}
               </p>
               <p className='text-[14px] text-[#747873]'>Dapat dipilih pasien</p>
             </div>
@@ -211,7 +268,7 @@ export default function JadwalOperasional() {
                 Slot Nonaktif
               </p>
               <p className='font-serif text-[30px] text-[#3d4940]'>
-                {inactiveCount}
+                {summary.inactive}
               </p>
               <p className='text-[14px] text-[#747873]'>
                 Jadwal tidak tersedia
@@ -222,7 +279,7 @@ export default function JadwalOperasional() {
                 Sudah Dipesan
               </p>
               <p className='font-serif text-[30px] text-[#3d4940]'>
-                {bookedCount}
+                {summary.booked}
               </p>
               <p className='text-[14px] text-[#747873]'>Tidak dapat diubah</p>
             </div>
@@ -230,14 +287,16 @@ export default function JadwalOperasional() {
 
           <div className='flex gap-[10px] rounded-[10px] p-[10px]'>
             <button
-              onClick={() => setAllSlots(false)}
-              className='flex h-11 flex-1 items-center justify-center rounded-[10px] border border-[#ece7df] bg-white px-[18px] text-[13px] font-bold text-[#3d4940] transition-colors hover:bg-[#f5f5f3]'
+              disabled={!slots.length || busy === "batch"}
+              onClick={() => setBatchStatus("Nonaktif")}
+              className='flex h-11 flex-1 items-center justify-center rounded-[10px] border border-[#ece7df] bg-white px-[18px] text-[13px] font-bold text-[#3d4940] transition-colors hover:bg-[#f5f5f3] disabled:cursor-not-allowed disabled:opacity-50'
             >
               Nonaktifkan Semua
             </button>
             <button
-              onClick={() => setAllSlots(true)}
-              className='flex h-11 flex-1 items-center justify-center rounded-[10px] border border-[#ece7df] bg-[#e9eee9] px-[18px] text-[13px] font-bold text-[#3d4940] transition-colors hover:brightness-95'
+              disabled={!slots.length || busy === "batch"}
+              onClick={() => setBatchStatus("Aktif")}
+              className='flex h-11 flex-1 items-center justify-center rounded-[10px] border border-[#ece7df] bg-[#e9eee9] px-[18px] text-[13px] font-bold text-[#3d4940] transition-colors hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50'
             >
               Aktifkan Semua
             </button>
@@ -250,7 +309,7 @@ export default function JadwalOperasional() {
         <div className='flex flex-wrap items-start justify-between gap-3 border-b border-[#ece7df] pb-[22px]'>
           <div>
             <p className='font-serif text-[24px] font-medium text-[#3d4940]'>
-              {selectedDate.toLocaleDateString("id-ID", {
+              {selectedDateObject.toLocaleDateString("id-ID", {
                 weekday: "long",
                 day: "numeric",
                 month: "long",
@@ -277,78 +336,118 @@ export default function JadwalOperasional() {
           </div>
         </div>
 
-        <div className='flex flex-wrap gap-3 py-6'>
-          {TIME_SLOTS.map((slot) => {
-            const { active, booked } = schedule[slot];
-            return (
-              <div
-                key={slot}
-                className={cx(
-                  "flex w-[250px] min-h-[86px] items-center justify-between rounded-[14px] border p-[17px]",
-                  booked
-                    ? "border-[#eadcb6] bg-[#f6eedb]"
-                    : active
-                      ? "border-[#cdd9cf] bg-[#fbfdfb]"
-                      : "border-[#ece7df] bg-[#f5f3ef]",
-                )}
-              >
-                <div className='flex flex-col gap-[5px]'>
-                  <p
-                    className={cx(
-                      "font-serif text-[22px]",
-                      active || booked ? "text-[#3d4940]" : "text-[#a3a3a3]",
-                    )}
-                  >
-                    {slot}
-                  </p>
-                  <p className='text-[11px] text-[#747873]'>
-                    {slot} – {endOf(slot)}
-                  </p>
+        {error && (
+          <p className='mt-5 rounded-[12px] bg-[#fdf1f1] px-4 py-3 text-[13px] text-[#a03d4a]'>
+            {error}
+          </p>
+        )}
+        {notice && (
+          <p className='mt-5 rounded-[12px] bg-[#ebf0eb] px-4 py-3 text-[13px] text-[#3d4940]'>
+            {notice}
+          </p>
+        )}
+
+        {loading ? (
+          <p className='py-10 text-center text-[14px] text-[#747873]'>
+            Memuat jadwal…
+          </p>
+        ) : slots.length === 0 ? (
+          <p className='py-10 text-center text-[14px] text-[#747873]'>
+            Belum ada slot jadwal untuk tanggal ini.
+          </p>
+        ) : (
+          <div className='flex flex-wrap gap-3 py-6'>
+            {slots.map((slot) => {
+              const active = slot.status_jadwal === "Aktif";
+              const booked = Boolean(slot.no_reservasi);
+              return (
+                <div
+                  key={slot.id_jadwal}
+                  className={cx(
+                    "flex w-full min-h-[86px] items-center justify-between rounded-[14px] border p-[17px] sm:w-[250px]",
+                    booked
+                      ? "border-[#eadcb6] bg-[#f6eedb]"
+                      : active
+                        ? "border-[#cdd9cf] bg-[#fbfdfb]"
+                        : "border-[#ece7df] bg-[#f5f3ef]",
+                  )}
+                >
+                  <div className='flex flex-col gap-[5px]'>
+                    <p
+                      className={cx(
+                        "font-serif text-[22px]",
+                        active || booked ? "text-[#3d4940]" : "text-[#a3a3a3]",
+                      )}
+                    >
+                      {time(slot.jam_mulai)}
+                    </p>
+                    <p className='text-[11px] text-[#747873]'>
+                      {time(slot.jam_mulai)} – {time(slot.jam_selesai)}
+                    </p>
+                  </div>
+                  {booked ? (
+                    <span className='flex min-h-[28px] items-center justify-center rounded-full bg-[#ead9ae] px-[10px] text-[10px] font-bold tracking-[0.2px] text-[#765d21]'>
+                      DIPESAN
+                    </span>
+                  ) : (
+                    <Toggle
+                      checked={active}
+                      disabled={busy === String(slot.id_jadwal)}
+                      label={`Slot ${time(slot.jam_mulai)}`}
+                      onChange={() => toggleSlot(slot)}
+                    />
+                  )}
                 </div>
-                {booked ? (
-                  <span className='flex min-h-[28px] items-center justify-center rounded-full bg-[#ead9ae] px-[10px] text-[10px] font-bold tracking-[0.2px] text-[#765d21]'>
-                    DIPESAN
-                  </span>
-                ) : (
-                  <Toggle
-                    checked={active}
-                    label={`Slot ${slot}`}
-                    onChange={() => toggleSlot(slot)}
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         <div className='rounded-[12px] bg-[#f6eedb] px-4 py-[15px] text-[12px] leading-[1.6] text-[#6c5a2e]'>
           <span className='font-bold'>Catatan:</span> Slot yang sudah dipesan
-          tidak dapat dinonaktifkan. Batalkan atau jadwalkan ulang reservasi
-          terkait terlebih dahulu.
+          tidak dapat dinonaktifkan. Perubahan slot lain disimpan otomatis.
         </div>
 
         <div className='h-[22px]' />
 
         <div className='flex items-center justify-end gap-[10px] border-t border-[#ece7df] pt-5'>
-          {saved && (
-            <span className='text-[13px] font-medium text-emerald-600'>
-              Jadwal disimpan.
-            </span>
-          )}
           <button
-            onClick={resetSchedule}
-            className='flex h-11 items-center justify-center rounded-[999px] border border-[#ece7df] bg-white px-[18px] text-[13px] font-bold text-[#3d4940] transition-colors hover:bg-[#f5f5f3]'
+            onClick={load}
+            disabled={loading || Boolean(busy)}
+            className='flex h-11 items-center justify-center rounded-[999px] border border-[#ece7df] bg-white px-[18px] text-[13px] font-bold text-[#3d4940] transition-colors hover:bg-[#f5f5f3] disabled:cursor-not-allowed disabled:opacity-50'
           >
-            Batalkan Perubahan
-          </button>
-          <button
-            onClick={flash}
-            className='flex h-11 items-center justify-center rounded-[999px] bg-[#3d4940] px-[18px] text-[13px] font-bold text-white transition-colors hover:bg-[#333d35]'
-          >
-            Simpan Jadwal
+            Muat Ulang
           </button>
         </div>
       </div>
+
+      {batchStatus && (
+        <Modal
+          icon={<span className='text-xl font-bold'>!</span>}
+          iconTone={batchStatus === "Nonaktif" ? "red" : "brand"}
+          title={`${batchStatus === "Nonaktif" ? "Nonaktifkan" : "Aktifkan"} Semua Slot`}
+          subtitle={`Tindakan ini mengubah seluruh slot yang belum dipesan pada ${selectedDate}.`}
+          onClose={() => setBatchStatus(null)}
+          footer={
+            <>
+              <Button variant='outline' onClick={() => setBatchStatus(null)}>
+                Batal
+              </Button>
+              <Button
+                variant={batchStatus === "Nonaktif" ? "danger" : "primary"}
+                disabled={busy === "batch"}
+                onClick={confirmBatch}
+              >
+                Konfirmasi
+              </Button>
+            </>
+          }
+        >
+          <p className='text-sm text-[#434655]'>
+            Slot yang sudah dipesan tetap terkunci agar reservasi pasien aman.
+          </p>
+        </Modal>
+      )}
     </div>
   );
 }
