@@ -34,7 +34,6 @@ senses-app/
 │   │   ├── migrations/
 │   │   └── seed.js             # Data dummy pengembangan
 │   └── src/
-├── docs/integration/           # Status dan keputusan integrasi
 └── package.json                # Menjalankan frontend + backend bersama
 ```
 
