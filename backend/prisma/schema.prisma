@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Resepsionis {
+  id_resepsionis Int    @id @default(autoincrement())
+  nama_lengkap   String @db.VarChar(100)
+  telepon        String @db.VarChar(20)
+  password       String @db.VarChar(255)
+
+  reservasi Reservasi[]
+
+  @@map("resepsionis")
+}
+
+model Pasien {
+  email               String    @id @db.VarChar(100)
+  password            String    @db.VarChar(255)
+  nama_lengkap        String    @db.VarChar(100)
+  telepon             String?   @db.VarChar(20)
+  jenis_kelamin       String?   @db.VarChar(15)
+  tempat_lahir        String?   @db.VarChar(50)
+  tanggal_lahir       DateTime? @db.Date
+  pendidikan_terakhir String?   @db.VarChar(50)
+  pekerjaan           String?   @db.VarChar(50)
+  status_perkawinan   String?   @db.VarChar(20)
+  agama               String?   @db.VarChar(20)
+  alamat_domisili     String?   @db.VarChar(255)
+  kota                String?   @db.VarChar(50)
+  profil_lengkap      Boolean   @default(false)
+
+  reservasi Reservasi[]
+
+  @@map("pasien")
+}
+
+model Layanan {
+  id_layanan        Int      @id @default(autoincrement())
+  nama_layanan      String   @db.VarChar(100)
+  estimasi_durasi   Int
+  deskripsi_layanan String   @db.VarChar(255)
+  harga             Decimal  @default(0) @db.Decimal(10, 2)
+  status_layanan    String   @default("Aktif") @db.VarChar(20)
+
+  reservasi Reservasi[]
+
+  @@map("layanan")
+}
+
+model Reservasi {
+  no_reservasi      String    @id @default(dbgenerated("'RSV-' || LPAD(nextval('reservasi_no_seq')::text, 6, '0')")) @db.VarChar(11)
+  email_pasien      String    @db.VarChar(100)
+  id_layanan        Int
+  id_resepsionis    Int?
+  tanggal_reservasi DateTime  @default(now()) @db.Date
+  status_reservasi  String    @default("Terjadwal") @db.VarChar(20)
+  keluhan_awal      String?   @db.VarChar(255)
+  alasan_pembatalan String?   @db.VarChar(255)
+  harga_layanan     Decimal   @db.Decimal(10, 2)
+
+  pasien      Pasien       @relation(fields: [email_pasien], references: [email], onDelete: Restrict, onUpdate: Cascade)
+  layanan     Layanan      @relation(fields: [id_layanan], references: [id_layanan], onDelete: Restrict, onUpdate: Cascade)
+  resepsionis Resepsionis? @relation(fields: [id_resepsionis], references: [id_resepsionis], onDelete: SetNull, onUpdate: Cascade)
+  jadwal      Jadwal[]
+  pembayaran  Pembayaran?
+
+  @@index([email_pasien])
+  @@index([id_layanan])
+  @@index([id_resepsionis])
+  @@index([status_reservasi])
+  @@map("reservasi")
+}
+
+model Jadwal {
+  id_jadwal     Int        @id @default(autoincrement())
+  no_reservasi  String?    @db.VarChar(11)
+  tanggal       DateTime   @db.Date
+  jam_mulai     DateTime   @db.Time(0)
+  jam_selesai   DateTime   @db.Time(0)
+  status_jadwal String     @default("Aktif") @db.VarChar(20)
+
+  reservasi Reservasi? @relation(fields: [no_reservasi], references: [no_reservasi], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([tanggal, jam_mulai])
+  @@index([no_reservasi])
+  @@index([tanggal, status_jadwal])
+  @@map("jadwal")
+}
+
+model Pembayaran {
+  id_pembayaran      String    @id @default(dbgenerated("'PAY-' || LPAD(nextval('pembayaran_id_seq')::text, 6, '0')")) @db.VarChar(11)
+  no_reservasi       String    @unique @db.VarChar(11)
+  tanggal_bayar      DateTime  @default(now()) @db.Timestamp(6)
+  total_biaya        Decimal   @db.Decimal(10, 2)
+  metode_pembayaran  String    @db.VarChar(20)
+
+  reservasi Reservasi @relation(fields: [no_reservasi], references: [no_reservasi], onDelete: Restrict, onUpdate: Cascade)
+
+  @@map("pembayaran")
+}

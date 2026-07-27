@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-clinic-dark: #082518;
+  --color-clinic-text: #6f6257;
+  --color-clinic-muted: #9a8b7c;
+  --color-clinic-gold: #a8945e;
+  --color-clinic-green: #3f7d58;
+  --color-clinic-border: #d8c7b5;
+  --color-clinic-cream: #fbf8f3;
+  --font-serif: Georgia, "Liberation Serif", "Times New Roman", serif;
+  --font-sans: "Inter", system-ui, Arial, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-clinic-cream font-sans text-clinic-text antialiased;
+  }
+}
