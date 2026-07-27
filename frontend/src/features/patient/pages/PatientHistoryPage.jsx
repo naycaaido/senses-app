@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import HistorySearch from "../components/HistorySearch.jsx";
 import HistoryFilter from "../components/HistoryFilter.jsx";
 import HistoryCard from "../components/HistoryCard.jsx";
-import { getMyReservations } from "../../../shared/services/reservasiApi.js";
+import {
+  cancelPatientReservation,
+  getMyReservations,
+} from "../../../shared/services/reservasiApi.js";
 
 const dateFormatter = new Intl.DateTimeFormat("id-ID", {
   day: "numeric",
@@ -36,6 +39,10 @@ export default function PatientHistoryPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [cancellationTarget, setCancellationTarget] = useState(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelError, setCancelError] = useState("");
+  const [cancelling, setCancelling] = useState(false);
 
   const loadVisits = async () => {
     setLoading(true);
@@ -53,6 +60,38 @@ export default function PatientHistoryPage() {
   useEffect(() => {
     loadVisits();
   }, []);
+
+  const closeCancelDialog = () => {
+    if (cancelling) return;
+    setCancellationTarget(null);
+    setCancelReason("");
+    setCancelError("");
+  };
+
+  const handleCancellation = async () => {
+    if (!cancellationTarget) return;
+
+    setCancelling(true);
+    setCancelError("");
+    try {
+      const reservasi = await cancelPatientReservation(
+        cancellationTarget.reservationId,
+        cancelReason.trim() ? { alasan_pembatalan: cancelReason.trim() } : {},
+      );
+      const updatedVisit = toVisit(reservasi);
+      setVisits((current) => current.map((visit) =>
+        visit.reservationId === updatedVisit.reservationId ? updatedVisit : visit,
+      ));
+      setCancellationTarget(null);
+      setCancelReason("");
+    } catch (requestError) {
+      setCancelError(
+        requestError.message || "Reservasi belum dapat dibatalkan. Silakan coba lagi.",
+      );
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   const filteredVisits = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -88,12 +127,66 @@ export default function PatientHistoryPage() {
       {!loading && !error && (filteredVisits.length > 0 ? (
         <div className="flex flex-col gap-6">
           {filteredVisits.map((visit) => (
-            <HistoryCard key={visit.reservationId} visit={visit} />
+            <HistoryCard
+              key={visit.reservationId}
+              visit={visit}
+              onCancel={setCancellationTarget}
+            />
           ))}
         </div>
       ) : (
         <p className="m-0 rounded-[18px] border border-[#f3f4f6] bg-white px-6 py-12 text-center text-[15px] leading-6 text-[#6b6b6b]">{EMPTY_MESSAGE}</p>
       ))}
+
+      {cancellationTarget && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#191c1e]/45 p-4 sm:items-center" role="presentation">
+          <div
+            className="w-full max-w-[480px] rounded-[22px] bg-white p-6 shadow-2xl sm:p-7"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cancel-reservation-title"
+          >
+            <p className="m-0 text-xs font-semibold uppercase tracking-[0.12em] text-[#a03d4a]">Konfirmasi pembatalan</p>
+            <h2 id="cancel-reservation-title" className="mt-2 font-serif text-[26px] font-bold leading-8 text-[#3d4940]">
+              Batalkan reservasi ini?
+            </h2>
+            <p className="mt-3 text-[15px] leading-6 text-[#4f514f]">
+              Reservasi {cancellationTarget.serviceName} pada {cancellationTarget.date} pukul {cancellationTarget.time} akan dibatalkan. Aksi ini tidak dapat dikembalikan dan slot jadwal akan tersedia untuk pasien lain.
+            </p>
+            <label htmlFor="cancel-reason" className="mt-5 block text-sm font-semibold text-[#2c2c2c]">
+              Alasan pembatalan <span className="font-normal text-[#6b6b6b]">(opsional)</span>
+            </label>
+            <textarea
+              id="cancel-reason"
+              value={cancelReason}
+              onChange={(event) => setCancelReason(event.target.value)}
+              maxLength={255}
+              rows={4}
+              placeholder="Contoh: Ada keperluan mendadak"
+              className="mt-2 w-full resize-none rounded-xl border border-[#dedbd5] px-3 py-2.5 text-sm text-[#2c2c2c] outline-none placeholder:text-[#9a9a9a] focus:border-[#3d4940]"
+            />
+            {cancelError && <p className="mt-3 text-sm text-[#a03d4a]" role="alert">{cancelError}</p>}
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={closeCancelDialog}
+                disabled={cancelling}
+                className="rounded-full border border-[#d7d5cf] px-5 py-2.5 text-sm font-semibold text-[#3d4940] hover:bg-[#f7f5f1] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Kembali
+              </button>
+              <button
+                type="button"
+                onClick={handleCancellation}
+                disabled={cancelling}
+                className="rounded-full bg-[#a03d4a] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#7d2432] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {cancelling ? "Membatalkan…" : "Ya, batalkan reservasi"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

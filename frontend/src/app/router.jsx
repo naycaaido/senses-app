@@ -8,7 +8,8 @@ import LoginPage from "../features/public/pages/LoginPage.jsx";
 import RegisterPage from "../features/public/pages/RegisterPage.jsx";
 import BiodataPage from "../features/public/pages/BiodataPage.jsx";
 import NotFoundPage from "./pages/NotFoundPage.jsx";
-import PatientDashboardPage from "../features/patient/pages/PatientDashboardPage.jsx";
+import PatientDashboardPage from "../features/patient/pages/PatientDashboardApiPage.jsx";
+import PatientNoActiveReservationPreviewPage from "../features/patient/pages/PatientNoActiveReservationPreviewPage.jsx";
 import PatientServicePage from "../features/patient/pages/PatientServicePage.jsx";
 import PatientReservationPage from "../features/patient/pages/PatientReservationPage.jsx";
 import PatientBookingProofPage from "../features/patient/pages/PatientBookingProofPage.jsx";
@@ -23,7 +24,8 @@ import ReceptionistReservationDetailPage from "../features/receptionist/pages/Re
 import ReceptionistPatientDataPage from "../features/receptionist/pages/ReceptionistPatientDataApiPage.jsx";
 import ReceptionistPatientRegistrationPage from "../features/receptionist/pages/ReceptionistPatientRegistrationApiPage.jsx";
 import ReceptionistPatientDetailPage from "../features/receptionist/pages/ReceptionistPatientDetailApiPage.jsx";
-import ReceptionistOperationalSchedulePage from "../features/receptionist/pages/ReceptionistOperationalScheduleApiPage.jsx";
+import ReceptionistOperationalSchedulePage from "../features/receptionist/pages/ReceptionistOperationalSchedulePage.jsx";
+import ReceptionistOperationalScheduleApiPage from "../features/receptionist/pages/ReceptionistOperationalScheduleApiPage.jsx";
 import ReceptionistServicePage from "../features/receptionist/pages/ReceptionistServiceApiPage.jsx";
 import ReceptionistServiceFormPage from "../features/receptionist/pages/ReceptionistServiceFormApiPage.jsx";
 import ReceptionistPaymentPage from "../features/receptionist/pages/ReceptionistPaymentApiPage.jsx";
@@ -39,6 +41,7 @@ export default function AppRouter() {
         </Route>
         <Route element={<ProtectedRoute allowedRoles={["pasien"]}><PatientLayout /></ProtectedRoute>}>
           <Route path='/pasien/beranda' element={<PatientDashboardPage />} />
+          <Route path='/pasien/beranda/tanpa-reservasi' element={<PatientNoActiveReservationPreviewPage />} />
           <Route path='/pasien/layanan' element={<PatientServicePage />} />
           <Route
             path='/pasien/reservasi'
@@ -92,6 +95,7 @@ export default function AppRouter() {
             path="jadwal"
             element={<ReceptionistOperationalSchedulePage />}
           />
+          <Route path="jadwal/api" element={<ReceptionistOperationalScheduleApiPage />} />
           <Route path="layanan" element={<ReceptionistServicePage />} />
           <Route
             path="layanan/baru"

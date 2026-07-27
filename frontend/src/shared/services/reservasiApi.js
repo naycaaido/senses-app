@@ -35,3 +35,15 @@ export async function getMyReservations(params = {}) {
     pagination: response?.pagination,
   };
 }
+
+
+export async function cancelPatientReservation(noReservasi, payload = {}) {
+  const response = await api.patch(
+    `/reservasi/${encodeURIComponent(noReservasi)}/batal`,
+    payload,
+  );
+  if (!response?.reservasi) {
+    throw new Error("Format reservasi dari server tidak valid.");
+  }
+  return response.reservasi;
+}

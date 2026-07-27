@@ -163,7 +163,7 @@ async function seedScheduleDay(tanggal) {
     SLOT_STARTS.map((jam_mulai) =>
       prisma.jadwal.upsert({
         where: { tanggal_jam_mulai: { tanggal, jam_mulai: timeAtUtc(jam_mulai) } },
-        update: { status_jadwal: "Aktif" },
+        update: {},
         create: {
           tanggal,
           jam_mulai: timeAtUtc(jam_mulai),
