@@ -131,10 +131,20 @@ const completeProfilePasien = async ({ email, ...rest }) => {
     throw error;
   }
 
+  const tanggalLahir = new Date(`${rest.tanggal_lahir}T00:00:00.000Z`);
+  if (Number.isNaN(tanggalLahir.getTime())) {
+    throw new BadRequestError("Tanggal lahir tidak valid");
+  }
+
   await prisma.pasien.update({
     where: { email },
     data: {
-      ...Object.fromEntries(PROFILE_FIELDS.map((field) => [field, rest[field]])),
+      ...Object.fromEntries(
+        PROFILE_FIELDS.map((field) => [
+          field,
+          field === "tanggal_lahir" ? tanggalLahir : rest[field],
+        ]),
+      ),
       profil_lengkap: true,
     },
   });
