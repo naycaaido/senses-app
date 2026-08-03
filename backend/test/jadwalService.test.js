@@ -3,6 +3,10 @@ import test from "node:test";
 import { StatusJadwal } from "@prisma/client";
 import prisma from "../src/config/prisma.js";
 import jadwalService from "../src/services/jadwalService.js";
+import {
+  buildScheduleCandidates,
+  scheduleHorizonDays,
+} from "../src/services/jadwalService.js";
 import { scheduleStartAtWib } from "../src/utils/clinicTime.js";
 
 const FIXED_NOW = new Date("2026-08-03T14:00:00+07:00").getTime();
@@ -105,4 +109,108 @@ test("batch schedule updates preserve booked slots", async () => {
   assert.equal(result.skipped_booked_count, 1);
   assert.equal(result.data[0].status_jadwal, StatusJadwal.Nonaktif);
   assert.equal(result.data[1].status_jadwal, StatusJadwal.Aktif);
+});
+
+const slotKey = (slot) => `${slot.tanggal.toISOString()}-${slot.jam_mulai.toISOString()}`;
+
+const useCreateManyRecorder = (existingSlots = []) => {
+  const keys = new Set(existingSlots.map(slotKey));
+  prisma.jadwal.createMany = async ({ data, skipDuplicates }) => {
+    assert.equal(skipDuplicates, true);
+    let count = 0;
+    for (const slot of data) {
+      const key = slotKey(slot);
+      if (!keys.has(key)) {
+        keys.add(key);
+        count += 1;
+      }
+    }
+    return { count };
+  };
+  return keys;
+};
+
+test("future schedule dates produce sixteen active 30-minute candidates", () => {
+  const candidates = buildScheduleCandidates({
+    startDate: "2026-08-05",
+    horizonDays: 1,
+    now: new Date("2026-08-04T14:00:00+07:00"),
+  });
+
+  assert.equal(candidates.length, 16);
+  assert.equal(candidates[0].jam_mulai.toISOString().slice(11, 16), "09:00");
+  assert.equal(candidates[0].jam_selesai.toISOString().slice(11, 16), "09:30");
+  assert.equal(candidates.at(-1).jam_mulai.toISOString().slice(11, 16), "16:30");
+  assert.equal(candidates.at(-1).jam_selesai.toISOString().slice(11, 16), "17:00");
+  assert.equal(candidates[0].status_jadwal, StatusJadwal.Aktif);
+  assert.equal(candidates[0].no_reservasi, null);
+});
+
+test("today only plans slots whose WIB start time is after now", async () => {
+  const now = new Date("2026-08-04T14:00:00+07:00");
+  let inserted = [];
+  prisma.jadwal.createMany = async ({ data }) => {
+    inserted = data;
+    return { count: data.length };
+  };
+
+  const summary = await jadwalService.ensureScheduleWindow({
+    startDate: "2026-08-04",
+    horizonDays: 1,
+    now,
+  });
+
+  assert.equal(summary.slot_direncanakan, 5);
+  assert.equal(summary.slot_dibuat, 5);
+  assert.equal(summary.slot_dilewati, 0);
+  assert.equal(inserted[0].jam_mulai.toISOString().slice(11, 16), "14:30");
+});
+
+test("generator is idempotent and never changes existing slots", async () => {
+  const existing = buildScheduleCandidates({
+    startDate: "2026-08-05",
+    horizonDays: 1,
+    now: new Date("2026-08-04T14:00:00+07:00"),
+  })[0];
+  existing.status_jadwal = StatusJadwal.Nonaktif;
+  existing.no_reservasi = "RSV-000001";
+  useCreateManyRecorder([existing]);
+
+  const options = {
+    startDate: "2026-08-05",
+    horizonDays: 1,
+    now: new Date("2026-08-04T14:00:00+07:00"),
+  };
+  const first = await jadwalService.ensureScheduleWindow(options);
+  const second = await jadwalService.ensureScheduleWindow(options);
+
+  assert.equal(first.slot_dibuat, 15);
+  assert.equal(first.slot_dilewati, 1);
+  assert.equal(second.slot_dibuat, 0);
+  assert.equal(second.slot_dilewati, 16);
+  assert.equal(existing.status_jadwal, StatusJadwal.Nonaktif);
+  assert.equal(existing.no_reservasi, "RSV-000001");
+});
+
+test("parallel generator executions rely on the unique constraint safely", async () => {
+  const keys = useCreateManyRecorder();
+  const options = {
+    startDate: "2026-08-05",
+    horizonDays: 1,
+    now: new Date("2026-08-04T14:00:00+07:00"),
+  };
+  const [first, second] = await Promise.all([
+    jadwalService.ensureScheduleWindow(options),
+    jadwalService.ensureScheduleWindow(options),
+  ]);
+
+  assert.equal(first.slot_dibuat + second.slot_dibuat, 16);
+  assert.equal(keys.size, 16);
+});
+
+test("horizon configuration defaults safely and accepts valid environment values", () => {
+  assert.equal(scheduleHorizonDays(undefined), 30);
+  assert.equal(scheduleHorizonDays("7"), 7);
+  assert.equal(scheduleHorizonDays("0"), 30);
+  assert.equal(scheduleHorizonDays("invalid"), 30);
 });

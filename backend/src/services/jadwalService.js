@@ -8,6 +8,10 @@ import { scheduleStartAtWib } from "../utils/clinicTime.js";
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 const SCHEDULE_STATUS = Object.values(StatusJadwal);
+const DEFAULT_SCHEDULE_HORIZON_DAYS = 30;
+const SLOT_DURATION_MINUTES = 30;
+const CLINIC_OPEN_MINUTES = 9 * 60;
+const CLINIC_CLOSE_MINUTES = 17 * 60;
 
 const JADWAL_SELECT = {
   id_jadwal: true,
@@ -88,6 +92,103 @@ const getJadwalTersedia = async (tanggal) => {
   return slots
     .filter((slot) => scheduleStartAtWib(slot.tanggal, slot.jam_mulai).getTime() > now)
     .map(serializeJadwal);
+};
+
+const formatWibDate = (value) => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(value);
+  const part = (type) => parts.find((item) => item.type === type)?.value;
+  return `${part("year")}-${part("month")}-${part("day")}`;
+};
+
+const addCalendarDays = (tanggal, days) => {
+  const date = parseTanggal(tanggal);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+};
+
+const scheduleHorizonDays = (value = process.env.SCHEDULE_HORIZON_DAYS) => {
+  if (value === undefined || value === "") return DEFAULT_SCHEDULE_HORIZON_DAYS;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) && parsed > 0
+    ? parsed
+    : DEFAULT_SCHEDULE_HORIZON_DAYS;
+};
+
+const timeFromMinutes = (minutes) => {
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  return `${String(hours).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
+};
+
+const scheduleSlotData = (tanggal, startMinutes) => {
+  const jam_mulai = timeFromMinutes(startMinutes);
+  const jam_selesai = timeFromMinutes(startMinutes + SLOT_DURATION_MINUTES);
+  return {
+    tanggal: parseTanggal(tanggal),
+    jam_mulai: dateForTime(jam_mulai),
+    jam_selesai: dateForTime(jam_selesai),
+    status_jadwal: StatusJadwal.Aktif,
+    no_reservasi: null,
+  };
+};
+
+const buildScheduleCandidates = ({ startDate, horizonDays, now = new Date() }) => {
+  const todayWib = formatWibDate(now);
+  const candidates = [];
+
+  for (let day = 0; day < horizonDays; day += 1) {
+    const tanggal = addCalendarDays(startDate, day);
+    for (
+      let startMinutes = CLINIC_OPEN_MINUTES;
+      startMinutes < CLINIC_CLOSE_MINUTES;
+      startMinutes += SLOT_DURATION_MINUTES
+    ) {
+      const data = scheduleSlotData(tanggal, startMinutes);
+      if (
+        tanggal === todayWib
+        && scheduleStartAtWib(data.tanggal, data.jam_mulai).getTime() <= now.getTime()
+      ) {
+        continue;
+      }
+      candidates.push(data);
+    }
+  }
+
+  return candidates;
+};
+
+const ensureScheduleWindow = async ({
+  startDate,
+  horizonDays = scheduleHorizonDays(),
+  now = new Date(),
+} = {}) => {
+  const tanggal_mulai = startDate
+    ? parseTanggal(startDate).toISOString().slice(0, 10)
+    : formatWibDate(now);
+  const jumlah_hari = scheduleHorizonDays(horizonDays);
+  const candidates = buildScheduleCandidates({
+    startDate: tanggal_mulai,
+    horizonDays: jumlah_hari,
+    now,
+  });
+  const result = candidates.length === 0
+    ? { count: 0 }
+    : await prisma.jadwal.createMany({ data: candidates, skipDuplicates: true });
+  const slot_dibuat = result.count;
+
+  return {
+    tanggal_mulai,
+    tanggal_selesai: addCalendarDays(tanggal_mulai, jumlah_hari - 1),
+    jumlah_hari,
+    slot_direncanakan: candidates.length,
+    slot_dibuat,
+    slot_dilewati: candidates.length - slot_dibuat,
+  };
 };
 
 const getJadwalByResepsionis = async (tanggal) => {
@@ -193,4 +294,12 @@ export default {
   createJadwal,
   setJadwalStatus,
   setAllJadwalStatusByDate,
+  ensureScheduleWindow,
+};
+
+export {
+  DEFAULT_SCHEDULE_HORIZON_DAYS,
+  buildScheduleCandidates,
+  ensureScheduleWindow,
+  scheduleHorizonDays,
 };

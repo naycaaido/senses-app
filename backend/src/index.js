@@ -8,6 +8,7 @@ import resepsionisRoute from "./routes/resepsionisRoute.js";
 import layananRoute from "./routes/layananRoute.js";
 import jadwalRoute from "./routes/jadwalRoute.js";
 import reservasiRoute from "./routes/reservasiRoute.js";
+import internalJobRoute from "./routes/internalJobRoute.js";
 import swaggerSpec from "./config/swagger.js";
 import errorMiddleware from "./middleware/errorMiddleware.js";
 
@@ -25,6 +26,7 @@ app.use("/", resepsionisRoute);
 app.use("/", layananRoute);
 app.use("/", jadwalRoute);
 app.use("/", reservasiRoute);
+app.use("/", internalJobRoute);
 
 app.get("/", (_req, res) => {
   res.send("Sense Clinic Backend is running");

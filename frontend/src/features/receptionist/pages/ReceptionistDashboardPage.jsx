@@ -91,7 +91,7 @@ export default function Dashboard() {
   const [openMenu, setOpenMenu] = useState(null)
 
   const recent = reservations.slice(0, 3)
-  const todayPayments = payments.reduce((sum, p) => sum + p.amount, 0)
+  const todayPayments = payments.reduce((sum, p) => sum + Number(p.total_biaya || 0), 0)
   const presentPatients = reservations.filter((r) => r.status === 'Hadir').length
 
   return (

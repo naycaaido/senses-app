@@ -1,36 +1,40 @@
 import bcrypt from "bcrypt";
 import {
   MetodePembayaran,
+  PihakPembatalan,
   StatusJadwal,
   StatusLayanan,
   StatusReservasi,
 } from "@prisma/client";
 import prisma from "../src/config/prisma.js";
 
+const SEED_MARKER = "[SEED:SENSES-CLINIC]";
 const DUMMY_PASSWORD = "senses123";
 const RECEPTIONIST = {
-  id_resepsionis: 9001,
-  nama_lengkap: "Resepsionis Dummy",
-  telepon: "081234567890",
+  nama_lengkap: "Seed Scheduler Sense's Clinic",
+  telepon: "089900000001",
 };
 
 const PATIENTS = [
   {
-    email: "andi.dummy@example.com",
-    nama_lengkap: "Andi Pratama",
-    telepon: "081234567801",
+    key: "andi",
+    email: "andi.seed@senses-clinic.invalid",
+    nama_lengkap: "Andi Seed",
+    telepon: "089900000101",
     jenis_kelamin: "Laki-laki",
   },
   {
-    email: "siti.dummy@example.com",
-    nama_lengkap: "Siti Aulia",
-    telepon: "081234567802",
+    key: "siti",
+    email: "siti.seed@senses-clinic.invalid",
+    nama_lengkap: "Siti Seed",
+    telepon: "089900000102",
     jenis_kelamin: "Perempuan",
   },
   {
-    email: "bima.dummy@example.com",
-    nama_lengkap: "Bima Saputra",
-    telepon: "081234567803",
+    key: "bima",
+    email: "bima.seed@senses-clinic.invalid",
+    nama_lengkap: "Bima Seed",
+    telepon: "089900000103",
     jenis_kelamin: "Laki-laki",
   },
 ];
@@ -38,260 +42,319 @@ const PATIENTS = [
 const SERVICES = [
   {
     key: "consultation",
-    nama_layanan: "Konsultasi Kulit Dummy",
+    nama_layanan: "[SEED] Konsultasi Kulit",
     estimasi_durasi: 30,
-    deskripsi_layanan: "Konsultasi awal untuk data pengembangan.",
+    deskripsi_layanan: "Layanan dummy khusus seeder.",
     harga: 150000,
     status_layanan: StatusLayanan.Aktif,
   },
   {
     key: "facial",
-    nama_layanan: "Facial Acne Dummy",
+    nama_layanan: "[SEED] Facial Acne",
     estimasi_durasi: 60,
-    deskripsi_layanan: "Perawatan acne untuk data pengembangan.",
+    deskripsi_layanan: "Layanan dummy khusus seeder.",
     harga: 250000,
     status_layanan: StatusLayanan.Aktif,
   },
-  {
-    key: "laser",
-    nama_layanan: "Laser Rejuvenation Dummy",
-    estimasi_durasi: 60,
-    deskripsi_layanan: "Perawatan laser untuk data pengembangan.",
-    harga: 450000,
-    status_layanan: StatusLayanan.Aktif,
-  },
-  {
-    key: "inactive",
-    nama_layanan: "Perawatan Nonaktif Dummy",
-    estimasi_durasi: 30,
-    deskripsi_layanan: "Contoh layanan yang tidak dapat dipesan.",
-    harga: 100000,
-    status_layanan: StatusLayanan.Nonaktif,
-  },
 ];
 
-const SLOT_STARTS = Array.from({ length: 16 }, (_, index) => {
-  const minutes = 9 * 60 + index * 30;
-  return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
-});
-
-const atUtcMidnight = (offset = 0) => {
-  const date = new Date();
-  date.setUTCHours(0, 0, 0, 0);
-  date.setUTCDate(date.getUTCDate() + offset);
-  return date;
+const formatWibDate = (value) => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(value);
+  const part = (type) => parts.find((item) => item.type === type)?.value;
+  return `${part("year")}-${part("month")}-${part("day")}`;
 };
 
-const timeAtUtc = (time) => {
+const addCalendarDays = (tanggal, offset) => {
+  const result = new Date(`${tanggal}T00:00:00.000Z`);
+  result.setUTCDate(result.getUTCDate() + offset);
+  return result.toISOString().slice(0, 10);
+};
+
+const dateOnly = (tanggal) => new Date(`${tanggal}T00:00:00.000Z`);
+
+const timeOnly = (time) => {
   const [hours, minutes] = time.split(":").map(Number);
   return new Date(Date.UTC(1970, 0, 1, hours, minutes, 0));
 };
 
-const endTime = (start) => {
-  const [hours, minutes] = start.split(":").map(Number);
-  return `${String(Math.floor((hours * 60 + minutes + 30) / 60)).padStart(2, "0")}:${String((minutes + 30) % 60).padStart(2, "0")}`;
+const addThirtyMinutes = (time) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  const totalMinutes = hours * 60 + minutes + 30;
+  return `${String(Math.floor(totalMinutes / 60)).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`;
 };
 
-async function seedReceptionist(password) {
-  const existing = await prisma.resepsionis.findUnique({
-    where: { id_resepsionis: RECEPTIONIST.id_resepsionis },
-    select: { id_resepsionis: true, telepon: true },
+const atWib = (tanggal, time) => new Date(`${tanggal}T${time}:00+07:00`);
+
+const seedPassword = (() => {
+  let passwordHash;
+  return async () => {
+    if (!passwordHash) passwordHash = await bcrypt.hash(DUMMY_PASSWORD, 10);
+    return passwordHash;
+  };
+})();
+
+const seedPatientData = (patient) => ({
+  email: patient.email,
+  nama_lengkap: patient.nama_lengkap,
+  telepon: patient.telepon,
+  jenis_kelamin: patient.jenis_kelamin,
+  tempat_lahir: "Jakarta",
+  tanggal_lahir: new Date("1995-01-15T00:00:00.000Z"),
+  pendidikan_terakhir: "S1",
+  pekerjaan: "Data Seed",
+  status_perkawinan: "Belum Menikah",
+  agama: "Islam",
+  alamat_domisili: "Alamat khusus seed",
+  kota: "Jakarta",
+  profil_lengkap: true,
+});
+
+async function ensureReceptionist(tx) {
+  const existing = await tx.resepsionis.findFirst({
+    where: RECEPTIONIST,
+    select: { id_resepsionis: true },
   });
+  if (existing) return existing;
 
-  if (existing && existing.telepon !== RECEPTIONIST.telepon) {
-    throw new Error(
-      `ID resepsionis ${RECEPTIONIST.id_resepsionis} sudah dipakai data non-dummy. Seeder dihentikan agar data tersebut tidak tertimpa.`,
-    );
-  }
-
-  return prisma.resepsionis.upsert({
-    where: { id_resepsionis: RECEPTIONIST.id_resepsionis },
-    update: { ...RECEPTIONIST, password },
-    create: { ...RECEPTIONIST, password },
+  return tx.resepsionis.create({
+    data: { ...RECEPTIONIST, password: await seedPassword() },
+    select: { id_resepsionis: true },
   });
 }
 
-async function seedPatients(password) {
-  return Promise.all(
-    PATIENTS.map((patient) =>
-      prisma.pasien.upsert({
+async function ensurePatients(tx) {
+  const patients = await Promise.all(
+    PATIENTS.map(async (patient) => {
+      const existing = await tx.pasien.findUnique({
         where: { email: patient.email },
-        update: {
-          ...patient,
-          password,
-          tempat_lahir: "Jakarta",
-          tanggal_lahir: new Date("1995-01-15T00:00:00.000Z"),
-          pendidikan_terakhir: "S1",
-          pekerjaan: "Karyawan Swasta",
-          status_perkawinan: "Belum Menikah",
-          agama: "Islam",
-          alamat_domisili: "Jl. Contoh No. 1",
-          kota: "Jakarta",
-          profil_lengkap: true,
-        },
-        create: {
-          ...patient,
-          password,
-          tempat_lahir: "Jakarta",
-          tanggal_lahir: new Date("1995-01-15T00:00:00.000Z"),
-          pendidikan_terakhir: "S1",
-          pekerjaan: "Karyawan Swasta",
-          status_perkawinan: "Belum Menikah",
-          agama: "Islam",
-          alamat_domisili: "Jl. Contoh No. 1",
-          kota: "Jakarta",
-          profil_lengkap: true,
-        },
-      }),
-    ),
+        select: { email: true },
+      });
+      if (existing) return [patient.key, existing];
+
+      return [
+        patient.key,
+        await tx.pasien.create({
+          data: { ...seedPatientData(patient), password: await seedPassword() },
+          select: { email: true },
+        }),
+      ];
+    }),
   );
+  return new Map(patients);
 }
 
-async function seedServices() {
+async function ensureServices(tx) {
   const services = await Promise.all(
     SERVICES.map(async ({ key, ...service }) => {
-      const existing = await prisma.layanan.findFirst({
+      const existing = await tx.layanan.findFirst({
         where: { nama_layanan: service.nama_layanan },
         select: { id_layanan: true },
       });
-      const record = existing
-        ? await prisma.layanan.update({ where: { id_layanan: existing.id_layanan }, data: service })
-        : await prisma.layanan.create({ data: service });
-      return [key, record];
+      if (existing) return [key, existing];
+
+      return [
+        key,
+        await tx.layanan.create({ data: service, select: { id_layanan: true } }),
+      ];
     }),
   );
-
   return new Map(services);
 }
 
-async function seedScheduleDay(tanggal) {
-  const schedules = await Promise.all(
-    SLOT_STARTS.map((jam_mulai) =>
-      prisma.jadwal.upsert({
-        where: { tanggal_jam_mulai: { tanggal, jam_mulai: timeAtUtc(jam_mulai) } },
-        update: {},
-        create: {
-          tanggal,
-          jam_mulai: timeAtUtc(jam_mulai),
-          jam_selesai: timeAtUtc(endTime(jam_mulai)),
-          status_jadwal: StatusJadwal.Aktif,
-        },
-      }),
-    ),
-  );
-  return new Map(schedules.map((schedule) => [schedule.jam_mulai.toISOString().slice(11, 16), schedule]));
+async function cleanupSeedReservations(tx) {
+  const reservations = await tx.reservasi.findMany({
+    where: {
+      email_pasien: { in: PATIENTS.map((patient) => patient.email) },
+      keluhan_awal: { startsWith: SEED_MARKER },
+    },
+    select: { no_reservasi: true },
+  });
+  const reservationNumbers = reservations.map((reservation) => reservation.no_reservasi);
+  if (reservationNumbers.length === 0) return;
+
+  const schedules = await tx.jadwal.findMany({
+    where: { no_reservasi: { in: reservationNumbers } },
+    select: { id_jadwal: true },
+  });
+
+  await tx.pembayaran.deleteMany({ where: { no_reservasi: { in: reservationNumbers } } });
+  await tx.pembatalanReservasi.deleteMany({
+    where: { no_reservasi: { in: reservationNumbers } },
+  });
+  if (schedules.length > 0) {
+    await tx.jadwal.deleteMany({
+      where: { id_jadwal: { in: schedules.map((schedule) => schedule.id_jadwal) } },
+    });
+  }
+  await tx.reservasi.deleteMany({ where: { no_reservasi: { in: reservationNumbers } } });
 }
 
-async function seedReservation({ no_reservasi, patient, service, receptionist, tanggal, slots, status, keluhan_awal }) {
-  return prisma.$transaction(async (tx) => {
-    const existingReservation = await tx.reservasi.findUnique({
-      where: { no_reservasi },
-      select: { keluhan_awal: true },
-    });
-    if (existingReservation && !existingReservation.keluhan_awal?.startsWith("[SEED]")) {
-      throw new Error(`${no_reservasi} sudah dipakai reservasi non-dummy; data tersebut tidak diubah.`);
-    }
+async function ensureScheduleSlots(tx, tanggal, starts) {
+  return Promise.all(
+    starts.map(async (jam_mulai) => {
+      const jamMulai = timeOnly(jam_mulai);
+      return tx.jadwal.create({
+        data: {
+          tanggal: dateOnly(tanggal),
+          jam_mulai: jamMulai,
+          jam_selesai: timeOnly(addThirtyMinutes(jam_mulai)),
+          status_jadwal: StatusJadwal.Aktif,
+          no_reservasi: null,
+        },
+        select: { id_jadwal: true, no_reservasi: true, status_jadwal: true },
+      });
+    }),
+  );
+}
 
-    await tx.jadwal.updateMany({ where: { no_reservasi }, data: { no_reservasi: null } });
+async function createSeedReservation(tx, scenario, context) {
+  const patient = context.patients.get(scenario.patient);
+  const service = context.services.get(scenario.service);
+  const slots = scenario.slot_starts.length > 0
+    ? await ensureScheduleSlots(tx, scenario.tanggal, scenario.slot_starts)
+    : [];
 
-    const requestedSlots = await tx.jadwal.findMany({
-      where: { id_jadwal: { in: slots.map((slot) => slot.id_jadwal) } },
-      select: { id_jadwal: true, no_reservasi: true, status_jadwal: true },
-    });
-    if (
-      requestedSlots.length !== slots.length ||
-      requestedSlots.some(
-        (slot) =>
-          slot.status_jadwal !== StatusJadwal.Aktif ||
-          slot.no_reservasi !== null,
-      )
-    ) {
-      throw new Error(`Slot untuk ${no_reservasi} tidak tersedia; data jadwal non-dummy tidak diubah.`);
-    }
+  if (slots.some(
+    (slot) => slot.status_jadwal !== StatusJadwal.Aktif || slot.no_reservasi !== null,
+  )) {
+    throw new Error(`Slot demo ${scenario.key} tidak tersedia; data non-seed tidak diubah.`);
+  }
 
-    const reservasi = await tx.reservasi.upsert({
-      where: { no_reservasi },
-      update: {
-        email_pasien: patient.email,
-        id_layanan: service.id_layanan,
-        id_resepsionis: receptionist.id_resepsionis,
-        tanggal_reservasi: tanggal,
-        status_reservasi: status,
-        keluhan_awal,
-        harga_layanan: service.harga,
-      },
-      create: {
-        no_reservasi,
-        email_pasien: patient.email,
-        id_layanan: service.id_layanan,
-        id_resepsionis: receptionist.id_resepsionis,
-        tanggal_reservasi: tanggal,
-        status_reservasi: status,
-        keluhan_awal,
-        harga_layanan: service.harga,
-      },
-    });
+  const reservasi = await tx.reservasi.create({
+    data: {
+      email_pasien: patient.email,
+      id_layanan: service.id_layanan,
+      id_resepsionis: context.receptionist.id_resepsionis,
+      tanggal_reservasi: dateOnly(scenario.tanggal),
+      status_reservasi: scenario.status,
+      keluhan_awal: `${SEED_MARKER} ${scenario.keluhan_awal}`,
+      harga_layanan: scenario.harga_layanan,
+    },
+    select: { no_reservasi: true, harga_layanan: true },
+  });
 
+  if (slots.length > 0) {
     const claimed = await tx.jadwal.updateMany({
-      where: { id_jadwal: { in: slots.map((slot) => slot.id_jadwal) }, no_reservasi: null },
-      data: { no_reservasi },
+      where: {
+        id_jadwal: { in: slots.map((slot) => slot.id_jadwal) },
+        status_jadwal: StatusJadwal.Aktif,
+        no_reservasi: null,
+      },
+      data: { no_reservasi: reservasi.no_reservasi },
     });
     if (claimed.count !== slots.length) {
-      throw new Error(`Slot untuk ${no_reservasi} baru saja berubah dan tidak dapat dipakai.`);
+      throw new Error(`Slot demo ${scenario.key} berubah saat seed berjalan.`);
     }
-    return reservasi;
-  });
+  }
+
+  if (scenario.metode_pembayaran) {
+    await tx.pembayaran.create({
+      data: {
+        no_reservasi: reservasi.no_reservasi,
+        total_biaya: reservasi.harga_layanan,
+        metode_pembayaran: scenario.metode_pembayaran,
+      },
+    });
+  }
+
+  if (scenario.pembatalan) {
+    await tx.pembatalanReservasi.create({
+      data: {
+        no_reservasi: reservasi.no_reservasi,
+        alasan_pembatalan: scenario.pembatalan.alasan_pembatalan,
+        pihak_pembatalan: scenario.pembatalan.pihak_pembatalan,
+        dibatalkan_pada: scenario.pembatalan.dibatalkan_pada,
+      },
+    });
+  }
+}
+
+function buildScenarios(now = new Date()) {
+  const today = formatWibDate(now);
+  const completedDate = addCalendarDays(today, -365);
+  const historicalDate = addCalendarDays(today, -364);
+  const scheduledDate = addCalendarDays(today, 90);
+  const cancelledDate = addCalendarDays(today, 91);
+
+  return [
+    {
+      key: "scheduled",
+      patient: "andi",
+      service: "facial",
+      tanggal: scheduledDate,
+      slot_starts: ["09:00", "09:30"],
+      status: StatusReservasi.Terjadwal,
+      harga_layanan: 250000,
+      keluhan_awal: "Reservasi terjadwal.",
+    },
+    {
+      key: "present",
+      patient: "siti",
+      service: "consultation",
+      tanggal: historicalDate,
+      slot_starts: ["10:00"],
+      status: StatusReservasi.Hadir,
+      harga_layanan: 150000,
+      keluhan_awal: "Pasien sudah hadir.",
+    },
+    {
+      key: "completed",
+      patient: "bima",
+      service: "consultation",
+      tanggal: completedDate,
+      slot_starts: ["11:00"],
+      status: StatusReservasi.Selesai,
+      harga_layanan: 150000,
+      keluhan_awal: "Perawatan selesai.",
+      metode_pembayaran: MetodePembayaran.QRIS,
+    },
+    {
+      key: "cancelled",
+      patient: "andi",
+      service: "consultation",
+      tanggal: cancelledDate,
+      slot_starts: [],
+      status: StatusReservasi.Dibatalkan,
+      harga_layanan: 150000,
+      keluhan_awal: "Reservasi dibatalkan; tidak ada slot tersisa.",
+      pembatalan: {
+        alasan_pembatalan: "Data demo pembatalan.",
+        pihak_pembatalan: PihakPembatalan.Resepsionis,
+        dibatalkan_pada: atWib(cancelledDate, "08:00"),
+      },
+    },
+    {
+      key: "no-show",
+      patient: "siti",
+      service: "consultation",
+      tanggal: historicalDate,
+      slot_starts: ["13:00"],
+      status: StatusReservasi.TidakHadir,
+      harga_layanan: 150000,
+      keluhan_awal: "Pasien tidak hadir.",
+    },
+  ];
 }
 
 async function main() {
-  const password = await bcrypt.hash(DUMMY_PASSWORD, 10);
-  const receptionist = await seedReceptionist(password);
-  const patients = await seedPatients(password);
-  const services = await seedServices();
+  await prisma.$transaction(async (tx) => {
+    const receptionist = await ensureReceptionist(tx);
+    const patients = await ensurePatients(tx);
+    const services = await ensureServices(tx);
+    await cleanupSeedReservations(tx);
 
-  const completedDate = atUtcMidnight(-1);
-  const bookingDate = atUtcMidnight(1);
-  await seedScheduleDay(atUtcMidnight(2));
-  const completedSlots = await seedScheduleDay(completedDate);
-  const bookingSlots = await seedScheduleDay(bookingDate);
-
-  const completedReservation = await seedReservation({
-    no_reservasi: "RSV-990001",
-    patient: patients[1],
-    service: services.get("consultation"),
-    receptionist,
-    tanggal: completedDate,
-    slots: [completedSlots.get("10:00")],
-    status: StatusReservasi.Selesai,
-    keluhan_awal: "[SEED] Kontrol perawatan dummy.",
-  });
-  await seedReservation({
-    no_reservasi: "RSV-990002",
-    patient: patients[0],
-    service: services.get("facial"),
-    receptionist,
-    tanggal: bookingDate,
-    slots: [bookingSlots.get("09:00"), bookingSlots.get("09:30")],
-    status: StatusReservasi.Terjadwal,
-    keluhan_awal: "[SEED] Keluhan jerawat dummy.",
-  });
-
-  await prisma.pembayaran.upsert({
-    where: { no_reservasi: completedReservation.no_reservasi },
-    update: {
-      total_biaya: completedReservation.harga_layanan,
-      metode_pembayaran: MetodePembayaran.QRIS,
-    },
-    create: {
-      no_reservasi: completedReservation.no_reservasi,
-      total_biaya: completedReservation.harga_layanan,
-      metode_pembayaran: MetodePembayaran.QRIS,
-    },
+    for (const scenario of buildScenarios()) {
+      await createSeedReservation(tx, scenario, { receptionist, patients, services });
+    }
   });
 
   console.log("Seeder selesai.");
-  console.log(`Resepsionis dummy: ID ${RECEPTIONIST.id_resepsionis}, password ${DUMMY_PASSWORD}`);
-  console.log(`Pasien dummy: ${PATIENTS.map((patient) => patient.email).join(", ")}, password ${DUMMY_PASSWORD}`);
+  console.log(`Akun seed memakai domain .invalid dengan password ${DUMMY_PASSWORD}.`);
 }
 
 main()

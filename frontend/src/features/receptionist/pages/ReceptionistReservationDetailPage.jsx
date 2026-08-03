@@ -1,16 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { IconPhone, IconWallet } from '../components/Icons.jsx'
 import { Button, Card, Chip, Modal, NotFound, Textarea } from '../components/ui.jsx'
 import { formatRupiah, useStore } from '../data/store.jsx'
-import { cx } from '../utils/cx.js'
-
-
-const PAYMENT_METHODS = [
-  { id: 'Tunai (Cash)', icon: <IconWallet size={18} /> },
-  { id: 'Debit / Credit', icon: <IconWallet size={18} /> },
-  { id: 'QRIS / E-Wallet', icon: <IconPhone size={18} /> },
-]
 
 const cancellationDateFormatter = new Intl.DateTimeFormat('id-ID', {
   day: 'numeric',
@@ -90,20 +81,19 @@ function CancelModal({ reservation, onClose, onConfirm }) {
 }
 
 function CompleteModal({ reservation, onClose, onConfirm }) {
-  const [method, setMethod] = useState('Tunai (Cash)')
   return (
     <Modal
       variant="bar"
       size="lg"
-      title="Selesaikan Reservasi & Catat Pembayaran"
-      subtitle="Konfirmasi kehadiran pasien dan proses detail pembayaran."
+      title="Selesaikan Reservasi"
+      subtitle="Konfirmasi kehadiran pasien. Pembayaran dicatat setelah reservasi selesai."
       onClose={onClose}
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
             Batal
           </Button>
-          <Button onClick={() => onConfirm(method)}>Selesaikan</Button>
+          <Button onClick={onConfirm}>Selesaikan</Button>
         </>
       }
     >
@@ -122,22 +112,6 @@ function CompleteModal({ reservation, onClose, onConfirm }) {
           <p className="text-[10px] font-semibold uppercase tracking-[0.05em] text-[#434655]">Reservation ID</p>
           <p className="mt-1 text-sm font-bold text-[#191c1e]">{reservation.id}</p>
         </div>
-      </div>
-
-      <p className="mt-5 text-[13px] font-semibold text-[#191c1e]">Metode Pembayaran</p>
-      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        {PAYMENT_METHODS.map((m) => (
-          <button
-            key={m.id}
-            onClick={() => setMethod(m.id)}
-            className={cx('flex flex-col items-center gap-2 rounded-xl border border-[#e6e6e2] px-4 py-5 transition-colors hover:bg-[#f5f5f3]/40', method === m.id && 'border-2 border-[#191c1e] bg-[#f5f5f3]/60 px-[15px] py-[19px]')}
-          >
-            <span className={cx('flex size-9 items-center justify-center rounded-lg bg-[#f5f5f3] text-[#434655]', method === m.id && 'bg-[#3d4940] text-white')}>
-              {m.icon}
-            </span>
-            <span className="text-[13px] font-medium text-[#191c1e]">{m.id}</span>
-          </button>
-        ))}
       </div>
 
       <div className="mt-6 flex items-center justify-between border-b border-dashed border-[#e6e6e2] pb-3">
@@ -262,8 +236,8 @@ export default function DetailReservasi() {
         <CompleteModal
           reservation={reservation}
           onClose={() => setModal(null)}
-          onConfirm={(method) => {
-            completeReservation(reservation.id, method)
+          onConfirm={() => {
+            completeReservation(reservation.id)
             setModal(null)
           }}
         />

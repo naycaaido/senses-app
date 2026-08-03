@@ -177,7 +177,10 @@ authRoute.post("/auth/pasien/login", pasienController.loginPasien);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-authRoute.post("/auth/resepsionis/login", resepsionisAuthController.loginResepsionis);
+authRoute.post(
+  "/auth/resepsionis/login",
+  resepsionisAuthController.loginResepsionis,
+);
 
 /**
  * @deprecated Will be replaced by /auth/pasien/login and /auth/resepsionis/login
@@ -303,6 +306,7 @@ authRoute.get(
   requireRole("pasien"),
   pasienController.getProfilePasien,
 );
+
 authRoute.put(
   "/auth/profile",
   validateToken,

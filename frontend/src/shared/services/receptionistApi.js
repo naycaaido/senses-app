@@ -54,6 +54,14 @@ export function mapReceptionistReservation(reservasi) {
           dibatalkan_pada: reservasi.pembatalan?.dibatalkan_pada,
         }
       : null,
+    pembayaran: reservasi.pembayaran
+      ? {
+          no_reservasi: reservasi.pembayaran?.no_reservasi,
+          tanggal_bayar: reservasi.pembayaran?.tanggal_bayar,
+          total_biaya: reservasi.pembayaran?.total_biaya,
+          metode_pembayaran: reservasi.pembayaran?.metode_pembayaran,
+        }
+      : null,
     slots: reservasi.jadwal || [],
   };
 }
