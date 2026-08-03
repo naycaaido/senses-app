@@ -1,4 +1,5 @@
 import BadRequestError from "../exceptions/BadRequestError.js";
+import { StatusJadwal } from "@prisma/client";
 import jadwalService from "../services/jadwalService.js";
 
 const parseScheduleId = (value) => {
@@ -34,7 +35,7 @@ const aktifkanJadwal = async (req, res, next) => {
   try {
     const jadwal = await jadwalService.setJadwalStatus(
       parseScheduleId(req.params.id_jadwal),
-      "Aktif",
+      StatusJadwal.Aktif,
     );
     return res.status(200).json({
       message: "Schedule slot activated successfully",
@@ -49,7 +50,7 @@ const nonaktifkanJadwal = async (req, res, next) => {
   try {
     const jadwal = await jadwalService.setJadwalStatus(
       parseScheduleId(req.params.id_jadwal),
-      "Nonaktif",
+      StatusJadwal.Nonaktif,
     );
     return res.status(200).json({
       message: "Schedule slot deactivated successfully",

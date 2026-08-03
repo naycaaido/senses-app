@@ -1,8 +1,9 @@
 import BadRequestError from "../exceptions/BadRequestError.js";
 import NotFoundError from "../exceptions/NotFoundError.js";
+import { StatusLayanan } from "@prisma/client";
 import prisma from "../config/prisma.js";
 
-const SERVICE_STATUS = ["Aktif", "Nonaktif"];
+const SERVICE_STATUS = Object.values(StatusLayanan);
 const EDITABLE_FIELDS = [
   "nama_layanan",
   "estimasi_durasi",
@@ -94,7 +95,7 @@ const updateDataFrom = (payload) => {
 
 const getActiveLayanan = async () => {
   const data = await prisma.layanan.findMany({
-    where: { status_layanan: "Aktif" },
+    where: { status_layanan: StatusLayanan.Aktif },
     orderBy: { nama_layanan: "asc" },
     select: LAYANAN_SELECT,
   });
@@ -103,7 +104,7 @@ const getActiveLayanan = async () => {
 
 const getActiveLayananById = async (id_layanan) => {
   const layanan = await prisma.layanan.findFirst({
-    where: { id_layanan, status_layanan: "Aktif" },
+    where: { id_layanan, status_layanan: StatusLayanan.Aktif },
     select: LAYANAN_SELECT,
   });
   if (!layanan) {

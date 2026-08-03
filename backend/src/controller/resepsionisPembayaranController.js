@@ -56,7 +56,7 @@ const listPembayaran = async (req, res, next) => {
 const getPembayaranById = async (req, res, next) => {
   try {
     const pembayaran = await pembayaranService.getPembayaranById(
-      req.params.id_pembayaran,
+      req.params.no_reservasi,
     );
     return res.status(200).json({ pembayaran });
   } catch (error) {

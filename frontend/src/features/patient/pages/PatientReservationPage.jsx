@@ -43,16 +43,30 @@ function timeToMinutes(time) {
   return hours * 60 + minutes;
 }
 
-function getConsecutiveSlots(slots, startTime, requiredCount) {
+function scheduleStartTimestampWib(date, time) {
+  const match = /^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/.exec(time || "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "") || !match) return Number.NaN;
+  const [, hours, minutes, seconds = "00"] = match;
+  return new Date(`${date}T${hours}:${minutes}:${seconds}+07:00`).getTime();
+}
+
+function isFutureSlot(date, time, now) {
+  const startAt = scheduleStartTimestampWib(date, time);
+  return Number.isFinite(startAt) && startAt > now;
+}
+
+function getConsecutiveSlots(slots, startTime, requiredCount, date, now) {
   const startIndex = slots.findIndex((slot) => slot.jam_mulai === startTime);
   if (startIndex < 0) return [];
 
   const selected = slots.slice(startIndex, startIndex + requiredCount);
   if (selected.length !== requiredCount) return [];
 
-  return selected.every((slot, index) => (
+  const consecutive = selected.every((slot, index) => (
     index === 0 || timeToMinutes(slot.jam_mulai) - timeToMinutes(selected[index - 1].jam_mulai) === 30
-  )) ? selected : [];
+  ));
+
+  return consecutive && isFutureSlot(date, selected[0].jam_mulai, now) ? selected : [];
 }
 
 export default function PatientReservationPage() {
@@ -69,21 +83,33 @@ export default function PatientReservationPage() {
   const [scheduleError, setScheduleError] = useState("");
   const [bookingError, setBookingError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
   const selectedDate = reservationDates.find((date) => date.id === selectedDateId) || null;
   const requiredSlotCount = selectedService ? selectedService.durationMinutes / 30 : 0;
   const selectedSlots = useMemo(
-    () => getConsecutiveSlots(slots, selectedTime, requiredSlotCount),
-    [requiredSlotCount, selectedTime, slots],
+    () => getConsecutiveSlots(slots, selectedTime, requiredSlotCount, selectedDateId, now),
+    [now, requiredSlotCount, selectedDateId, selectedTime, slots],
   );
   const timeSlots = useMemo(
     () => slots.map((slot) => ({
       time: slot.jam_mulai,
-      available: getConsecutiveSlots(slots, slot.jam_mulai, requiredSlotCount).length === requiredSlotCount,
+      available: getConsecutiveSlots(
+        slots,
+        slot.jam_mulai,
+        requiredSlotCount,
+        selectedDateId,
+        now,
+      ).length === requiredSlotCount,
     })),
-    [requiredSlotCount, slots],
+    [now, requiredSlotCount, selectedDateId, slots],
   );
   const canContinue = Boolean(selectedDate && selectedSlots.length === requiredSlotCount && !submitting);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -130,8 +156,30 @@ export default function PatientReservationPage() {
     };
   }, [selectedDateId]);
 
+  const refreshSchedules = async () => {
+    setLoadingSchedule(true);
+    setScheduleError("");
+    setSelectedTime(null);
+    try {
+      setSlots(await getAvailableSchedules(selectedDateId));
+    } catch (error) {
+      setScheduleError(error.message || "Jadwal belum dapat dimuat ulang.");
+    } finally {
+      setLoadingSchedule(false);
+      setNow(Date.now());
+    }
+  };
+
   const handleContinue = async () => {
-    if (!canContinue || !selectedService) return;
+    if (!selectedService || submitting) return;
+
+    const selectedStart = selectedSlots[0] || slots.find((slot) => slot.jam_mulai === selectedTime);
+    if (selectedStart && !isFutureSlot(selectedDateId, selectedStart.jam_mulai, Date.now())) {
+      setBookingError("Jam yang dipilih sudah lewat atau tidak lagi tersedia. Silakan pilih jadwal lain.");
+      await refreshSchedules();
+      return;
+    }
+    if (!canContinue) return;
 
     setSubmitting(true);
     setBookingError("");
@@ -142,7 +190,12 @@ export default function PatientReservationPage() {
       });
       navigate(`/pasien/bukti-booking?reservasi=${encodeURIComponent(reservasi.no_reservasi)}`, { replace: true });
     } catch (error) {
-      setBookingError(error.message || "Reservasi belum dapat dibuat. Silakan coba lagi.");
+      if (error.statusCode === 409) {
+        setBookingError("Jam yang dipilih sudah lewat atau tidak lagi tersedia. Silakan pilih jadwal lain.");
+        await refreshSchedules();
+      } else {
+        setBookingError(error.message || "Reservasi belum dapat dibuat. Silakan coba lagi.");
+      }
     } finally {
       setSubmitting(false);
     }

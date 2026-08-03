@@ -153,13 +153,6 @@ const options = {
           description: "Nomor reservasi, misalnya RSV-000001.",
           schema: { type: "string", example: "RSV-000001" },
         },
-        PaymentId: {
-          name: "id_pembayaran",
-          in: "path",
-          required: true,
-          description: "ID pembayaran, misalnya PAY-000001.",
-          schema: { type: "string", example: "PAY-000001" },
-        },
         Email: {
           name: "email",
           in: "path",
@@ -337,6 +330,8 @@ const options = {
             "harga_layanan",
             "layanan",
             "jadwal",
+            "pembatalan",
+            "pembayaran",
           ],
           properties: {
             no_reservasi: { type: "string", example: "RSV-000001" },
@@ -349,7 +344,6 @@ const options = {
               enum: ["Terjadwal", "Hadir", "Selesai", "Dibatalkan", "Tidak Hadir"],
             },
             keluhan_awal: { type: "string", nullable: true },
-            alasan_pembatalan: { type: "string", nullable: true },
             harga_layanan: { type: "number", example: 100000 },
             pasien: schemaRef("ReservationPatient"),
             layanan: schemaRef("ReservationService"),
@@ -357,12 +351,59 @@ const options = {
               type: "array",
               items: schemaRef("Jadwal"),
             },
+            pembatalan: {
+              allOf: [schemaRef("PembatalanReservasi")],
+              nullable: true,
+            },
+            pembayaran: {
+              allOf: [schemaRef("ReservationPayment")],
+              nullable: true,
+            },
+          },
+        },
+        PembatalanReservasi: {
+          type: "object",
+          required: [
+            "no_reservasi",
+            "alasan_pembatalan",
+            "pihak_pembatalan",
+            "dibatalkan_pada",
+          ],
+          properties: {
+            no_reservasi: { type: "string", example: "RSV-000001" },
+            alasan_pembatalan: {
+              type: "string",
+              maxLength: 255,
+              example: "Tidak dapat hadir",
+            },
+            pihak_pembatalan: {
+              type: "string",
+              enum: ["Pasien", "Resepsionis"],
+            },
+            dibatalkan_pada: { type: "string", format: "date-time" },
+          },
+        },
+        ReservationPayment: {
+          type: "object",
+          required: [
+            "no_reservasi",
+            "tanggal_bayar",
+            "total_biaya",
+            "metode_pembayaran",
+          ],
+          properties: {
+            no_reservasi: { type: "string", example: "RSV-000001" },
+            tanggal_bayar: { type: "string", format: "date-time" },
+            total_biaya: { type: "number", example: 100000 },
+            metode_pembayaran: {
+              type: "string",
+              enum: ["Tunai", "Debit", "Transfer", "QRIS"],
+            },
           },
         },
         Pembayaran: {
           type: "object",
           required: [
-            "id_pembayaran",
             "no_reservasi",
             "tanggal_bayar",
             "total_biaya",
@@ -370,7 +411,6 @@ const options = {
             "reservasi",
           ],
           properties: {
-            id_pembayaran: { type: "string", example: "PAY-000001" },
             no_reservasi: { type: "string", example: "RSV-000001" },
             tanggal_bayar: { type: "string", format: "date-time" },
             total_biaya: { type: "number", example: 100000 },
@@ -604,8 +644,15 @@ const options = {
         },
         CancellationRequest: {
           type: "object",
+          required: ["alasan_pembatalan"],
+          description:
+            "Client hanya mengirim alasan. pihak_pembatalan ditentukan backend dari role JWT.",
           properties: {
-            alasan_pembatalan: { type: "string", maxLength: 255 },
+            alasan_pembatalan: {
+              type: "string",
+              minLength: 1,
+              maxLength: 255,
+            },
           },
         },
         PaymentRequest: {
@@ -901,11 +948,11 @@ const options = {
           tags: ["Reservasi"],
           summary: "Batalkan reservasi pasien",
           description:
-            "Hanya reservasi Terjadwal milik pasien. Slot dilepas bila waktu mulai belum lewat.",
+            "Hanya reservasi Terjadwal milik pasien. Backend mencatat pihak Pasien dan melepas slot dalam transaksi. Pembatalan tidak dapat dilakukan melalui endpoint status umum.",
           security: bearerSecurity,
           parameters: [parameterRef("ReservationNumber")],
           requestBody: {
-            required: false,
+            required: true,
             content: {
               "application/json": {
                 schema: schemaRef("CancellationRequest"),
@@ -917,6 +964,7 @@ const options = {
               "Reservasi berhasil dibatalkan.",
               messageSchema("reservasi", schemaRef("Reservasi")),
             ),
+            400: errorResponse("Alasan pembatalan wajib dan maksimal 255 karakter."),
             401: errorResponse("Token tidak ada atau tidak valid."),
             403: errorResponse("Akses reservasi ditolak."),
             404: errorResponse("Reservasi tidak ditemukan."),
@@ -1318,11 +1366,11 @@ const options = {
           tags: ["Resepsionis - Reservasi"],
           summary: "Batalkan reservasi",
           description:
-            "Transisi status dari Terjadwal ke Dibatalkan. Seluruh slot dilepas bila waktu mulai belum lewat.",
+            "Endpoint khusus pembatalan. Backend mencatat pihak Resepsionis, resepsionis pemroses, dan melepas seluruh slot dalam satu transaksi.",
           security: bearerSecurity,
           parameters: [parameterRef("ReservationNumber")],
           requestBody: {
-            required: false,
+            required: true,
             content: {
               "application/json": {
                 schema: schemaRef("CancellationRequest"),
@@ -1334,6 +1382,7 @@ const options = {
               "Reservasi berhasil dibatalkan.",
               messageSchema("reservasi", schemaRef("Reservasi")),
             ),
+            400: errorResponse("Alasan pembatalan wajib dan maksimal 255 karakter."),
             401: errorResponse("Token tidak ada atau tidak valid."),
             403: errorResponse("Hanya resepsionis yang dapat mengakses."),
             404: errorResponse("Reservasi tidak ditemukan."),
@@ -1407,12 +1456,14 @@ const options = {
           },
         },
       },
-      "/resepsionis/pembayaran/{id_pembayaran}": {
+      "/resepsionis/pembayaran/{no_reservasi}": {
         get: {
           tags: ["Resepsionis - Pembayaran"],
           summary: "Detail pembayaran",
+          description:
+            "Pembayaran adalah weak entity dan diidentifikasi oleh no_reservasi sebagai primary key sekaligus foreign key.",
           security: bearerSecurity,
-          parameters: [parameterRef("PaymentId")],
+          parameters: [parameterRef("ReservationNumber")],
           responses: {
             200: jsonResponse("Detail pembayaran.", {
               type: "object",

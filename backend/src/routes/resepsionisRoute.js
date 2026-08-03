@@ -146,7 +146,7 @@ resepsionisRoute.get(
   resepsionisPembayaranController.listPembayaran,
 );
 resepsionisRoute.get(
-  "/resepsionis/pembayaran/:id_pembayaran",
+  "/resepsionis/pembayaran/:no_reservasi",
   validateToken,
   requireRole("resepsionis"),
   resepsionisPembayaranController.getPembayaranById,

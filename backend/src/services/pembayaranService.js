@@ -1,9 +1,11 @@
 import BadRequestError from "../exceptions/BadRequestError.js";
 import ConflictError from "../exceptions/ConflictError.js";
 import NotFoundError from "../exceptions/NotFoundError.js";
+import { MetodePembayaran, StatusReservasi } from "@prisma/client";
 import prisma from "../config/prisma.js";
+import { toPublicReservationStatus } from "../utils/reservationStatus.js";
 
-const PAYMENT_METHODS = ["Tunai", "Debit", "Transfer", "QRIS"];
+const PAYMENT_METHODS = Object.values(MetodePembayaran);
 
 const PAYMENT_INCLUDE = {
   reservasi: {
@@ -18,15 +20,20 @@ const PAYMENT_INCLUDE = {
   },
 };
 
-const serializePayment = (pembayaran) => ({
-  ...pembayaran,
-  tanggal_bayar: pembayaran.tanggal_bayar.toISOString(),
-  total_biaya: Number(pembayaran.total_biaya),
-  reservasi: {
-    ...pembayaran.reservasi,
-    harga_layanan: Number(pembayaran.reservasi.harga_layanan),
-  },
-});
+const serializePayment = (pembayaran) => {
+  return {
+    ...pembayaran,
+    tanggal_bayar: pembayaran.tanggal_bayar.toISOString(),
+    total_biaya: Number(pembayaran.total_biaya),
+    reservasi: {
+      ...pembayaran.reservasi,
+      status_reservasi: toPublicReservationStatus(
+        pembayaran.reservasi.status_reservasi,
+      ),
+      harga_layanan: Number(pembayaran.reservasi.harga_layanan),
+    },
+  };
+};
 
 const getCompletedReservation = async (db, no_reservasi) => {
   const reservasi = await db.reservasi.findUnique({
@@ -43,7 +50,7 @@ const getCompletedReservation = async (db, no_reservasi) => {
   if (!reservasi) {
     throw new NotFoundError("Reservation not found");
   }
-  if (reservasi.status_reservasi !== "Selesai") {
+  if (reservasi.status_reservasi !== StatusReservasi.Selesai) {
     throw new ConflictError(
       "Payment can only be processed for completed reservations",
     );
@@ -99,13 +106,15 @@ const createPembayaran = async ({ no_reservasi, metode_pembayaran }) => {
           total_biaya: reservasi.harga_layanan,
           metode_pembayaran,
         },
-        select: { id_pembayaran: true },
+        select: { no_reservasi: true },
       });
 
-      return serializePayment(await tx.pembayaran.findUnique({
-        where: { id_pembayaran: pembayaran.id_pembayaran },
-        include: PAYMENT_INCLUDE,
-      }));
+      return serializePayment(
+        await tx.pembayaran.findUnique({
+          where: { no_reservasi: pembayaran.no_reservasi },
+          include: PAYMENT_INCLUDE,
+        }),
+      );
     });
   } catch (error) {
     if (error.code === "P2002") {
@@ -115,9 +124,9 @@ const createPembayaran = async ({ no_reservasi, metode_pembayaran }) => {
   }
 };
 
-const getPembayaranById = async (id_pembayaran) => {
+const getPembayaranById = async (no_reservasi) => {
   const pembayaran = await prisma.pembayaran.findUnique({
-    where: { id_pembayaran },
+    where: { no_reservasi },
     include: PAYMENT_INCLUDE,
   });
   if (!pembayaran) {

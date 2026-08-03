@@ -1,4 +1,10 @@
 import bcrypt from "bcrypt";
+import {
+  MetodePembayaran,
+  StatusJadwal,
+  StatusLayanan,
+  StatusReservasi,
+} from "@prisma/client";
 import prisma from "../src/config/prisma.js";
 
 const DUMMY_PASSWORD = "senses123";
@@ -36,7 +42,7 @@ const SERVICES = [
     estimasi_durasi: 30,
     deskripsi_layanan: "Konsultasi awal untuk data pengembangan.",
     harga: 150000,
-    status_layanan: "Aktif",
+    status_layanan: StatusLayanan.Aktif,
   },
   {
     key: "facial",
@@ -44,7 +50,7 @@ const SERVICES = [
     estimasi_durasi: 60,
     deskripsi_layanan: "Perawatan acne untuk data pengembangan.",
     harga: 250000,
-    status_layanan: "Aktif",
+    status_layanan: StatusLayanan.Aktif,
   },
   {
     key: "laser",
@@ -52,7 +58,7 @@ const SERVICES = [
     estimasi_durasi: 60,
     deskripsi_layanan: "Perawatan laser untuk data pengembangan.",
     harga: 450000,
-    status_layanan: "Aktif",
+    status_layanan: StatusLayanan.Aktif,
   },
   {
     key: "inactive",
@@ -60,7 +66,7 @@ const SERVICES = [
     estimasi_durasi: 30,
     deskripsi_layanan: "Contoh layanan yang tidak dapat dipesan.",
     harga: 100000,
-    status_layanan: "Nonaktif",
+    status_layanan: StatusLayanan.Nonaktif,
   },
 ];
 
@@ -168,7 +174,7 @@ async function seedScheduleDay(tanggal) {
           tanggal,
           jam_mulai: timeAtUtc(jam_mulai),
           jam_selesai: timeAtUtc(endTime(jam_mulai)),
-          status_jadwal: "Aktif",
+          status_jadwal: StatusJadwal.Aktif,
         },
       }),
     ),
@@ -194,7 +200,11 @@ async function seedReservation({ no_reservasi, patient, service, receptionist, t
     });
     if (
       requestedSlots.length !== slots.length ||
-      requestedSlots.some((slot) => slot.status_jadwal !== "Aktif" || slot.no_reservasi !== null)
+      requestedSlots.some(
+        (slot) =>
+          slot.status_jadwal !== StatusJadwal.Aktif ||
+          slot.no_reservasi !== null,
+      )
     ) {
       throw new Error(`Slot untuk ${no_reservasi} tidak tersedia; data jadwal non-dummy tidak diubah.`);
     }
@@ -208,7 +218,6 @@ async function seedReservation({ no_reservasi, patient, service, receptionist, t
         tanggal_reservasi: tanggal,
         status_reservasi: status,
         keluhan_awal,
-        alasan_pembatalan: null,
         harga_layanan: service.harga,
       },
       create: {
@@ -253,7 +262,7 @@ async function main() {
     receptionist,
     tanggal: completedDate,
     slots: [completedSlots.get("10:00")],
-    status: "Selesai",
+    status: StatusReservasi.Selesai,
     keluhan_awal: "[SEED] Kontrol perawatan dummy.",
   });
   await seedReservation({
@@ -263,17 +272,20 @@ async function main() {
     receptionist,
     tanggal: bookingDate,
     slots: [bookingSlots.get("09:00"), bookingSlots.get("09:30")],
-    status: "Terjadwal",
+    status: StatusReservasi.Terjadwal,
     keluhan_awal: "[SEED] Keluhan jerawat dummy.",
   });
 
   await prisma.pembayaran.upsert({
     where: { no_reservasi: completedReservation.no_reservasi },
-    update: { total_biaya: completedReservation.harga_layanan, metode_pembayaran: "QRIS" },
+    update: {
+      total_biaya: completedReservation.harga_layanan,
+      metode_pembayaran: MetodePembayaran.QRIS,
+    },
     create: {
       no_reservasi: completedReservation.no_reservasi,
       total_biaya: completedReservation.harga_layanan,
-      metode_pembayaran: "QRIS",
+      metode_pembayaran: MetodePembayaran.QRIS,
     },
   });
 

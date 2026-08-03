@@ -1,4 +1,5 @@
 import BadRequestError from "../exceptions/BadRequestError.js";
+import { StatusLayanan } from "@prisma/client";
 import layananService from "../services/layananService.js";
 
 const parsePositiveInteger = (value, field, defaultValue, max) => {
@@ -75,7 +76,7 @@ const nonaktifkanLayanan = async (req, res, next) => {
   try {
     const layanan = await layananService.setLayananStatus(
       parseServiceId(req.params.id_layanan),
-      "Nonaktif",
+      StatusLayanan.Nonaktif,
     );
     return res.status(200).json({
       message: "Service deactivated successfully",
@@ -90,7 +91,7 @@ const aktifkanLayanan = async (req, res, next) => {
   try {
     const layanan = await layananService.setLayananStatus(
       parseServiceId(req.params.id_layanan),
-      "Aktif",
+      StatusLayanan.Aktif,
     );
     return res.status(200).json({
       message: "Service activated successfully",

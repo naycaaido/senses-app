@@ -12,6 +12,15 @@ const PAYMENT_METHODS = [
   { id: 'QRIS / E-Wallet', icon: <IconPhone size={18} /> },
 ]
 
+const cancellationDateFormatter = new Intl.DateTimeFormat('id-ID', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'Asia/Jakarta',
+})
+
 function InfoCard({ title, rows }) {
   return (
     <Card pad="md">
@@ -177,10 +186,14 @@ export default function DetailReservasi() {
         </Button>
       </div>
 
-      {reservation.cancelReason && (
+      {reservation.pembatalan && (
         <Card pad="sm" className="border-[#f3d9d9] bg-[#fdf1f1]">
           <p className="text-xs font-semibold text-[#a03d4a]">Alasan pembatalan</p>
-          <p className="mt-1 text-[13px] text-[#191c1e]">{reservation.cancelReason}</p>
+          <p className="mt-1 text-[13px] text-[#191c1e]">{reservation.pembatalan?.alasan_pembatalan}</p>
+          <p className="text-xs font-semibold text-[#a03d4a]">Dibatalkan oleh</p>
+          <p className="mt-1 text-[13px] text-[#191c1e]">{reservation.pembatalan?.pihak_pembatalan}</p>
+          <p className="text-xs font-semibold text-[#a03d4a]">Dibatalkan pada</p>
+          <p className="mt-1 text-[13px] text-[#191c1e]">{reservation.pembatalan?.dibatalkan_pada ? `${cancellationDateFormatter.format(new Date(reservation.pembatalan?.dibatalkan_pada))} WIB` : null}</p>
         </Card>
       )}
 

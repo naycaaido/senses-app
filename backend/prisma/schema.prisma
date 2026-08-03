@@ -6,6 +6,48 @@ datasource db {
   provider = "postgresql"
 }
 
+/**
+ * =====================================================
+ * ENUM
+ * =====================================================
+ */
+
+enum StatusLayanan {
+  Aktif
+  Nonaktif
+}
+
+enum StatusJadwal {
+  Aktif
+  Nonaktif
+}
+
+enum StatusReservasi {
+  Terjadwal
+  Hadir
+  Selesai
+  Dibatalkan
+  TidakHadir @map("Tidak Hadir")
+}
+
+enum MetodePembayaran {
+  Tunai
+  Debit
+  Transfer
+  QRIS
+}
+
+enum PihakPembatalan {
+  Pasien
+  Resepsionis
+}
+
+/**
+ * =====================================================
+ * RESEPSIONIS
+ * =====================================================
+ */
+
 model Resepsionis {
   id_resepsionis Int    @id @default(autoincrement())
   nama_lengkap   String @db.VarChar(100)
@@ -16,6 +58,12 @@ model Resepsionis {
 
   @@map("resepsionis")
 }
+
+/**
+ * =====================================================
+ * PASIEN
+ * =====================================================
+ */
 
 model Pasien {
   email               String    @id @db.VarChar(100)
@@ -38,35 +86,48 @@ model Pasien {
   @@map("pasien")
 }
 
+/**
+ * =====================================================
+ * LAYANAN
+ * =====================================================
+ */
+
 model Layanan {
-  id_layanan        Int      @id @default(autoincrement())
-  nama_layanan      String   @db.VarChar(100)
+  id_layanan        Int           @id @default(autoincrement())
+  nama_layanan      String        @db.VarChar(100)
   estimasi_durasi   Int
-  deskripsi_layanan String   @db.VarChar(255)
-  harga             Decimal  @default(0) @db.Decimal(10, 2)
-  status_layanan    String   @default("Aktif") @db.VarChar(20)
+  deskripsi_layanan String        @db.VarChar(255)
+  harga             Decimal       @default(0) @db.Decimal(10, 2)
+  status_layanan    StatusLayanan @default(Aktif)
 
   reservasi Reservasi[]
 
   @@map("layanan")
 }
 
+/**
+ * =====================================================
+ * RESERVASI
+ * =====================================================
+ */
+
 model Reservasi {
-  no_reservasi      String    @id @default(dbgenerated("'RSV-' || LPAD(nextval('reservasi_no_seq')::text, 6, '0')")) @db.VarChar(11)
-  email_pasien      String    @db.VarChar(100)
+  no_reservasi      String          @id @default(dbgenerated("'RSV-' || LPAD(nextval('reservasi_no_seq')::text, 6, '0')")) @db.VarChar(11)
+  email_pasien      String          @db.VarChar(100)
   id_layanan        Int
   id_resepsionis    Int?
-  tanggal_reservasi DateTime  @default(now()) @db.Date
-  status_reservasi  String    @default("Terjadwal") @db.VarChar(20)
-  keluhan_awal      String?   @db.VarChar(255)
-  alasan_pembatalan String?   @db.VarChar(255)
-  harga_layanan     Decimal   @db.Decimal(10, 2)
+  tanggal_reservasi DateTime        @default(now()) @db.Date
+  status_reservasi  StatusReservasi @default(Terjadwal)
+  keluhan_awal      String?         @db.VarChar(255)
+  harga_layanan     Decimal         @db.Decimal(10, 2)
 
   pasien      Pasien       @relation(fields: [email_pasien], references: [email], onDelete: Restrict, onUpdate: Cascade)
   layanan     Layanan      @relation(fields: [id_layanan], references: [id_layanan], onDelete: Restrict, onUpdate: Cascade)
   resepsionis Resepsionis? @relation(fields: [id_resepsionis], references: [id_resepsionis], onDelete: SetNull, onUpdate: Cascade)
-  jadwal      Jadwal[]
-  pembayaran  Pembayaran?
+
+  jadwal     Jadwal[]
+  pembayaran Pembayaran?
+  pembatalan PembatalanReservasi?
 
   @@index([email_pasien])
   @@index([id_layanan])
@@ -75,13 +136,19 @@ model Reservasi {
   @@map("reservasi")
 }
 
+/**
+ * =====================================================
+ * JADWAL
+ * =====================================================
+ */
+
 model Jadwal {
-  id_jadwal     Int        @id @default(autoincrement())
-  no_reservasi  String?    @db.VarChar(11)
-  tanggal       DateTime   @db.Date
-  jam_mulai     DateTime   @db.Time(0)
-  jam_selesai   DateTime   @db.Time(0)
-  status_jadwal String     @default("Aktif") @db.VarChar(20)
+  id_jadwal     Int          @id @default(autoincrement())
+  no_reservasi  String?      @db.VarChar(11)
+  tanggal       DateTime     @db.Date
+  jam_mulai     DateTime     @db.Time(0)
+  jam_selesai   DateTime     @db.Time(0)
+  status_jadwal StatusJadwal @default(Aktif)
 
   reservasi Reservasi? @relation(fields: [no_reservasi], references: [no_reservasi], onDelete: SetNull, onUpdate: Cascade)
 
@@ -91,14 +158,36 @@ model Jadwal {
   @@map("jadwal")
 }
 
-model Pembayaran {
-  id_pembayaran      String    @id @default(dbgenerated("'PAY-' || LPAD(nextval('pembayaran_id_seq')::text, 6, '0')")) @db.VarChar(11)
-  no_reservasi       String    @unique @db.VarChar(11)
-  tanggal_bayar      DateTime  @default(now()) @db.Timestamp(6)
-  total_biaya        Decimal   @db.Decimal(10, 2)
-  metode_pembayaran  String    @db.VarChar(20)
+/**
+ * =====================================================
+ * WEAK ENTITY PEMBAYARAN
+ * =====================================================
+ */
 
-  reservasi Reservasi @relation(fields: [no_reservasi], references: [no_reservasi], onDelete: Restrict, onUpdate: Cascade)
+model Pembayaran {
+  no_reservasi      String           @id @db.VarChar(11)
+  tanggal_bayar     DateTime         @default(now()) @db.Timestamp(6)
+  total_biaya       Decimal          @db.Decimal(10, 2)
+  metode_pembayaran MetodePembayaran
+
+  reservasi Reservasi @relation(fields: [no_reservasi], references: [no_reservasi], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("pembayaran")
+}
+
+/**
+ * =====================================================
+ * WEAK ENTITY PEMBATALAN RESERVASI
+ * =====================================================
+ */
+
+model PembatalanReservasi {
+  no_reservasi      String          @id @db.VarChar(11)
+  alasan_pembatalan String          @db.VarChar(255)
+  pihak_pembatalan  PihakPembatalan
+  dibatalkan_pada   DateTime        @default(now()) @db.Timestamp(6)
+
+  reservasi Reservasi @relation(fields: [no_reservasi], references: [no_reservasi], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("pembatalan_reservasi")
 }
