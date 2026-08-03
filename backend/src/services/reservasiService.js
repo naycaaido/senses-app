@@ -2,19 +2,26 @@ import BadRequestError from "../exceptions/BadRequestError.js";
 import ConflictError from "../exceptions/ConflictError.js";
 import ForbiddenError from "../exceptions/ForbiddenError.js";
 import NotFoundError from "../exceptions/NotFoundError.js";
+import {
+  PihakPembatalan,
+  StatusJadwal,
+  StatusLayanan,
+  StatusReservasi,
+} from "@prisma/client";
 import prisma from "../config/prisma.js";
-
-const RESERVATION_STATUS = [
-  "Terjadwal",
-  "Hadir",
-  "Selesai",
-  "Dibatalkan",
-  "Tidak Hadir",
-];
+import { scheduleStartAtWib } from "../utils/clinicTime.js";
+import {
+  PUBLIC_RESERVATION_STATUSES,
+  toInternalReservationStatus,
+  toPublicReservationStatus,
+} from "../utils/reservationStatus.js";
 
 const STATUS_TRANSITIONS = {
-  Terjadwal: ["Hadir", "Dibatalkan", "Tidak Hadir"],
-  Hadir: ["Selesai"],
+  [StatusReservasi.Terjadwal]: [
+    StatusReservasi.Hadir,
+    StatusReservasi.TidakHadir,
+  ],
+  [StatusReservasi.Hadir]: [StatusReservasi.Selesai],
 };
 
 const RESERVATION_INCLUDE = {
@@ -43,6 +50,8 @@ const RESERVATION_INCLUDE = {
       status_jadwal: true,
     },
   },
+  pembatalan: true,
+  pembayaran: true,
 };
 
 const parsePositiveInteger = (value, field) => {
@@ -73,16 +82,33 @@ const serializeJadwal = (jadwal) => ({
   jam_selesai: jadwal.jam_selesai.toISOString().slice(11, 16),
 });
 
-const serializeReservation = (reservasi) => ({
-  ...reservasi,
-  harga_layanan: Number(reservasi.harga_layanan),
-  tanggal_reservasi: reservasi.tanggal_reservasi.toISOString().slice(0, 10),
-  layanan: {
-    ...reservasi.layanan,
-    harga: Number(reservasi.layanan.harga),
-  },
-  jadwal: reservasi.jadwal.map(serializeJadwal),
-});
+const serializeReservation = (reservasi) => {
+  const { pembatalan, pembayaran, ...data } = reservasi;
+  return {
+    ...data,
+    status_reservasi: toPublicReservationStatus(reservasi.status_reservasi),
+    harga_layanan: Number(reservasi.harga_layanan),
+    tanggal_reservasi: reservasi.tanggal_reservasi.toISOString().slice(0, 10),
+    layanan: {
+      ...reservasi.layanan,
+      harga: Number(reservasi.layanan.harga),
+    },
+    jadwal: reservasi.jadwal.map(serializeJadwal),
+    pembatalan: pembatalan
+      ? {
+          ...pembatalan,
+          dibatalkan_pada: pembatalan.dibatalkan_pada.toISOString(),
+        }
+      : null,
+    pembayaran: pembayaran
+      ? {
+          ...pembayaran,
+          tanggal_bayar: pembayaran.tanggal_bayar.toISOString(),
+          total_biaya: Number(pembayaran.total_biaya),
+        }
+      : null,
+  };
+};
 
 const validateSlots = (slots, selectedIds, expectedSlotCount) => {
   if (slots.length !== selectedIds.length) {
@@ -98,7 +124,7 @@ const validateSlots = (slots, selectedIds, expectedSlotCount) => {
   if (
     slots.some(
       (slot) =>
-        slot.status_jadwal !== "Aktif" || slot.no_reservasi !== null,
+        slot.status_jadwal !== StatusJadwal.Aktif || slot.no_reservasi !== null,
     )
   ) {
     throw new ConflictError("One or more selected schedule slots are unavailable");
@@ -123,6 +149,12 @@ const validateSlots = (slots, selectedIds, expectedSlotCount) => {
       );
     }
   }
+
+  if (scheduleStartAtWib(sorted[0].tanggal, sorted[0].jam_mulai).getTime() <= Date.now()) {
+    throw new ConflictError(
+      "Reservation slot has passed or is no longer available",
+    );
+  }
 };
 
 const createReservation = async ({
@@ -144,7 +176,7 @@ const createReservation = async ({
         select: { email: true, profil_lengkap: true },
       }),
       tx.layanan.findFirst({
-        where: { id_layanan: serviceId, status_layanan: "Aktif" },
+        where: { id_layanan: serviceId, status_layanan: StatusLayanan.Aktif },
         select: { id_layanan: true, estimasi_durasi: true, harga: true },
       }),
       tx.jadwal.findMany({
@@ -186,7 +218,7 @@ const createReservation = async ({
     const claimedSlots = await tx.jadwal.updateMany({
       where: {
         id_jadwal: { in: slotIds },
-        status_jadwal: "Aktif",
+        status_jadwal: StatusJadwal.Aktif,
         no_reservasi: null,
       },
       data: { no_reservasi: reservation.no_reservasi },
@@ -249,12 +281,14 @@ const getReservationsForResepsionis = async ({
   status,
   email_pasien,
 }) => {
-  if (status && !RESERVATION_STATUS.includes(status)) {
+  if (status && !PUBLIC_RESERVATION_STATUSES.includes(status)) {
     throw new BadRequestError("Invalid reservation status");
   }
 
   const where = {
-    ...(status ? { status_reservasi: status } : {}),
+    ...(status
+      ? { status_reservasi: toInternalReservationStatus(status) }
+      : {}),
     ...(email_pasien ? { email_pasien } : {}),
   };
   const [data, total] = await Promise.all([
@@ -280,18 +314,18 @@ const getReservationsForResepsionis = async ({
 };
 
 const cancellationReason = (value) => {
-  if (value === undefined || value === null) {
-    return null;
-  }
   if (typeof value !== "string") {
-    throw new BadRequestError("alasan_pembatalan must be a string");
+    throw new BadRequestError("alasan_pembatalan is required");
   }
 
   const reason = value.trim();
   if (reason.length > 255) {
     throw new BadRequestError("alasan_pembatalan must not exceed 255 characters");
   }
-  return reason || null;
+  if (!reason) {
+    throw new BadRequestError("alasan_pembatalan is required");
+  }
+  return reason;
 };
 
 const assertValidTransition = (currentStatus, nextStatus) => {
@@ -314,9 +348,7 @@ const firstScheduledSlot = (reservasi) => {
 
 const canCancelReservation = (reservasi) => {
   const firstSlot = firstScheduledSlot(reservasi);
-  const date = firstSlot.tanggal.toISOString().slice(0, 10);
-  const time = firstSlot.jam_mulai.toISOString().slice(11, 16);
-  const startAt = new Date(`${date}T${time}:00+07:00`);
+  const startAt = scheduleStartAtWib(firstSlot.tanggal, firstSlot.jam_mulai);
 
   if (Date.now() >= startAt.getTime()) {
     throw new ConflictError(
@@ -329,9 +361,13 @@ const updateReservationStatus = async ({
   no_reservasi,
   nextStatus,
   id_resepsionis = undefined,
-  email_pasien = undefined,
-  alasan_pembatalan = undefined,
 }) => {
+  if (nextStatus === StatusReservasi.Dibatalkan) {
+    throw new BadRequestError(
+      "Cancellation must use the dedicated cancellation endpoint",
+    );
+  }
+
   return prisma.$transaction(async (tx) => {
     const reservasi = await tx.reservasi.findUnique({
       where: { no_reservasi },
@@ -341,24 +377,11 @@ const updateReservationStatus = async ({
       throw new NotFoundError("Reservation not found");
     }
 
-    if (email_pasien && reservasi.email_pasien !== email_pasien) {
-      throw new ForbiddenError("You do not have access to this reservation");
-    }
-
     assertValidTransition(reservasi.status_reservasi, nextStatus);
 
     const data = { status_reservasi: nextStatus };
     if (id_resepsionis !== undefined) {
       data.id_resepsionis = id_resepsionis;
-    }
-
-    if (nextStatus === "Dibatalkan") {
-      canCancelReservation(reservasi);
-      data.alasan_pembatalan = cancellationReason(alasan_pembatalan);
-      await tx.jadwal.updateMany({
-        where: { no_reservasi },
-        data: { no_reservasi: null },
-      });
     }
 
     await tx.reservasi.update({
@@ -373,30 +396,111 @@ const updateReservationStatus = async ({
   });
 };
 
+const cancelReservation = async ({
+  no_reservasi,
+  alasan_pembatalan,
+  pihak_pembatalan,
+  email_pasien,
+  id_resepsionis,
+}) => {
+  const reason = cancellationReason(alasan_pembatalan);
+
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const reservasi = await tx.reservasi.findUnique({
+        where: { no_reservasi },
+        include: RESERVATION_INCLUDE,
+      });
+      if (!reservasi) {
+        throw new NotFoundError("Reservation not found");
+      }
+      if (email_pasien && reservasi.email_pasien !== email_pasien) {
+        throw new ForbiddenError("You do not have access to this reservation");
+      }
+      if (
+        reservasi.status_reservasi === StatusReservasi.Dibatalkan ||
+        reservasi.pembatalan
+      ) {
+        throw new ConflictError("Reservation has already been cancelled");
+      }
+      if (reservasi.status_reservasi !== StatusReservasi.Terjadwal) {
+        throw new ConflictError(
+          `Reservation cannot transition from ${toPublicReservationStatus(reservasi.status_reservasi)} to Dibatalkan`,
+        );
+      }
+
+      canCancelReservation(reservasi);
+      await tx.reservasi.update({
+        where: { no_reservasi },
+        data: {
+          status_reservasi: StatusReservasi.Dibatalkan,
+          ...(pihak_pembatalan === PihakPembatalan.Resepsionis
+            ? { id_resepsionis }
+            : {}),
+        },
+        select: { no_reservasi: true },
+      });
+      await tx.pembatalanReservasi.create({
+        data: {
+          no_reservasi,
+          alasan_pembatalan: reason,
+          pihak_pembatalan,
+        },
+      });
+      await tx.jadwal.updateMany({
+        where: { no_reservasi },
+        data: { no_reservasi: null },
+      });
+
+      return serializeReservation(
+        await tx.reservasi.findUnique({
+          where: { no_reservasi },
+          include: RESERVATION_INCLUDE,
+        }),
+      );
+    });
+  } catch (error) {
+    if (error.code === "P2002") {
+      throw new ConflictError("Reservation has already been cancelled");
+    }
+    throw error;
+  }
+};
+
 const cancelReservationByPatient = async ({
   no_reservasi,
   email_pasien,
   alasan_pembatalan,
 }) => {
-  return updateReservationStatus({
+  return cancelReservation({
     no_reservasi,
-    nextStatus: "Dibatalkan",
     email_pasien,
     alasan_pembatalan,
+    pihak_pembatalan: PihakPembatalan.Pasien,
   });
 };
+
+const cancelReservationByResepsionis = async ({
+  no_reservasi,
+  id_resepsionis,
+  alasan_pembatalan,
+}) =>
+  cancelReservation({
+    no_reservasi,
+    id_resepsionis,
+    alasan_pembatalan,
+    pihak_pembatalan: PihakPembatalan.Resepsionis,
+  });
 
 const updateReservationByResepsionis = async ({
   no_reservasi,
   id_resepsionis,
   nextStatus,
-  alasan_pembatalan,
 }) => {
   return updateReservationStatus({
     no_reservasi,
     nextStatus,
     id_resepsionis,
-    alasan_pembatalan,
   });
 };
 
@@ -406,5 +510,6 @@ export default {
   getPatientReservations,
   getReservationsForResepsionis,
   cancelReservationByPatient,
+  cancelReservationByResepsionis,
   updateReservationByResepsionis,
 };

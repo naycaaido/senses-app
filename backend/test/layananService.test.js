@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { StatusLayanan } from "@prisma/client";
 import prisma from "../src/config/prisma.js";
 import layananService from "../src/services/layananService.js";
 
@@ -7,7 +8,7 @@ test("service creation enforces 30-minute duration and serializes price", async 
   let created;
   prisma.layanan.create = async ({ data }) => {
     created = data;
-    return { id_layanan: 1, ...data, status_layanan: "Aktif" };
+    return { id_layanan: 1, ...data, status_layanan: StatusLayanan.Aktif };
   };
 
   const layanan = await layananService.createLayanan({

@@ -15,10 +15,38 @@ const dateFormatter = new Intl.DateTimeFormat("id-ID", {
 const rupiahFormatter = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0,
 });
+const cancellationDateFormatter = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Asia/Jakarta",
+});
 const EMPTY_MESSAGE = "Tidak ada riwayat kunjungan yang sesuai.";
+
+function cancellationErrorMessage(error) {
+  if (error?.statusCode === 0) return "Koneksi gagal. Periksa jaringan atau server.";
+  if (error?.statusCode === 403) return "Anda tidak memiliki akses untuk membatalkan reservasi ini.";
+  if (error?.statusCode === 404) return "Reservasi tidak ditemukan atau sudah tidak tersedia.";
+  if (error?.statusCode === 409) return "Reservasi sudah berubah atau tidak dapat dibatalkan lagi.";
+  if (error?.statusCode === 400) return "Reservasi tidak dapat dibatalkan. Periksa alasan atau batas waktu pembatalan.";
+  return "Reservasi belum dapat dibatalkan. Silakan coba lagi.";
+}
 
 function toVisit(reservasi) {
   const firstSlot = reservasi.jadwal?.[0];
+  const cancellationDetails = reservasi.pembatalan
+    ? [
+        reservasi.pembatalan?.alasan_pembatalan,
+        reservasi.pembatalan?.pihak_pembatalan
+          ? `Dibatalkan oleh ${reservasi.pembatalan?.pihak_pembatalan}`
+          : null,
+        reservasi.pembatalan?.dibatalkan_pada
+          ? `Dibatalkan pada ${cancellationDateFormatter.format(new Date(reservasi.pembatalan?.dibatalkan_pada))} WIB`
+          : null,
+      ].filter(Boolean).join(" • ")
+    : null;
   return {
     serviceName: reservasi.layanan.nama_layanan,
     reservationId: reservasi.no_reservasi,
@@ -27,8 +55,8 @@ function toVisit(reservasi) {
     time: firstSlot ? `${firstSlot.jam_mulai} WIB` : "—",
     duration: `${reservasi.layanan.estimasi_durasi} Menit`,
     paymentMethod: null,
-    noteLabel: reservasi.keluhan_awal ? "Keluhan Awal" : "Catatan Reservasi",
-    note: reservasi.keluhan_awal || "Tidak ada keluhan awal.",
+    noteLabel: reservasi.pembatalan ? "Detail Pembatalan" : reservasi.keluhan_awal ? "Keluhan Awal" : "Catatan Reservasi",
+    note: cancellationDetails || reservasi.keluhan_awal || "Tidak ada keluhan awal.",
     totalPayment: rupiahFormatter.format(reservasi.harga_layanan),
   };
 }
@@ -69,25 +97,28 @@ export default function PatientHistoryPage() {
   };
 
   const handleCancellation = async () => {
-    if (!cancellationTarget) return;
+    if (!cancellationTarget || cancelling) return;
+
+    const reason = cancelReason.trim();
+    if (!reason) {
+      setCancelError("Alasan pembatalan wajib diisi.");
+      return;
+    }
+    if (reason.length > 255) {
+      setCancelError("Alasan pembatalan maksimal 255 karakter.");
+      return;
+    }
 
     setCancelling(true);
     setCancelError("");
     try {
-      const reservasi = await cancelPatientReservation(
-        cancellationTarget.reservationId,
-        cancelReason.trim() ? { alasan_pembatalan: cancelReason.trim() } : {},
-      );
-      const updatedVisit = toVisit(reservasi);
-      setVisits((current) => current.map((visit) =>
-        visit.reservationId === updatedVisit.reservationId ? updatedVisit : visit,
-      ));
+      await cancelPatientReservation(cancellationTarget.reservationId, reason);
+      await loadVisits();
       setCancellationTarget(null);
       setCancelReason("");
     } catch (requestError) {
-      setCancelError(
-        requestError.message || "Reservasi belum dapat dibatalkan. Silakan coba lagi.",
-      );
+      if ([404, 409].includes(requestError?.statusCode)) await loadVisits();
+      setCancelError(cancellationErrorMessage(requestError));
     } finally {
       setCancelling(false);
     }
@@ -154,7 +185,7 @@ export default function PatientHistoryPage() {
               Reservasi {cancellationTarget.serviceName} pada {cancellationTarget.date} pukul {cancellationTarget.time} akan dibatalkan. Aksi ini tidak dapat dikembalikan dan slot jadwal akan tersedia untuk pasien lain.
             </p>
             <label htmlFor="cancel-reason" className="mt-5 block text-sm font-semibold text-[#2c2c2c]">
-              Alasan pembatalan <span className="font-normal text-[#6b6b6b]">(opsional)</span>
+              Alasan pembatalan <span className="font-normal text-[#6b6b6b]">*</span>
             </label>
             <textarea
               id="cancel-reason"

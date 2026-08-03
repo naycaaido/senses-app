@@ -43,7 +43,7 @@ export default function DetailPasien() {
   }
 
   const history = reservations.filter((r) => r.patientId === patient.id)
-  const invoices = payments.filter((p) => p.patientId === patient.id)
+  const invoices = payments.filter((p) => reservations.some((r) => r.id === p.no_reservasi && r.patientId === patient.id))
 
   return (
     <div className="flex flex-col gap-5">
@@ -148,7 +148,7 @@ export default function DetailPasien() {
               <table className="w-full min-w-[600px]">
                 <thead>
                   <tr className="border-y border-[#e6e6e2] bg-[#f5f5f3]/60 text-left">
-                    {['No Pembayaran', 'Layanan', 'Tanggal', 'Total', 'Method'].map((h) => (
+                    {['No Reservasi', 'Layanan', 'Tanggal', 'Total', 'Method'].map((h) => (
                       <th key={h} className="px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#434655]">
                         {h}
                       </th>
@@ -158,23 +158,23 @@ export default function DetailPasien() {
                 <tbody>
                   {invoices.length === 0 && <EmptyRow colSpan={5}>Belum ada pembayaran.</EmptyRow>}
                   {invoices.map((p) => (
-                    <tr key={p.id} className="border-b border-[#e6e6e2] last:border-b-0">
+                    <tr key={p.no_reservasi} className="border-b border-[#e6e6e2] last:border-b-0">
                       <td className="px-5 py-4 text-[13px] text-[#191c1e]">
-                        {p.reservationId ? (
+                        {p.no_reservasi ? (
                           <button
-                            onClick={() => navigate(`/resepsionis/reservasi/${p.reservationId}`)}
+                            onClick={() => navigate(`/resepsionis/reservasi/${p.no_reservasi}`)}
                             className="text-[13px] font-semibold text-[#2563eb] hover:underline"
                           >
-                            #{p.id}
+                            {p.no_reservasi}
                           </button>
                         ) : (
-                          <span className="text-[13px] font-semibold text-[#2563eb]">#{p.id}</span>
+                          <span className="text-[13px] font-semibold text-[#2563eb]">{p.no_reservasi}</span>
                         )}
                       </td>
-                      <td className="px-5 py-4 text-[13px] text-[#191c1e]">{p.service}</td>
-                      <td className="px-5 py-4 text-[13px] text-[#191c1e]">{formatDate(p.date)}</td>
-                      <td className="px-5 py-4 text-[13px] font-bold text-[#191c1e]">{formatRupiah(p.amount)}</td>
-                      <td className="px-5 py-4 text-[13px] text-[#434655]">{p.method}</td>
+                      <td className="px-5 py-4 text-[13px] text-[#191c1e]">{reservations.find((r) => r.id === p.no_reservasi)?.service || 'Layanan'}</td>
+                      <td className="px-5 py-4 text-[13px] text-[#191c1e]">{formatDate(p.tanggal_bayar)}</td>
+                      <td className="px-5 py-4 text-[13px] font-bold text-[#191c1e]">{formatRupiah(Number(p.total_biaya))}</td>
+                      <td className="px-5 py-4 text-[13px] text-[#434655]">{p.metode_pembayaran}</td>
                     </tr>
                   ))}
                 </tbody>

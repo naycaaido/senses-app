@@ -41,7 +41,7 @@ const expectedOperations = [
   ["GET", "/resepsionis/reservasi/{no_reservasi}/tagihan"],
   ["GET", "/resepsionis/pembayaran"],
   ["POST", "/resepsionis/pembayaran"],
-  ["GET", "/resepsionis/pembayaran/{id_pembayaran}"],
+  ["GET", "/resepsionis/pembayaran/{no_reservasi}"],
 ];
 
 const publicOperations = new Set([
@@ -104,7 +104,9 @@ test("Swagger documents request bodies and query parameters enforced by controll
     ["PUT", "/resepsionis/pasien/{email}"],
     ["PUT", "/resepsionis/layanan/{id_layanan}"],
     ["PATCH", "/resepsionis/jadwal/batch-status"],
+    ["PATCH", "/reservasi/{no_reservasi}/batal"],
     ["POST", "/resepsionis/reservasi"],
+    ["PATCH", "/resepsionis/reservasi/{no_reservasi}/batal"],
     ["POST", "/resepsionis/pembayaran"],
   ];
 
@@ -150,6 +152,7 @@ test("Swagger exposes schemas for API resources and pagination", () => {
     "Layanan",
     "Jadwal",
     "Reservasi",
+    "PembatalanReservasi",
     "Pembayaran",
     "Tagihan",
     "Pagination",
@@ -163,4 +166,17 @@ test("Swagger exposes schemas for API resources and pagination", () => {
     ].schema;
   assert.ok(reservationListResponse.properties.data);
   assert.ok(reservationListResponse.properties.pagination);
+
+  assert.equal(schemas.Reservasi.properties.alasan_pembatalan, undefined);
+  assert.ok(schemas.Reservasi.properties.pembatalan);
+  assert.equal(schemas.Pembayaran.properties.id_pembayaran, undefined);
+  assert.deepEqual(
+    schemas.CancellationRequest.required,
+    ["alasan_pembatalan"],
+  );
+  assert.match(schemas.CancellationRequest.description, /role JWT/);
+  assert.deepEqual(
+    schemas.Reservasi.properties.status_reservasi.enum,
+    ["Terjadwal", "Hadir", "Selesai", "Dibatalkan", "Tidak Hadir"],
+  );
 });

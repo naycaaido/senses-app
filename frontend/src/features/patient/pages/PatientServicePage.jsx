@@ -75,20 +75,6 @@ export default function PatientServicePage() {
               />
             ))}
         </div>
-
-        <aside className='mt-8 flex items-start gap-4 rounded-2xl border border-[#f5edd6] bg-[#f5edd6] p-[21px]'>
-          <div className='mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-[#a8945e]/20'>
-            <img className='w-7 h-7' src='/assets/icon-info.svg' alt='' />
-          </div>
-          <p className='m-0 text-[15px] leading-6 text-[#2c2c2c]'>
-            <strong>
-              Tindakan medis lain ditentukan oleh dokter saat konsultasi.
-            </strong>{" "}
-            Untuk kondisi tertentu, dr. Ria Vista Sari, SpDV akan menyusun
-            rencana perawatan yang sesuai dengan kebutuhan Anda, bukan paket
-            instan.
-          </p>
-        </aside>
       </div>
     </div>
   );

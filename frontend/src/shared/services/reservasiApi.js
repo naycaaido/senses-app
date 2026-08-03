@@ -7,6 +7,33 @@ function requireArray(value, message) {
   return value;
 }
 
+function normalizeCancellation(pembatalan) {
+  if (!pembatalan) return null;
+  return {
+    alasan_pembatalan: pembatalan?.alasan_pembatalan,
+    pihak_pembatalan: pembatalan?.pihak_pembatalan,
+    dibatalkan_pada: pembatalan?.dibatalkan_pada,
+  };
+}
+
+function normalizeReservation(reservasi) {
+  return {
+    ...reservasi,
+    pembatalan: normalizeCancellation(reservasi?.pembatalan),
+  };
+}
+
+function requiredCancellationReason(value) {
+  const reason = typeof value === "string" ? value.trim() : "";
+  if (!reason) {
+    throw new Error("Alasan pembatalan wajib diisi.");
+  }
+  if (reason.length > 255) {
+    throw new Error("Alasan pembatalan maksimal 255 karakter.");
+  }
+  return reason;
+}
+
 export async function getAvailableSchedules(tanggal) {
   const response = await api.get("/jadwal/tersedia", { tanggal });
   return requireArray(response?.data, "Format jadwal dari server tidak valid.");
@@ -17,7 +44,7 @@ export async function createPatientReservation(payload) {
   if (!response?.reservasi) {
     throw new Error("Format reservasi dari server tidak valid.");
   }
-  return response.reservasi;
+  return normalizeReservation(response.reservasi);
 }
 
 export async function getReservationDetail(noReservasi) {
@@ -25,25 +52,29 @@ export async function getReservationDetail(noReservasi) {
   if (!response?.reservasi) {
     throw new Error("Format detail reservasi dari server tidak valid.");
   }
-  return response.reservasi;
+  return normalizeReservation(response.reservasi);
 }
 
 export async function getMyReservations(params = {}) {
   const response = await api.get("/reservasi/me", params);
   return {
-    data: requireArray(response?.data, "Format riwayat reservasi dari server tidak valid."),
+    data: requireArray(
+      response?.data,
+      "Format riwayat reservasi dari server tidak valid.",
+    ).map(normalizeReservation),
     pagination: response?.pagination,
   };
 }
 
 
-export async function cancelPatientReservation(noReservasi, payload = {}) {
+export async function cancelPatientReservation(noReservasi, alasanPembatalan) {
+  const alasan_pembatalan = requiredCancellationReason(alasanPembatalan);
   const response = await api.patch(
     `/reservasi/${encodeURIComponent(noReservasi)}/batal`,
-    payload,
+    { alasan_pembatalan },
   );
   if (!response?.reservasi) {
     throw new Error("Format reservasi dari server tidak valid.");
   }
-  return response.reservasi;
+  return normalizeReservation(response.reservasi);
 }

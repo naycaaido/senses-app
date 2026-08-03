@@ -1,4 +1,5 @@
 import BadRequestError from "../exceptions/BadRequestError.js";
+import { StatusReservasi } from "@prisma/client";
 import reservasiService from "../services/reservasiService.js";
 
 const parsePositiveInteger = (value, field, defaultValue, max) => {
@@ -56,7 +57,6 @@ const updateReservationStatus = (nextStatus) => async (req, res, next) => {
       no_reservasi: req.params.no_reservasi,
       id_resepsionis: req.user.id_resepsionis,
       nextStatus,
-      alasan_pembatalan: req.body.alasan_pembatalan,
     });
     return res.status(200).json({
       message: "Reservation status updated successfully",
@@ -67,10 +67,25 @@ const updateReservationStatus = (nextStatus) => async (req, res, next) => {
   }
 };
 
-const tandaiHadir = updateReservationStatus("Hadir");
-const selesaikanReservation = updateReservationStatus("Selesai");
-const tandaiTidakHadir = updateReservationStatus("Tidak Hadir");
-const batalkanReservation = updateReservationStatus("Dibatalkan");
+const tandaiHadir = updateReservationStatus(StatusReservasi.Hadir);
+const selesaikanReservation = updateReservationStatus(StatusReservasi.Selesai);
+const tandaiTidakHadir = updateReservationStatus(StatusReservasi.TidakHadir);
+
+const batalkanReservation = async (req, res, next) => {
+  try {
+    const reservasi = await reservasiService.cancelReservationByResepsionis({
+      no_reservasi: req.params.no_reservasi,
+      id_resepsionis: req.user.id_resepsionis,
+      alasan_pembatalan: req.body.alasan_pembatalan,
+    });
+    return res.status(200).json({
+      message: "Reservation cancelled successfully",
+      reservasi,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
 
 export default {
   listReservations,

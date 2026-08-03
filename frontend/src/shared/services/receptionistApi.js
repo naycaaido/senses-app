@@ -1,6 +1,14 @@
 import api from "../utils/api.js";
 
 const toDotTime = (value) => (typeof value === "string" ? value.replace(":", ".") : "—");
+const RECEPTIONIST_STATUS_ACTIONS = new Set(["hadir", "selesai", "tidak-hadir"]);
+
+function requiredCancellationReason(value) {
+  const reason = typeof value === "string" ? value.trim() : "";
+  if (!reason) throw new Error("Alasan pembatalan wajib diisi.");
+  if (reason.length > 255) throw new Error("Alasan pembatalan maksimal 255 karakter.");
+  return reason;
+}
 
 export function mapReceptionistService(layanan) {
   return {
@@ -39,7 +47,21 @@ export function mapReceptionistReservation(reservasi) {
     endTime: toDotTime(lastSlot?.jam_selesai),
     status: reservasi.status_reservasi,
     complaint: reservasi.keluhan_awal,
-    cancelReason: reservasi.alasan_pembatalan,
+    pembatalan: reservasi.pembatalan
+      ? {
+          alasan_pembatalan: reservasi.pembatalan?.alasan_pembatalan,
+          pihak_pembatalan: reservasi.pembatalan?.pihak_pembatalan,
+          dibatalkan_pada: reservasi.pembatalan?.dibatalkan_pada,
+        }
+      : null,
+    pembayaran: reservasi.pembayaran
+      ? {
+          no_reservasi: reservasi.pembayaran?.no_reservasi,
+          tanggal_bayar: reservasi.pembayaran?.tanggal_bayar,
+          total_biaya: reservasi.pembayaran?.total_biaya,
+          metode_pembayaran: reservasi.pembayaran?.metode_pembayaran,
+        }
+      : null,
     slots: reservasi.jadwal || [],
   };
 }
@@ -123,8 +145,21 @@ export async function getReceptionistReservationDetail(id) {
   return mapReceptionistReservation(response.reservasi);
 }
 
-export async function updateReceptionistReservationStatus(id, action, body) {
-  const response = await api.patch(`/resepsionis/reservasi/${encodeURIComponent(id)}/${action}`, body);
+export async function updateReceptionistReservationStatus(id, action) {
+  if (!RECEPTIONIST_STATUS_ACTIONS.has(action)) {
+    throw new Error("Aksi status reservasi tidak valid.");
+  }
+  const response = await api.patch(`/resepsionis/reservasi/${encodeURIComponent(id)}/${action}`);
+  if (!response?.reservasi) throw new Error("Format reservasi dari server tidak valid.");
+  return mapReceptionistReservation(response.reservasi);
+}
+
+export async function cancelReceptionistReservation(id, alasanPembatalan) {
+  const alasan_pembatalan = requiredCancellationReason(alasanPembatalan);
+  const response = await api.patch(
+    `/resepsionis/reservasi/${encodeURIComponent(id)}/batal`,
+    { alasan_pembatalan },
+  );
   if (!response?.reservasi) throw new Error("Format reservasi dari server tidak valid.");
   return mapReceptionistReservation(response.reservasi);
 }
