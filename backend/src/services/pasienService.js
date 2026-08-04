@@ -31,6 +31,30 @@ const normalizeOptionalValue = (value) => {
   return value ?? null;
 };
 
+const normalizeBirthDate = (value) => {
+  const normalized = normalizeOptionalValue(value);
+  if (normalized === null) {
+    return null;
+  }
+
+  if (
+    typeof normalized !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(normalized)
+  ) {
+    throw new BadRequestError("Tanggal lahir tidak valid");
+  }
+
+  const date = new Date(`${normalized}T00:00:00.000Z`);
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.toISOString().slice(0, 10) !== normalized
+  ) {
+    throw new BadRequestError("Tanggal lahir tidak valid");
+  }
+
+  return date;
+};
+
 const requiredText = (value, field) => {
   const normalized = typeof value === "string" ? value.trim() : value;
   if (!normalized) {
@@ -47,7 +71,9 @@ const profileDataFrom = (payload) =>
   Object.fromEntries(
     PROFILE_FIELDS.filter((field) => field in payload).map((field) => [
       field,
-      normalizeOptionalValue(payload[field]),
+      field === "tanggal_lahir"
+        ? normalizeBirthDate(payload[field])
+        : normalizeOptionalValue(payload[field]),
     ]),
   );
 
@@ -136,6 +162,8 @@ const updatePasienByResepsionis = async (email, payload) => {
     data[field] =
       field === "nama_lengkap" || field === "telepon"
         ? requiredText(payload[field], field)
+        : field === "tanggal_lahir"
+          ? normalizeBirthDate(payload[field])
         : normalizeOptionalValue(payload[field]);
   }
 
