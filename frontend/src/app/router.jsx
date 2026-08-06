@@ -35,83 +35,96 @@ import ReceptionistLoginPage from "../features/receptionist/pages/ReceptionistLo
 export default function AppRouter() {
   return (
     <Routes>
-        <Route element={<PublicLayout />}>
-          <Route path='/' element={<LandingPage />} />
-          <Route path='/layanan' element={<ServiceCatalogPage />} />
-        </Route>
-        <Route element={<ProtectedRoute allowedRoles={["pasien"]}><PatientLayout /></ProtectedRoute>}>
-          <Route path='/pasien/beranda' element={<PatientDashboardPage />} />
-          <Route path='/pasien/beranda/tanpa-reservasi' element={<PatientNoActiveReservationPreviewPage />} />
-          <Route path='/pasien/layanan' element={<PatientServicePage />} />
-          <Route
-            path='/pasien/reservasi'
-            element={<PatientReservationPage />}
-          />
-          <Route
-            path='/pasien/bukti-booking'
-            element={<PatientBookingProofPage />}
-          />
-          <Route path='/pasien/riwayat' element={<PatientHistoryPage />} />
-          <Route path='/pasien/profil' element={<PatientProfilePage />} />
-          <Route
-            path='/pasien/profil/ubah'
-            element={<PatientEditProfilePage />}
-          />
-        </Route>
-        <Route path="/resepsionis/login" element={<ReceptionistLoginPage />} />
+      <Route element={<PublicLayout />}>
+        <Route path='/' element={<LandingPage />} />
+        <Route path='/layanan' element={<ServiceCatalogPage />} />
+      </Route>
+      <Route
+        element={
+          <ProtectedRoute allowedRoles={["pasien"]}>
+            <PatientLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path='/pasien/beranda' element={<PatientDashboardPage />} />
         <Route
-          path="/resepsionis"
-          element={
-            <ProtectedRoute allowedRoles={["resepsionis"]}>
-              <ReceptionistLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<ReceptionistDashboardPage />} />
-          <Route path="reservasi" element={<ReceptionistReservationPage />} />
-          <Route
-            path="reservasi/baru"
-            element={<ReceptionistNewReservationPage />}
-          />
-          <Route
-            path="reservasi/:id"
-            element={<ReceptionistReservationDetailPage />}
-          />
-          <Route path="data-pasien" element={<ReceptionistPatientDataPage />} />
-          <Route
-            path="data-pasien/baru"
-            element={<ReceptionistPatientRegistrationPage />}
-          />
-          <Route
-            path="data-pasien/:id"
-            element={<ReceptionistPatientDetailPage />}
-          />
-          <Route
-            path="data-pasien/:id/edit"
-            element={<ReceptionistPatientRegistrationPage />}
-          />
-          <Route
-            path="jadwal"
-            element={<ReceptionistOperationalSchedulePage />}
-          />
-          <Route path="jadwal/api" element={<ReceptionistOperationalScheduleApiPage />} />
-          <Route path="layanan" element={<ReceptionistServicePage />} />
-          <Route
-            path="layanan/baru"
-            element={<ReceptionistServiceFormPage />}
-          />
-          <Route
-            path="layanan/:id/edit"
-            element={<ReceptionistServiceFormPage />}
-          />
-          <Route path="pembayaran" element={<ReceptionistPaymentPage />} />
-          <Route path="*" element={<Navigate to="dashboard" replace />} />
-        </Route>
-        <Route path='/login' element={<LoginPage />} />
-        <Route path='/register' element={<RegisterPage />} />
-        <Route path='/lengkapi-biodata' element={<ProtectedRoute allowedRoles={["pasien"]}><BiodataPage /></ProtectedRoute>} />
-        <Route path='*' element={<NotFoundPage />} />
+          path='/pasien/beranda/tanpa-reservasi'
+          element={<PatientNoActiveReservationPreviewPage />}
+        />
+        <Route path='/pasien/layanan' element={<PatientServicePage />} />
+        <Route path='/pasien/reservasi' element={<PatientReservationPage />} />
+        <Route
+          path='/pasien/bukti-booking'
+          element={<PatientBookingProofPage />}
+        />
+        <Route path='/pasien/riwayat' element={<PatientHistoryPage />} />
+        <Route path='/pasien/profil' element={<PatientProfilePage />} />
+        <Route
+          path='/pasien/profil/ubah'
+          element={<PatientEditProfilePage />}
+        />
+      </Route>
+      <Route path='/resepsionis/login' element={<ReceptionistLoginPage />} />
+      <Route
+        path='/resepsionis'
+        element={
+          <ProtectedRoute allowedRoles={["resepsionis"]}>
+            <ReceptionistLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to='dashboard' replace />} />
+        <Route path='dashboard' element={<ReceptionistDashboardPage />} />
+        <Route path='reservasi' element={<ReceptionistReservationPage />} />
+        <Route
+          path='reservasi/baru'
+          element={<ReceptionistNewReservationPage />}
+        />
+        <Route
+          path='reservasi/:id'
+          element={<ReceptionistReservationDetailPage />}
+        />
+        <Route path='data-pasien' element={<ReceptionistPatientDataPage />} />
+        <Route
+          path='data-pasien/baru'
+          element={<ReceptionistPatientRegistrationPage />}
+        />
+        <Route
+          path='data-pasien/:id'
+          element={<ReceptionistPatientDetailPage />}
+        />
+        <Route
+          path='data-pasien/:id/edit'
+          element={<ReceptionistPatientRegistrationPage />}
+        />
+        <Route
+          path='jadwal'
+          element={<ReceptionistOperationalSchedulePage />}
+        />
+        <Route
+          path='jadwal/api'
+          element={<ReceptionistOperationalScheduleApiPage />}
+        />
+        <Route path='layanan' element={<ReceptionistServicePage />} />
+        <Route path='layanan/baru' element={<ReceptionistServiceFormPage />} />
+        <Route
+          path='layanan/:id/edit'
+          element={<ReceptionistServiceFormPage />}
+        />
+        <Route path='pembayaran' element={<ReceptionistPaymentPage />} />
+        <Route path='*' element={<Navigate to='dashboard' replace />} />
+      </Route>
+      <Route path='/login' element={<LoginPage />} />
+      <Route path='/register' element={<RegisterPage />} />
+      <Route
+        path='/lengkapi-biodata'
+        element={
+          <ProtectedRoute allowedRoles={["pasien"]}>
+            <BiodataPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path='*' element={<NotFoundPage />} />
     </Routes>
   );
 }

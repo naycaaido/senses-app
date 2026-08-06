@@ -59,6 +59,10 @@ export default function RegisterPage() {
       setError("Semua field wajib diisi.");
       return;
     }
+    if (password.length < 8) {
+      setError("Kata sandi harus minimal 8 karakter.");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Konfirmasi kata sandi tidak cocok.");
       return;

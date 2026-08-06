@@ -20,7 +20,7 @@ export default function BiodataPage() {
     return null;
   }
 
-  if (sessionUser.role !== "pasien") {
+  if (sessionUser.role !== "resepsionis") {
     clearAuthSession();
     navigate("/login", { replace: true });
     return null;
@@ -32,9 +32,7 @@ export default function BiodataPage() {
   }
 
   const displayEmail =
-    sessionUser.email ||
-    localStorage.getItem("pendingProfileEmail") ||
-    "";
+    sessionUser.email || localStorage.getItem("pendingProfileEmail") || "";
 
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState("");
@@ -89,27 +87,61 @@ export default function BiodataPage() {
 
   return (
     <div className={"flex min-h-screen flex-col items-center bg-[#fbf8f3]"}>
-      <div className={"flex w-full max-w-3xl flex-col items-center px-5 pt-6 md:pt-10"}>
-        <div className={"flex items-baseline whitespace-nowrap font-serif leading-none"}>
-          <span className={"text-2xl font-bold tracking-[0.18em] text-[#3d4940]"}>SENSE&rsquo;S</span>
-          <span className={"ml-1.5 text-[18.72px] italic text-[#a8945e]"}>clinic</span>
+      <div
+        className={
+          "flex w-full max-w-3xl flex-col items-center px-5 pt-6 md:pt-10"
+        }
+      >
+        <div
+          className={
+            "flex items-baseline whitespace-nowrap font-serif leading-none"
+          }
+        >
+          <span
+            className={"text-2xl font-bold tracking-[0.18em] text-[#3d4940]"}
+          >
+            SENSE&rsquo;S
+          </span>
+          <span className={"ml-1.5 text-[18.72px] italic text-[#a8945e]"}>
+            clinic
+          </span>
         </div>
 
-        <div className={"mt-10 flex w-full max-w-[464px] items-center justify-center gap-2 md:mt-[50px]"}>
+        <div
+          className={
+            "mt-10 flex w-full max-w-[464px] items-center justify-center gap-2 md:mt-[50px]"
+          }
+        >
           <div className={"flex items-center gap-2"}>
-            <div className={"flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold leading-4 tracking-[0.06em] bg-[#ebf0eb] text-[#3d4940]"}>
+            <div
+              className={
+                "flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold leading-4 tracking-[0.06em] bg-[#ebf0eb] text-[#3d4940]"
+              }
+            >
               1
             </div>
-            <span className={"whitespace-nowrap text-xs font-semibold leading-4 tracking-[0.06em] text-[#2c2c2c]"}>
+            <span
+              className={
+                "whitespace-nowrap text-xs font-semibold leading-4 tracking-[0.06em] text-[#2c2c2c]"
+              }
+            >
               Buat Akun
             </span>
             <div className={"mx-1 h-px min-w-0 flex-1 bg-[#f0ede7]"} />
           </div>
           <div className={"flex items-center gap-2"}>
-            <div className={"flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold leading-4 tracking-[0.06em] bg-[#3d4940] text-white"}>
+            <div
+              className={
+                "flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold leading-4 tracking-[0.06em] bg-[#3d4940] text-white"
+              }
+            >
               2
             </div>
-            <span className={"whitespace-nowrap text-xs font-semibold leading-4 tracking-[0.06em] text-[#6b6b6b]"}>
+            <span
+              className={
+                "whitespace-nowrap text-xs font-semibold leading-4 tracking-[0.06em] text-[#6b6b6b]"
+              }
+            >
               Lengkapi Biodata
             </span>
           </div>
@@ -117,24 +149,51 @@ export default function BiodataPage() {
       </div>
 
       <div className={"w-full max-w-3xl px-5 pb-8 md:pb-10"}>
-        <h1 className={"mt-6 font-serif text-[28px] font-bold leading-[35px] text-[#3d4940]"}>Lengkapi Biodata</h1>
+        <h1
+          className={
+            "mt-6 font-serif text-[28px] font-bold leading-[35px] text-[#3d4940]"
+          }
+        >
+          Lengkapi Biodata
+        </h1>
         <p className={"mt-1 text-[15px] leading-6 text-[#6b6b6b]"}>
           Satu langkah lagi sebelum masuk. Data ini membantu kami memahami
           kondisi Anda sebelum merawat.
         </p>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className={"mt-6 rounded-2xl border border-[#f0ede7] bg-white p-5 md:p-[25px]"}>
-            <h2 className={"m-0 flex items-center gap-2 font-serif text-[22px] font-bold leading-[28.6px] text-[#3d4940]"}>Kontak</h2>
+          <div
+            className={
+              "mt-6 rounded-2xl border border-[#f0ede7] bg-white p-5 md:p-[25px]"
+            }
+          >
+            <h2
+              className={
+                "m-0 flex items-center gap-2 font-serif text-[22px] font-bold leading-[28.6px] text-[#3d4940]"
+              }
+            >
+              Kontak
+            </h2>
             <div className={"pt-4"}>
               <div className={"grid grid-cols-1 gap-4 md:grid-cols-2"}>
                 <div className={"flex flex-col"}>
-                  <label className={"mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"} htmlFor='phone'>
+                  <label
+                    className={
+                      "mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"
+                    }
+                    htmlFor='phone'
+                  >
                     Nomor Telepon
                   </label>
-                  <div className={"relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940] [&_input]:pl-[37px] [&_select]:pl-[37px]"}>
+                  <div
+                    className={
+                      "relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940] [&_input]:pl-[37px] [&_select]:pl-[37px]"
+                    }
+                  >
                     <img
-                      className={"pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"}
+                      className={
+                        "pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
+                      }
                       src='/assets/icon-phone.svg'
                       alt=''
                     />
@@ -149,12 +208,23 @@ export default function BiodataPage() {
                   </div>
                 </div>
                 <div className={"flex flex-col"}>
-                  <label className={"mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"} htmlFor='email'>
+                  <label
+                    className={
+                      "mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"
+                    }
+                    htmlFor='email'
+                  >
                     Email
                   </label>
-                  <div className={"relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940] [&_input]:pl-[37px] [&_select]:pl-[37px] [&_input]:cursor-default [&_input]:bg-[#f9f7f4] [&_input]:text-[#6b6b6b]"}>
+                  <div
+                    className={
+                      "relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940] [&_input]:pl-[37px] [&_select]:pl-[37px] [&_input]:cursor-default [&_input]:bg-[#f9f7f4] [&_input]:text-[#6b6b6b]"
+                    }
+                  >
                     <img
-                      className={"pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"}
+                      className={
+                        "pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
+                      }
                       src='/assets/icon-mail.svg'
                       alt=''
                     />
@@ -173,17 +243,38 @@ export default function BiodataPage() {
             </div>
           </div>
 
-          <div className={"mt-6 rounded-2xl border border-[#f0ede7] bg-white p-5 md:p-[25px]"}>
-            <h2 className={"m-0 flex items-center gap-2 font-serif text-[22px] font-bold leading-[28.6px] text-[#3d4940]"}>Biodata Pasien</h2>
+          <div
+            className={
+              "mt-6 rounded-2xl border border-[#f0ede7] bg-white p-5 md:p-[25px]"
+            }
+          >
+            <h2
+              className={
+                "m-0 flex items-center gap-2 font-serif text-[22px] font-bold leading-[28.6px] text-[#3d4940]"
+              }
+            >
+              Biodata Pasien
+            </h2>
             <div className={"pt-4"}>
               <div className={"grid grid-cols-1 gap-4 md:grid-cols-2"}>
                 <div className={"flex flex-col"}>
-                  <label className={"mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"} htmlFor='gender'>
+                  <label
+                    className={
+                      "mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"
+                    }
+                    htmlFor='gender'
+                  >
                     Jenis Kelamin
                   </label>
-                  <div className={"relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940] [&_input]:pl-[37px] [&_select]:pl-[37px] [&_select]:pr-10"}>
+                  <div
+                    className={
+                      "relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940] [&_input]:pl-[37px] [&_select]:pl-[37px] [&_select]:pr-10"
+                    }
+                  >
                     <img
-                      className={"pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 left-auto right-3"}
+                      className={
+                        "pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 left-auto right-3"
+                      }
                       src='/assets/icon-chevron-down.svg'
                       alt=''
                     />
@@ -201,10 +292,19 @@ export default function BiodataPage() {
                   </div>
                 </div>
                 <div className={"flex flex-col"}>
-                  <label className={"mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"} htmlFor='birthPlace'>
+                  <label
+                    className={
+                      "mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"
+                    }
+                    htmlFor='birthPlace'
+                  >
                     Tempat Lahir
                   </label>
-                  <div className={"relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"}>
+                  <div
+                    className={
+                      "relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"
+                    }
+                  >
                     <input
                       id='birthPlace'
                       type='text'
@@ -216,10 +316,19 @@ export default function BiodataPage() {
                   </div>
                 </div>
                 <div className={"flex flex-col"}>
-                  <label className={"mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"} htmlFor='birthDate'>
+                  <label
+                    className={
+                      "mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"
+                    }
+                    htmlFor='birthDate'
+                  >
                     Tanggal Lahir
                   </label>
-                  <div className={"relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"}>
+                  <div
+                    className={
+                      "relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"
+                    }
+                  >
                     <input
                       id='birthDate'
                       type='date'
@@ -231,14 +340,22 @@ export default function BiodataPage() {
                 </div>
                 <div className={"flex flex-col"}>
                   <label
-                    className={"mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"}
+                    className={
+                      "mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"
+                    }
                     htmlFor='lastEducation'
                   >
                     Pendidikan Terakhir
                   </label>
-                  <div className={"relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940] [&_input]:pl-[37px] [&_select]:pl-[37px] [&_select]:pr-10"}>
+                  <div
+                    className={
+                      "relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940] [&_input]:pl-[37px] [&_select]:pl-[37px] [&_select]:pr-10"
+                    }
+                  >
                     <img
-                      className={"pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 left-auto right-3"}
+                      className={
+                        "pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 left-auto right-3"
+                      }
                       src='/assets/icon-chevron-down.svg'
                       alt=''
                     />
@@ -261,10 +378,19 @@ export default function BiodataPage() {
                   </div>
                 </div>
                 <div className={"flex flex-col"}>
-                  <label className={"mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"} htmlFor='occupation'>
+                  <label
+                    className={
+                      "mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"
+                    }
+                    htmlFor='occupation'
+                  >
                     Pekerjaan
                   </label>
-                  <div className={"relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"}>
+                  <div
+                    className={
+                      "relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"
+                    }
+                  >
                     <input
                       id='occupation'
                       type='text'
@@ -277,14 +403,22 @@ export default function BiodataPage() {
                 </div>
                 <div className={"flex flex-col"}>
                   <label
-                    className={"mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"}
+                    className={
+                      "mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"
+                    }
                     htmlFor='maritalStatus'
                   >
                     Status Perkawinan
                   </label>
-                  <div className={"relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940] [&_input]:pl-[37px] [&_select]:pl-[37px] [&_select]:pr-10"}>
+                  <div
+                    className={
+                      "relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940] [&_input]:pl-[37px] [&_select]:pl-[37px] [&_select]:pr-10"
+                    }
+                  >
                     <img
-                      className={"pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 left-auto right-3"}
+                      className={
+                        "pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 left-auto right-3"
+                      }
                       src='/assets/icon-chevron-down.svg'
                       alt=''
                     />
@@ -302,10 +436,19 @@ export default function BiodataPage() {
                   </div>
                 </div>
                 <div className={"flex flex-col"}>
-                  <label className={"mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"} htmlFor='religion'>
+                  <label
+                    className={
+                      "mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"
+                    }
+                    htmlFor='religion'
+                  >
                     Agama
                   </label>
-                  <div className={"relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"}>
+                  <div
+                    className={
+                      "relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"
+                    }
+                  >
                     <input
                       id='religion'
                       type='text'
@@ -320,20 +463,39 @@ export default function BiodataPage() {
             </div>
           </div>
 
-          <div className={"mt-6 rounded-2xl border border-[#f0ede7] bg-white p-5 md:p-[25px]"}>
-            <h2 className={"m-0 flex items-center gap-2 font-serif text-[22px] font-bold leading-[28.6px] text-[#3d4940]"}>
+          <div
+            className={
+              "mt-6 rounded-2xl border border-[#f0ede7] bg-white p-5 md:p-[25px]"
+            }
+          >
+            <h2
+              className={
+                "m-0 flex items-center gap-2 font-serif text-[22px] font-bold leading-[28.6px] text-[#3d4940]"
+              }
+            >
               <span className={"size-5 shrink-0 [&_img]:size-5"}>
                 <img src='/assets/icon-location.svg' alt='' />
               </span>
               Alamat
             </h2>
             <div className={"pt-4"}>
-              <div className={"grid grid-cols-1 gap-4 md:grid-cols-2 grid-cols-1"}>
+              <div
+                className={"grid grid-cols-1 gap-4 md:grid-cols-2 grid-cols-1"}
+              >
                 <div className={"flex flex-col"}>
-                  <label className={"mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"} htmlFor='address'>
+                  <label
+                    className={
+                      "mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"
+                    }
+                    htmlFor='address'
+                  >
                     Alamat Domisili
                   </label>
-                  <div className={"relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"}>
+                  <div
+                    className={
+                      "relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"
+                    }
+                  >
                     <input
                       id='address'
                       type='text'
@@ -345,12 +507,24 @@ export default function BiodataPage() {
                   </div>
                 </div>
               </div>
-              <div className={"grid grid-cols-1 gap-4 md:grid-cols-2"} style={{ marginTop: 16 }}>
+              <div
+                className={"grid grid-cols-1 gap-4 md:grid-cols-2"}
+                style={{ marginTop: 16 }}
+              >
                 <div className={"flex flex-col"}>
-                  <label className={"mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"} htmlFor='city'>
+                  <label
+                    className={
+                      "mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]"
+                    }
+                    htmlFor='city'
+                  >
                     Kota
                   </label>
-                  <div className={"relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"}>
+                  <div
+                    className={
+                      "relative [&_input]:h-[46px] [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-[#f0ede7] [&_input]:bg-white [&_input]:px-[15px] [&_input]:py-[11px] [&_input]:text-[15px] [&_input]:leading-6 [&_input]:text-[#2c2c2c] [&_input]:outline-none [&_input]:placeholder:text-[#6b6b6b] [&_input:focus]:border-[#3d4940] [&_select]:h-[46px] [&_select]:w-full [&_select]:appearance-none [&_select]:cursor-pointer [&_select]:rounded-xl [&_select]:border [&_select]:border-[#f0ede7] [&_select]:bg-white [&_select]:px-[15px] [&_select]:py-[11px] [&_select]:text-[15px] [&_select]:leading-6 [&_select]:text-[#2c2c2c] [&_select]:outline-none [&_select:focus]:border-[#3d4940]"
+                    }
+                  >
                     <input
                       id='city'
                       type='text'
@@ -366,18 +540,24 @@ export default function BiodataPage() {
           </div>
 
           {error && (
-            <p className="mb-4 text-center text-sm leading-5 text-[#9e5860]">
+            <p className='mb-4 text-center text-sm leading-5 text-[#9e5860]'>
               {error}
             </p>
           )}
           {success && (
-            <p className="mb-4 text-center text-sm leading-5 text-[#3d4940]">
+            <p className='mb-4 text-center text-sm leading-5 text-[#3d4940]'>
               Biodata berhasil disimpan.
             </p>
           )}
 
           <div className={"mt-6 flex justify-end"}>
-            <button type='submit' disabled={loading} className={"inline-flex h-[54px] items-center gap-2 rounded-full bg-[#3d4940] px-7 py-3.5 text-base font-medium leading-[26.4px] text-[#fbf8f3] shadow-[0_1px_2px_0_rgba(44,44,44,0.04),0_8px_24px_0_rgba(61,73,64,0.18)] hover:bg-[#0c3320] disabled:opacity-50"}>
+            <button
+              type='submit'
+              disabled={loading}
+              className={
+                "inline-flex h-[54px] items-center gap-2 rounded-full bg-[#3d4940] px-7 py-3.5 text-base font-medium leading-[26.4px] text-[#fbf8f3] shadow-[0_1px_2px_0_rgba(44,44,44,0.04),0_8px_24px_0_rgba(61,73,64,0.18)] hover:bg-[#0c3320] disabled:opacity-50"
+              }
+            >
               <span className={"size-[18px] shrink-0 [&_img]:size-[18px]"}>
                 <img src='/assets/icon-check.svg' alt='' />
               </span>

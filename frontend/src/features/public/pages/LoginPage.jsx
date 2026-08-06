@@ -219,9 +219,6 @@ export default function LoginPage() {
                   <EyeIcon open={showPassword} />
                 </button>
               </div>
-              <p className='mt-1.5 text-xs leading-4 tracking-[0.06em] text-[#6b6b6b]'>
-                Coba kata sandi &quot;salah&quot; untuk melihat state error.
-              </p>
             </div>
 
             {error && (
@@ -246,6 +243,13 @@ export default function LoginPage() {
               to='/register'
             >
               Daftar sekarang
+            </Link>
+            <p>or</p>
+            <Link
+              to='/resepsionis/login'
+              className='font-semibold text-[#3d4940] underline'
+            >
+              Login as receptionist
             </Link>
           </p>
 
