@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { completePatientProfile } from "../../../shared/services/authApi.js";
 import {
@@ -11,29 +11,7 @@ import { ApiError } from "../../../shared/utils/api.js";
 
 export default function BiodataPage() {
   const navigate = useNavigate();
-
-  const token = getToken();
-  const sessionUser = getAuthUser();
-
-  if (!token || !sessionUser) {
-    navigate("/login", { replace: true });
-    return null;
-  }
-
-  if (sessionUser.role !== "resepsionis") {
-    clearAuthSession();
-    navigate("/login", { replace: true });
-    return null;
-  }
-
-  if (sessionUser.profil_lengkap) {
-    navigate("/pasien/beranda", { replace: true });
-    return null;
-  }
-
-  const displayEmail =
-    sessionUser.email || localStorage.getItem("pendingProfileEmail") || "";
-
+  const [ready, setReady] = useState(false);
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState("");
   const [birthPlace, setBirthPlace] = useState("");
@@ -47,6 +25,36 @@ export default function BiodataPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    const token = getToken();
+    const sessionUser = getAuthUser();
+
+    if (!token || !sessionUser) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    if (sessionUser.role !== "pasien") {
+      clearAuthSession();
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    if (sessionUser.profil_lengkap) {
+      navigate("/pasien/beranda", { replace: true });
+      return;
+    }
+
+    setReady(true);
+  }, [navigate]);
+
+  if (!ready) return null;
+
+  const sessionUser = getAuthUser();
+
+  const displayEmail =
+    sessionUser.email || localStorage.getItem("pendingProfileEmail") || "";
 
   async function handleSubmit(e) {
     e.preventDefault();

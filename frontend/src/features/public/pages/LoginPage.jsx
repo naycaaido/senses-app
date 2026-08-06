@@ -169,7 +169,7 @@ export default function LoginPage() {
                 className='mb-1.5 block text-xs font-semibold uppercase leading-4 tracking-[0.025em] text-[#6b6b6b]'
                 htmlFor='identifierLogin'
               >
-                Email atau ID Resepsionis
+                Email
               </label>
               <div className='relative'>
                 <img
@@ -181,7 +181,7 @@ export default function LoginPage() {
                   className='h-[46px] w-full rounded-xl border border-[#f0ede7] bg-white py-[11px] pl-[37px] pr-[15px] text-[15px] leading-6 text-[#2c2c2c] outline-none placeholder:text-[#6b6b6b] focus:border-[#3d4940]'
                   id='identifierLogin'
                   type='text'
-                  placeholder='Masukkan email atau ID resepsionis'
+                  placeholder='Masukkan email'
                   value={identifierLogin}
                   onChange={(e) => setIdentifierLogin(e.target.value)}
                   autoComplete='username'
