@@ -156,7 +156,6 @@ export default function DetailPasien() {
               <Row label='Telepon' value={patient.phone} />
               <Row label='Alamat' value={patient.address} />
               <Row label='Kota' value={patient.city} />
-              <Row label='Kode Pos' value={patient.postalCode} />
             </div>
           </Card>
 
