@@ -18,19 +18,20 @@ import PatientProfilePage from "../features/patient/pages/PatientProfilePage.jsx
 import PatientEditProfilePage from "../features/patient/pages/PatientEditProfilePage.jsx";
 import ReceptionistLayout from "../features/receptionist/components/ReceptionistLayout.jsx";
 import ReceptionistDashboardPage from "../features/receptionist/pages/ReceptionistDashboardApiPage.jsx";
-import ReceptionistReservationPage from "../features/receptionist/pages/ReceptionistReservationApiPage.jsx";
+import ReceptionistReservationPage from "../features/receptionist/pages/ReceptionistReservationPage.jsx";
 import ReceptionistNewReservationPage from "../features/receptionist/pages/ReceptionistNewReservationApiPage.jsx";
 import ReceptionistReservationDetailPage from "../features/receptionist/pages/ReceptionistReservationDetailApiPage.jsx";
-import ReceptionistPatientDataPage from "../features/receptionist/pages/ReceptionistPatientDataApiPage.jsx";
+import ReceptionistPatientDataPage from "../features/receptionist/pages/ReceptionistPatientDataPage.jsx";
 import ReceptionistPatientRegistrationPage from "../features/receptionist/pages/ReceptionistPatientRegistrationApiPage.jsx";
-import ReceptionistPatientDetailPage from "../features/receptionist/pages/ReceptionistPatientDetailApiPage.jsx";
+import ReceptionistPatientDetailPage from "../features/receptionist/pages/ReceptionistPatientDetailPage.jsx";
 import ReceptionistOperationalSchedulePage from "../features/receptionist/pages/ReceptionistOperationalSchedulePage.jsx";
 import ReceptionistOperationalScheduleApiPage from "../features/receptionist/pages/ReceptionistOperationalScheduleApiPage.jsx";
-import ReceptionistServicePage from "../features/receptionist/pages/ReceptionistServiceApiPage.jsx";
+import ReceptionistServicePage from "../features/receptionist/pages/ReceptionistServicePage.jsx";
 import ReceptionistServiceFormPage from "../features/receptionist/pages/ReceptionistServiceFormApiPage.jsx";
 import ReceptionistPaymentPage from "../features/receptionist/pages/ReceptionistPaymentApiPage.jsx";
 import ReceptionistPlaceholderPage from "../features/receptionist/pages/ReceptionistPlaceholderPage.jsx";
 import ReceptionistLoginPage from "../features/receptionist/pages/ReceptionistLoginPage.jsx";
+import { StoreProvider } from "../features/receptionist/data/store.jsx";
 
 export default function AppRouter() {
   return (
@@ -69,7 +70,9 @@ export default function AppRouter() {
         path='/resepsionis'
         element={
           <ProtectedRoute allowedRoles={["resepsionis"]}>
-            <ReceptionistLayout />
+            <StoreProvider>
+              <ReceptionistLayout />
+            </StoreProvider>
           </ProtectedRoute>
         }
       >
