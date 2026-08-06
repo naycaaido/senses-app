@@ -43,7 +43,14 @@ function CardHeader({ icon, tone, title }) {
 
 function formatDate(iso) {
   if (!iso) return "—";
-  return new Date(`${iso}T00:00:00`).toLocaleDateString("id-ID", {
+
+  // Ambil bagian tanggal saja (YYYY-MM-DD)
+  const dateOnly = iso.split("T")[0];
+
+  const date = new Date(`${dateOnly}T00:00:00`);
+  if (isNaN(date.getTime())) return "—";
+
+  return date.toLocaleDateString("id-ID", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -51,22 +58,7 @@ function formatDate(iso) {
 }
 
 export default function DetailPasien() {
-  // const { id } = useParams();
-  // const navigate = useNavigate();
-  // const { getPatient, reservations, payments } = useStore();
   const [openMenu, setOpenMenu] = useState(null);
-
-  // const patient = getPatient(id);
-  // if (!patient) {
-  //   return <NotFound>Pasien tidak ditemukan.</NotFound>;
-  // }
-
-  // const history = reservations.filter((r) => r.patientId === patient.id);
-  // const invoices = payments.filter((p) =>
-  //   reservations.some(
-  //     (r) => r.id === p.no_reservasi && r.patientId === patient.id,
-  //   ),
-  // );
 
   const { id } = useParams();
   const email = decodeURIComponent(id);
@@ -84,6 +76,8 @@ export default function DetailPasien() {
           getReceptionistPatientHistory(email),
           getReceptionistPatientPayments(email),
         ]);
+
+        console.log("di effect:", paymentResult);
         setPatient(profile);
         setHistory(reservationResult.data);
         setPayments(paymentResult);
@@ -101,6 +95,10 @@ export default function DetailPasien() {
   if (!patient)
     return <p className='py-10 text-center text-sm'>Memuat pasien…</p>;
 
+  console.log("pasien :", patient);
+  console.log("reservasi :", reservations);
+  console.log("history :", history);
+  console.log("payment :", payments);
   return (
     <div className='flex flex-col gap-5'>
       <div className='flex items-end justify-between gap-4'>
@@ -137,10 +135,7 @@ export default function DetailPasien() {
           <div className='mt-4 text-left'>
             <Row label='Gender' value={patient.gender} />
             <Row label='Tanggal Lahir' value={formatDate(patient.birthDate)} />
-            <div className='flex items-center justify-between gap-4 py-3'>
-              <span className='text-xs font-medium text-[#434655]'>Status</span>
-              <Chip>{patient.status}</Chip>
-            </div>
+            <Row label='Status' value={patient.maritalStatus} />
           </div>
         </Card>
 
@@ -252,13 +247,7 @@ export default function DetailPasien() {
               <table className='w-full min-w-[600px]'>
                 <thead>
                   <tr className='border-y border-[#e6e6e2] bg-[#f5f5f3]/60 text-left'>
-                    {[
-                      "No Reservasi",
-                      "Layanan",
-                      "Tanggal",
-                      "Total",
-                      "Method",
-                    ].map((h) => (
+                    {["No Reservasi", "Tanggal", "Total", "Method"].map((h) => (
                       <th
                         key={h}
                         className='px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#434655]'

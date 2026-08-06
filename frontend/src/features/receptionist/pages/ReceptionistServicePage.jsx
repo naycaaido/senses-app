@@ -126,20 +126,17 @@ export default function Layanan() {
         <StatBox
           label='Total Layanan'
           value={services.length}
-          note='Seluruh layanan terdaftar'
           icon={<IconGrid size={16} />}
         />
         <StatBox
           label='Layanan Aktif'
           value={activeCount}
-          note={`${services.length ? Math.round((activeCount / services.length) * 100) : 0}% dari total kapasitas`}
           noteTone='green'
           icon={<IconGrid size={16} />}
         />
         <StatBox
           label='Layanan Nonaktif'
           value={inactiveCount}
-          note='Tidak dapat dipilih untuk reservasi baru'
           noteTone='muted'
           icon={<IconGrid size={16} />}
         />

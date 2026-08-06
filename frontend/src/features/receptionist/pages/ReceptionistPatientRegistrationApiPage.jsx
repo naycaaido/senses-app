@@ -131,14 +131,26 @@ export default function ReceptionistPatientRegistrationApiPage() {
             onChange={set("birthDate")}
           />
         </Field>
-        <Field label='Pendidikan'>
-          <Input value={form.education} onChange={set("education")} />
-        </Field>
         <Field label='Pekerjaan'>
           <Input value={form.job} onChange={set("job")} />
         </Field>
+        <Field label='Pendidikan Terakhir'>
+          <Select value={form.education} onChange={set("education")}>
+            <option value=''>Pilih pendidikan</option>
+            {["SD", "SMP", "SMA/SMK", "D1/D2/D3", "S1/D4", "S2", "S3"].map(
+              (o) => (
+                <option key={o}>{o}</option>
+              ),
+            )}
+          </Select>
+        </Field>
         <Field label='Status Perkawinan'>
-          <Input value={form.maritalStatus} onChange={set("maritalStatus")} />
+          <Select value={form.maritalStatus} onChange={set("maritalStatus")}>
+            <option value=''>Pilih status</option>
+            {["Belum Menikah", "Menikah"].map((o) => (
+              <option key={o}>{o}</option>
+            ))}
+          </Select>
         </Field>
         <Field label='Agama'>
           <Input value={form.religion} onChange={set("religion")} />
