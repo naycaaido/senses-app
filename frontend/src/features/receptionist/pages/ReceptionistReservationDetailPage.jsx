@@ -136,7 +136,7 @@ function CompleteModal({ reservation, onClose, onConfirm, submitting, error }) {
       variant='bar'
       size='lg'
       title='Selesaikan Reservasi'
-      subtitle='Konfirmasi kehadiran pasien. Pembayaran dicatat setelah reservasi selesai.'
+      subtitle='Tandai reservasi ini sebagai selesai.'
       onClose={submitting ? undefined : onClose}
       footer={
         <>
@@ -176,22 +176,6 @@ function CompleteModal({ reservation, onClose, onConfirm, submitting, error }) {
         </div>
       </div>
 
-      <div className='mt-6 flex items-center justify-between border-b border-dashed border-[#e6e6e2] pb-3'>
-        <span className='text-[13px] text-[#434655]'>
-          Service Fee ({reservation.service})
-        </span>
-        <span className='text-[13px] font-semibold text-[#191c1e]'>
-          {formatRupiah(reservation.price)}
-        </span>
-      </div>
-      <div className='mt-3 flex items-center justify-between'>
-        <span className='text-sm font-bold text-[#191c1e]'>
-          Total Pembayaran
-        </span>
-        <span className='text-2xl font-bold text-[#191c1e]'>
-          {formatRupiah(reservation.price)}
-        </span>
-      </div>
       {error && (
         <p className='mt-3 rounded-lg bg-[#fdf1f1] p-3 text-sm text-[#a03d4a]'>
           {error}
@@ -317,9 +301,13 @@ export default function DetailReservasi() {
     return <NotFound>{error || "Reservasi tidak ditemukan."}</NotFound>;
   }
 
-  const closed = ["Selesai", "Dibatalkan"].includes(reservation.status);
+  const isCanceled = reservation.status === "Dibatalkan";
   const canAttend = reservation.status === "Terjadwal";
   const canFinish = reservation.status === "Hadir";
+  const canCancel = ["Terjadwal", "Hadir", "Selesai"].includes(
+    reservation.status,
+  );
+
   const canRecordPayment =
     reservation.status === "Selesai" && !reservation.pembayaran;
   const canViewPayment =
@@ -342,17 +330,17 @@ export default function DetailReservasi() {
 
       <div className='flex flex-wrap gap-3'>
         {canAttend && (
-          <Button disabled={closed} onClick={() => setModal("hadir")}>
+          <Button disabled={isCanceled} onClick={() => setModal("hadir")}>
             Tandai Hadir
           </Button>
         )}
         {canFinish && (
           <Button
             variant='gold'
-            disabled={closed}
+            disabled={isCanceled}
             onClick={() => setModal("complete")}
           >
-            Selesaikan &amp; Pembayaran
+            Tandai Selesai
           </Button>
         )}
         {canRecordPayment && (
@@ -381,21 +369,17 @@ export default function DetailReservasi() {
             Lihat Pembayaran
           </Button>
         )}
-        {canAttend && (
-          <Button
-            variant='dangerSoft'
-            disabled={closed}
-            onClick={() => setModal("cancel")}
-          >
+        {canCancel && (
+          <Button variant='dangerSoft' onClick={() => setModal("cancel")}>
             Batalkan Reservasi
           </Button>
         )}
-        <Button
+        {/* <Button
           variant='outline'
           onClick={() => navigate("/resepsionis/reservasi")}
         >
           Kembali
-        </Button>
+        </Button> */}
       </div>
 
       {reservation.pembatalan && (
