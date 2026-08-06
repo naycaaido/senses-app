@@ -70,9 +70,7 @@ export default function AppRouter() {
         path='/resepsionis'
         element={
           <ProtectedRoute allowedRoles={["resepsionis"]}>
-            <StoreProvider>
-              <ReceptionistLayout />
-            </StoreProvider>
+            <ReceptionistLayout />
           </ProtectedRoute>
         }
       >
