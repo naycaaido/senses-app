@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IconChevronLeft,
@@ -18,8 +18,14 @@ import {
   PageHeader,
   Select,
 } from "../components/ui.jsx";
-import { formatRupiah, useStore } from "../data/store.jsx";
+import {
+  getReceptionistServices,
+  setReceptionistServiceStatus,
+} from "../../../shared/services/receptionistApi.js";
 import { cx } from "../utils/cx.js";
+
+const formatRupiah = (value) =>
+  `Rp${Number(value || 0).toLocaleString("id-ID")}`;
 
 const PER_PAGE = 5;
 
@@ -43,12 +49,49 @@ function StatBox({ label, value, note, noteTone = "muted", icon }) {
 }
 
 export default function Layanan() {
-  const { services, setServiceStatus } = useStore();
   const navigate = useNavigate();
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState("");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await getReceptionistServices({ limit: 100 });
+      setServices(response.data || []);
+    } catch (requestError) {
+      setError(requestError.message || "Layanan tidak dapat dimuat.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const toggleStatus = async (service) => {
+    const next = service.status === "Aktif" ? "Nonaktif" : "Aktif";
+    setBusy(String(service.id));
+    setError("");
+    try {
+      const updated = await setReceptionistServiceStatus(service.id, next);
+      setServices((items) =>
+        items.map((item) => (item.id === updated.id ? updated : item)),
+      );
+      setPendingStatusChange(null);
+    } catch (requestError) {
+      setError(requestError.message || "Status layanan tidak dapat diubah.");
+    } finally {
+      setBusy("");
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -65,11 +108,6 @@ export default function Layanan() {
 
   const activeCount = services.filter((s) => s.status === "Aktif").length;
   const inactiveCount = services.filter((s) => s.status === "Nonaktif").length;
-  const avgPrice = services.length
-    ? Math.round(
-        services.reduce((sum, s) => sum + s.price, 0) / services.length,
-      )
-    : 0;
 
   return (
     <div className='flex flex-col gap-5'>
@@ -84,7 +122,7 @@ export default function Layanan() {
         }
       />
 
-      <div className='grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4'>
+      <div className='grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3'>
         <StatBox
           label='Total Layanan'
           value={services.length}
@@ -132,14 +170,21 @@ export default function Layanan() {
               }}
             >
               <option value=''>Semua Status</option>
-              <option>Aktif</option>
-              <option>Nonaktif</option>
+              <option value='Aktif'>Aktif</option>
+              <option value='Nonaktif'>Nonaktif</option>
             </Select>
           </div>
         </div>
       </Card>
 
       <Card>
+        {error && (
+          <div className='border-b border-[#e6e6e2] p-5 pb-0'>
+            <p className='rounded-lg bg-[#fdf1f1] p-3 text-sm text-[#a03d4a]'>
+              {error}
+            </p>
+          </div>
+        )}
         <div className='overflow-x-auto'>
           <table className={cx("w-full", "min-w-[720px]")}>
             <thead>
@@ -161,102 +206,115 @@ export default function Layanan() {
               </tr>
             </thead>
             <tbody>
-              {rows.length === 0 && <EmptyRow colSpan={5} />}
-              {rows.map((s) => (
-                <tr
-                  key={s.id}
-                  className='border-b border-[#e6e6e2] last:border-b-0'
-                >
-                  <td
-                    className={cx(
-                      "px-5 py-4 text-[13px] text-[#191c1e]",
-                      "text-sm font-bold",
-                    )}
-                  >
-                    {s.name}
-                  </td>
-                  <td
-                    className={cx(
-                      "px-5 py-4 text-[13px] text-[#191c1e]",
-                      "font-semibold",
-                    )}
-                  >
-                    {formatRupiah(s.price)}
-                  </td>
-                  <td className='px-5 py-4 text-[13px] text-[#191c1e]'>
-                    {s.duration} Menit
-                  </td>
-                  <td className='px-5 py-4 text-[13px] text-[#191c1e]'>
-                    <Chip>{s.status}</Chip>
-                  </td>
-                  <td className='px-5 py-4 text-[13px] text-[#191c1e]'>
-                    <div className='flex gap-1'>
-                      <button
-                        aria-label={`Edit ${s.name}`}
-                        onClick={() =>
-                          navigate(`/resepsionis/layanan/${s.id}/edit`)
-                        }
-                        className='rounded-lg p-2 text-[#434655] transition-colors hover:bg-[#f5f5f3] hover:text-[#191c1e]'
-                      >
-                        <IconPencil size={16} />
-                      </button>
-                      <button
-                        aria-label={`${s.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"} ${s.name}`}
-                        onClick={() => setPendingStatusChange(s)}
-                        className={cx(
-                          "rounded-lg px-2 py-1 text-xs font-semibold transition-colors hover:bg-[#f5f5f3]",
-                          s.status === "Aktif"
-                            ? "text-[#a03d4a]"
-                            : "text-emerald-600",
-                        )}
-                      >
-                        {s.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"}
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className='p-8 text-center text-sm'>
+                    Memuat layanan...
                   </td>
                 </tr>
-              ))}
+              ) : rows.length === 0 ? (
+                <EmptyRow colSpan={5} />
+              ) : (
+                rows.map((s) => (
+                  <tr
+                    key={s.id}
+                    className='border-b border-[#e6e6e2] last:border-b-0'
+                  >
+                    <td className={cx("px-5 py-4 text-[13px] text-[#191c1e]")}>
+                      <p className='text-sm font-bold'>{s.name}</p>
+                      <p className='text-xs text-[#434655]'>{s.description}</p>
+                    </td>
+                    <td
+                      className={cx(
+                        "px-5 py-4 text-[13px] text-[#191c1e]",
+                        "font-semibold",
+                      )}
+                    >
+                      {formatRupiah(s.price)}
+                    </td>
+                    <td className='px-5 py-4 text-[13px] text-[#191c1e]'>
+                      {s.duration} Menit
+                    </td>
+                    <td className='px-5 py-4 text-[13px] text-[#191c1e]'>
+                      <Chip>{s.status}</Chip>
+                    </td>
+                    <td className='px-5 py-4 text-[13px] text-[#191c1e]'>
+                      <div className='flex gap-1'>
+                        <button
+                          aria-label={`Edit ${s.name}`}
+                          onClick={() =>
+                            navigate(`/resepsionis/layanan/${s.id}/edit`)
+                          }
+                          className='rounded-lg p-2 text-[#434655] transition-colors hover:bg-[#f5f5f3] hover:text-[#191c1e]'
+                        >
+                          <IconPencil size={16} />
+                        </button>
+                        <button
+                          aria-label={`${s.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"} ${s.name}`}
+                          onClick={() => setPendingStatusChange(s)}
+                          disabled={busy === String(s.id)}
+                          className={cx(
+                            "rounded-lg px-2 py-1 text-xs font-semibold transition-colors hover:bg-[#f5f5f3] disabled:opacity-50",
+                            s.status === "Aktif"
+                              ? "text-[#a03d4a]"
+                              : "text-emerald-600",
+                          )}
+                        >
+                          {busy === String(s.id)
+                            ? "Memproses..."
+                            : s.status === "Aktif"
+                              ? "Nonaktifkan"
+                              : "Aktifkan"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
-        <div className='flex flex-wrap items-center justify-between gap-3 px-5 py-4'>
-          <p className='text-xs text-[#434655]'>
-            Showing {rows.length === 0 ? 0 : (current - 1) * PER_PAGE + 1} to{" "}
-            {(current - 1) * PER_PAGE + rows.length} of {filtered.length}{" "}
-            entries
-          </p>
-          <div className='flex items-center gap-1'>
-            <button
-              disabled={current === 1}
-              onClick={() => setPage(current - 1)}
-              aria-label='Halaman sebelumnya'
-              className='rounded-lg p-1.5 text-[#434655] transition-colors hover:not-disabled:bg-[#f5f5f3] disabled:opacity-35'
-            >
-              <IconChevronLeft size={16} />
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+        {!loading && (
+          <div className='flex flex-wrap items-center justify-between gap-3 px-5 py-4'>
+            <p className='text-xs text-[#434655]'>
+              Showing {rows.length === 0 ? 0 : (current - 1) * PER_PAGE + 1} to{" "}
+              {(current - 1) * PER_PAGE + rows.length} of {filtered.length}{" "}
+              entries
+            </p>
+            <div className='flex items-center gap-1'>
               <button
-                key={n}
-                onClick={() => setPage(n)}
-                className={cx(
-                  "size-8 rounded-lg text-[13px] font-medium text-[#191c1e] transition-colors hover:bg-[#f5f5f3]",
-                  n === current && "bg-[#3d4940] text-white hover:bg-[#3d4940]",
-                )}
+                disabled={current === 1}
+                onClick={() => setPage(current - 1)}
+                aria-label='Halaman sebelumnya'
+                className='rounded-lg p-1.5 text-[#434655] transition-colors hover:not-disabled:bg-[#f5f5f3] disabled:opacity-35'
               >
-                {n}
+                <IconChevronLeft size={16} />
               </button>
-            ))}
-            <button
-              disabled={current === totalPages}
-              onClick={() => setPage(current + 1)}
-              aria-label='Halaman berikutnya'
-              className='rounded-lg p-1.5 text-[#434655] transition-colors hover:not-disabled:bg-[#f5f5f3] disabled:opacity-35'
-            >
-              <IconChevronRight size={16} />
-            </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setPage(n)}
+                  className={cx(
+                    "size-8 rounded-lg text-[13px] font-medium text-[#191c1e] transition-colors hover:bg-[#f5f5f3]",
+                    n === current &&
+                      "bg-[#3d4940] text-white hover:bg-[#3d4940]",
+                  )}
+                >
+                  {n}
+                </button>
+              ))}
+              <button
+                disabled={current === totalPages}
+                onClick={() => setPage(current + 1)}
+                aria-label='Halaman berikutnya'
+                className='rounded-lg p-1.5 text-[#434655] transition-colors hover:not-disabled:bg-[#f5f5f3] disabled:opacity-35'
+              >
+                <IconChevronRight size={16} />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </Card>
 
       {pendingStatusChange && (
@@ -265,11 +323,12 @@ export default function Layanan() {
           iconTone={pendingStatusChange.status === "Aktif" ? "red" : "brand"}
           title={`${pendingStatusChange.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"} Layanan`}
           subtitle={`Anda akan ${pendingStatusChange.status === "Aktif" ? "menonaktifkan" : "mengaktifkan"} layanan berikut:`}
-          onClose={() => setPendingStatusChange(null)}
+          onClose={() => !busy && setPendingStatusChange(null)}
           footer={
             <>
               <Button
                 variant='outline'
+                disabled={!!busy}
                 onClick={() => setPendingStatusChange(null)}
               >
                 Kembali
@@ -278,19 +337,14 @@ export default function Layanan() {
                 variant={
                   pendingStatusChange.status === "Aktif" ? "danger" : "primary"
                 }
-                onClick={() => {
-                  setServiceStatus(
-                    pendingStatusChange.id,
-                    pendingStatusChange.status === "Aktif"
-                      ? "Nonaktif"
-                      : "Aktif",
-                  );
-                  setPendingStatusChange(null);
-                }}
+                disabled={!!busy}
+                onClick={() => toggleStatus(pendingStatusChange)}
               >
-                {pendingStatusChange.status === "Aktif"
-                  ? "Konfirmasi Nonaktifkan"
-                  : "Konfirmasi Aktifkan"}
+                {busy === String(pendingStatusChange.id)
+                  ? "Memproses..."
+                  : pendingStatusChange.status === "Aktif"
+                    ? "Konfirmasi Nonaktifkan"
+                    : "Konfirmasi Aktifkan"}
               </Button>
             </>
           }
