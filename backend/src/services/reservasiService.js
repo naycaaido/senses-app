@@ -127,7 +127,9 @@ const validateSlots = (slots, selectedIds, expectedSlotCount) => {
         slot.status_jadwal !== StatusJadwal.Aktif || slot.no_reservasi !== null,
     )
   ) {
-    throw new ConflictError("One or more selected schedule slots are unavailable");
+    throw new ConflictError(
+      "One or more selected schedule slots are unavailable",
+    );
   }
 
   const sorted = [...slots].sort(
@@ -142,7 +144,8 @@ const validateSlots = (slots, selectedIds, expectedSlotCount) => {
 
     if (
       currentDate !== firstDate ||
-      current.jam_mulai.getTime() - previous.jam_mulai.getTime() !== 30 * 60 * 1000
+      current.jam_mulai.getTime() - previous.jam_mulai.getTime() !==
+        30 * 60 * 1000
     ) {
       throw new BadRequestError(
         "Selected schedule slots must be consecutive and on the same date",
@@ -150,7 +153,10 @@ const validateSlots = (slots, selectedIds, expectedSlotCount) => {
     }
   }
 
-  if (scheduleStartAtWib(sorted[0].tanggal, sorted[0].jam_mulai).getTime() <= Date.now()) {
+  if (
+    scheduleStartAtWib(sorted[0].tanggal, sorted[0].jam_mulai).getTime() <=
+    Date.now()
+  ) {
     throw new ConflictError(
       "Reservation slot has passed or is no longer available",
     );
@@ -196,7 +202,9 @@ const createReservation = async ({
       throw new NotFoundError("Patient not found");
     }
     if (!patient.profil_lengkap) {
-      throw new BadRequestError("Patient profile must be completed before booking");
+      throw new BadRequestError(
+        "Patient profile must be completed before booking",
+      );
     }
     if (!service) {
       throw new NotFoundError("Active service not found");
@@ -224,7 +232,9 @@ const createReservation = async ({
       data: { no_reservasi: reservation.no_reservasi },
     });
     if (claimedSlots.count !== slotIds.length) {
-      throw new ConflictError("Selected schedule slots were just booked by another request");
+      throw new ConflictError(
+        "Selected schedule slots were just booked by another request",
+      );
     }
 
     const detail = await tx.reservasi.findUnique({
@@ -276,27 +286,53 @@ const getPatientReservations = async ({ email, page, limit }) => {
 };
 
 const getReservationsForResepsionis = async ({
-  page,
-  limit,
+  page = 1,
+  limit = 10,
   status,
   email_pasien,
+  search,
 }) => {
   if (status && !PUBLIC_RESERVATION_STATUSES.includes(status)) {
     throw new BadRequestError("Invalid reservation status");
   }
 
+  const pageNum = Number(page);
+  const limitNum = Number(limit);
+
+  let statusCondition = {};
+  if (status) {
+    const internalStatus = toInternalReservationStatus(status);
+    statusCondition.status_reservasi = internalStatus;
+
+    if (internalStatus === "Selesai") {
+      statusCondition.pembayaran = null;
+    }
+  }
+
   const where = {
-    ...(status
-      ? { status_reservasi: toInternalReservationStatus(status) }
-      : {}),
+    ...statusCondition,
     ...(email_pasien ? { email_pasien } : {}),
+    ...(search
+      ? {
+          OR: [
+            { no_reservasi: { contains: search, mode: "insensitive" } },
+            { email_pasien: { contains: search, mode: "insensitive" } },
+            {
+              pasien: {
+                nama_lengkap: { contains: search, mode: "insensitive" },
+              },
+            },
+          ],
+        }
+      : {}),
   };
+
   const [data, total] = await Promise.all([
     prisma.reservasi.findMany({
       where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { tanggal_reservasi: "desc" },
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
+      orderBy: [{ tanggal_reservasi: "desc" }, { no_reservasi: "desc" }],
       include: RESERVATION_INCLUDE,
     }),
     prisma.reservasi.count({ where }),
@@ -305,10 +341,10 @@ const getReservationsForResepsionis = async ({
   return {
     data: data.map(serializeReservation),
     pagination: {
-      page,
-      limit,
+      page: pageNum,
+      limit: limitNum,
       total,
-      total_pages: Math.ceil(total / limit),
+      total_pages: Math.ceil(total / limitNum),
     },
   };
 };
@@ -320,7 +356,9 @@ const cancellationReason = (value) => {
 
   const reason = value.trim();
   if (reason.length > 255) {
-    throw new BadRequestError("alasan_pembatalan must not exceed 255 characters");
+    throw new BadRequestError(
+      "alasan_pembatalan must not exceed 255 characters",
+    );
   }
   if (!reason) {
     throw new BadRequestError("alasan_pembatalan is required");
@@ -389,10 +427,12 @@ const updateReservationStatus = async ({
       data,
       select: { no_reservasi: true },
     });
-    return serializeReservation(await tx.reservasi.findUnique({
-      where: { no_reservasi },
-      include: RESERVATION_INCLUDE,
-    }));
+    return serializeReservation(
+      await tx.reservasi.findUnique({
+        where: { no_reservasi },
+        include: RESERVATION_INCLUDE,
+      }),
+    );
   });
 };
 
