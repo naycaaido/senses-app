@@ -111,16 +111,7 @@ export default function ReceptionistPaymentApiPage() {
 
   return (
     <div className='flex flex-col gap-5'>
-      <PageHeader
-        eyebrow='Lu anjing'
-        title='Pembayaran'
-        action={
-          <Button onClick={() => navigate("/resepsionis/reservasi/baru")}>
-            <IconPlus size={12} />
-            Reservasi baru
-          </Button>
-        }
-      />
+      <PageHeader title='Pembayaran' />
       <div className='grid gap-5 lg:grid-cols-[1fr_380px]'>
         <Card pad='md'>
           <h2 className='font-bold'>Riwayat Pembayaran</h2>

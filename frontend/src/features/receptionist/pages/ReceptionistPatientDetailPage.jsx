@@ -113,7 +113,7 @@ export default function DetailPasien() {
         </div>
         <Button
           onClick={() =>
-            navigate(`/resepsionis/data-pasien/${patient.id}/edit`)
+            navigate(`/resepsionis/data-pasien/${patient.email}/edit`)
           }
         >
           <IconPlus size={12} />
