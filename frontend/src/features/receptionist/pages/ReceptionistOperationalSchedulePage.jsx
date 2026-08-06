@@ -7,6 +7,7 @@ import {
   setReceptionistScheduleStatus,
 } from "../../../shared/services/receptionistApi.js";
 import { cx } from "../utils/cx.js";
+import { PageHeader } from "../components/ui.jsx";
 
 const WEEKDAYS = ["MIN", "SEN", "SEL", "RAB", "KAM", "JUM", "SAB"];
 const MONTHS_ID = [
@@ -157,17 +158,7 @@ export default function JadwalOperasional() {
   return (
     <div className='flex flex-col gap-[22px]'>
       {/* ── Page Header ── */}
-      <div>
-        <p className='text-[11px] font-bold uppercase tracking-[2px] text-[#b99b57]'>
-          Pengaturan Operasional
-        </p>
-        <h1 className='mt-[8px] font-serif text-[44px] font-medium leading-tight text-[#3d4940]'>
-          Kelola Ketersediaan Jadwal
-        </h1>
-        <p className='mt-[8px] text-[14px] leading-[1.6] text-[#747873]'>
-          Atur slot praktik dokter pada jam operasional tetap klinik.
-        </p>
-      </div>
+      <PageHeader title='Kelola Ketersediaan Jadwal' />
 
       {/* ── Calendar + Stats Row ── */}
       <div className='flex gap-5'>

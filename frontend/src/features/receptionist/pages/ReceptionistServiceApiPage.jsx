@@ -1,14 +1,142 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Chip } from "../components/ui.jsx";
-import { getReceptionistServices, setReceptionistServiceStatus } from "../../../shared/services/receptionistApi.js";
+import {
+  getReceptionistServices,
+  setReceptionistServiceStatus,
+} from "../../../shared/services/receptionistApi.js";
 
 const rupiah = (value) => `Rp${Number(value || 0).toLocaleString("id-ID")}`;
 
 export default function ReceptionistServiceApiPage() {
-  const navigate = useNavigate(); const [services, setServices] = useState([]); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [busy, setBusy] = useState("");
-  const load = async () => { setLoading(true); try { setServices((await getReceptionistServices({ limit: 100 })).data); } catch (requestError) { setError(requestError.message || "Layanan tidak dapat dimuat."); } finally { setLoading(false); } };
-  useEffect(() => { load(); }, []);
-  const toggle = async (service) => { const next = service.status === "Aktif" ? "Nonaktif" : "Aktif"; setBusy(String(service.id)); try { const updated = await setReceptionistServiceStatus(service.id, next); setServices((items) => items.map((item) => item.id === updated.id ? updated : item)); } catch (requestError) { setError(requestError.message || "Status layanan tidak dapat diubah."); } finally { setBusy(""); } };
-  return <div className="flex flex-col gap-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs text-[#434655]">Manajemen layanan medis</p><h1 className="text-[28px] font-bold text-[#191c1e]">Kelola Layanan</h1></div><Button onClick={() => navigate("/resepsionis/layanan/baru")}>Tambah Layanan</Button></div><Card>{error && <p className="m-5 rounded-lg bg-[#fdf1f1] p-3 text-sm text-[#a03d4a]">{error}</p>}<div className="overflow-x-auto"><table className="w-full min-w-[680px]"><thead><tr className="border-b bg-[#f5f5f3]/60 text-left">{["Layanan", "Harga", "Durasi", "Status", "Aksi"].map((label) => <th key={label} className="px-5 py-3 text-xs text-[#434655]">{label}</th>)}</tr></thead><tbody>{loading ? <tr><td colSpan="5" className="p-8 text-center text-sm">Memuat layanan…</td></tr> : services.length === 0 ? <tr><td colSpan="5" className="p-8 text-center text-sm">Belum ada layanan.</td></tr> : services.map((service) => <tr key={service.id} className="border-b border-[#e6e6e2]"><td className="px-5 py-4"><p className="font-semibold">{service.name}</p><p className="text-xs text-[#434655]">{service.description}</p></td><td className="px-5 py-4 text-sm">{rupiah(service.price)}</td><td className="px-5 py-4 text-sm">{service.duration} menit</td><td className="px-5 py-4"><Chip>{service.status}</Chip></td><td className="px-5 py-4"><div className="flex gap-2"><Button variant="outline" onClick={() => navigate(`/resepsionis/layanan/${service.id}/edit`)}>Edit</Button><Button variant={service.status === "Aktif" ? "dangerSoft" : "soft"} disabled={busy === String(service.id)} onClick={() => toggle(service)}>{service.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"}</Button></div></td></tr>)}</tbody></table></div></Card></div>;
+  const navigate = useNavigate();
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState("");
+  const load = async () => {
+    setLoading(true);
+    try {
+      setServices((await getReceptionistServices({ limit: 100 })).data);
+    } catch (requestError) {
+      setError(requestError.message || "Layanan tidak dapat dimuat.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    load();
+  }, []);
+  const toggle = async (service) => {
+    const next = service.status === "Aktif" ? "Nonaktif" : "Aktif";
+    setBusy(String(service.id));
+    try {
+      const updated = await setReceptionistServiceStatus(service.id, next);
+      setServices((items) =>
+        items.map((item) => (item.id === updated.id ? updated : item)),
+      );
+    } catch (requestError) {
+      setError(requestError.message || "Status layanan tidak dapat diubah.");
+    } finally {
+      setBusy("");
+    }
+  };
+  return (
+    <div className='flex flex-col gap-5'>
+      <div className='flex flex-wrap items-center justify-between gap-3'>
+        <div>
+          <p className='text-xs text-[#434655]'>Manajemen layanan medis</p>
+          <h1 className='text-[28px] font-bold text-[#191c1e]'>
+            Kelola Layanan
+          </h1>
+        </div>
+        <Button onClick={() => navigate("/resepsionis/layanan/baru")}>
+          Tambah Layanan
+        </Button>
+      </div>
+      <Card>
+        {error && (
+          <p className='m-5 rounded-lg bg-[#fdf1f1] p-3 text-sm text-[#a03d4a]'>
+            {error}
+          </p>
+        )}
+        <div className='overflow-x-auto'>
+          <table className='w-full min-w-[680px]'>
+            <thead>
+              <tr className='border-b bg-[#f5f5f3]/60 text-left'>
+                {["Layanan", "Harga", "Durasi", "Status", "Aksi"].map(
+                  (label) => (
+                    <th
+                      key={label}
+                      className='px-5 py-3 text-xs text-[#434655]'
+                    >
+                      {label}
+                    </th>
+                  ),
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan='5' className='p-8 text-center text-sm'>
+                    Memuat layanan…
+                  </td>
+                </tr>
+              ) : services.length === 0 ? (
+                <tr>
+                  <td colSpan='5' className='p-8 text-center text-sm'>
+                    Belum ada layanan.
+                  </td>
+                </tr>
+              ) : (
+                services.map((service) => (
+                  <tr key={service.id} className='border-b border-[#e6e6e2]'>
+                    <td className='px-5 py-4'>
+                      <p className='font-semibold'>{service.name}</p>
+                      <p className='text-xs text-[#434655]'>
+                        {service.description}
+                      </p>
+                    </td>
+                    <td className='px-5 py-4 text-sm'>
+                      {rupiah(service.price)}
+                    </td>
+                    <td className='px-5 py-4 text-sm'>
+                      {service.duration} menit
+                    </td>
+                    <td className='px-5 py-4'>
+                      <Chip>{service.status}</Chip>
+                    </td>
+                    <td className='px-5 py-4'>
+                      <div className='flex gap-2'>
+                        <Button
+                          variant='outline'
+                          onClick={() =>
+                            navigate(`/resepsionis/layanan/${service.id}/edit`)
+                          }
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant={
+                            service.status === "Aktif" ? "dangerSoft" : "soft"
+                          }
+                          disabled={busy === String(service.id)}
+                          onClick={() => toggle(service)}
+                        >
+                          {service.status === "Aktif"
+                            ? "Nonaktifkan"
+                            : "Aktifkan"}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
 }

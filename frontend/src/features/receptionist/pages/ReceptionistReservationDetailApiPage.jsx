@@ -18,11 +18,16 @@ const cancellationDateFormatter = new Intl.DateTimeFormat("id-ID", {
 });
 
 function cancellationErrorMessage(error) {
-  if (error?.statusCode === 0) return "Koneksi gagal. Periksa jaringan atau server.";
-  if (error?.statusCode === 403) return "Anda tidak memiliki akses untuk membatalkan reservasi ini.";
-  if (error?.statusCode === 404) return "Reservasi tidak ditemukan atau sudah tidak tersedia.";
-  if (error?.statusCode === 409) return "Reservasi sudah berubah atau tidak dapat dibatalkan lagi.";
-  if (error?.statusCode === 400) return "Reservasi tidak dapat dibatalkan. Periksa alasan atau batas waktu pembatalan.";
+  if (error?.statusCode === 0)
+    return "Koneksi gagal. Periksa jaringan atau server.";
+  if (error?.statusCode === 403)
+    return "Anda tidak memiliki akses untuk membatalkan reservasi ini.";
+  if (error?.statusCode === 404)
+    return "Reservasi tidak ditemukan atau sudah tidak tersedia.";
+  if (error?.statusCode === 409)
+    return "Reservasi sudah berubah atau tidak dapat dibatalkan lagi.";
+  if (error?.statusCode === 400)
+    return "Reservasi tidak dapat dibatalkan. Periksa alasan atau batas waktu pembatalan.";
   return "Reservasi belum dapat dibatalkan. Silakan coba lagi.";
 }
 
@@ -38,7 +43,9 @@ function cancellationSummary(pembatalan) {
     pembatalan?.dibatalkan_pada
       ? `Dibatalkan pada: ${cancellationDateFormatter.format(new Date(pembatalan?.dibatalkan_pada))} WIB`
       : null,
-  ].filter(Boolean).join(" • ");
+  ]
+    .filter(Boolean)
+    .join(" • ");
 }
 
 export default function ReceptionistReservationDetailApiPage() {
@@ -104,7 +111,10 @@ export default function ReceptionistReservationDetailApiPage() {
       setPending(null);
       setReason("");
     } catch (requestError) {
-      if (pending === "batal" && [404, 409].includes(requestError?.statusCode)) {
+      if (
+        pending === "batal" &&
+        [404, 409].includes(requestError?.statusCode)
+      ) {
         await load();
       }
       setError(
@@ -117,16 +127,162 @@ export default function ReceptionistReservationDetailApiPage() {
     }
   };
 
-  if (loading) return <p className="py-10 text-center text-sm text-[#434655]">Memuat reservasi…</p>;
-  if (!reservation) return <Card pad="md"><p className="text-[#a03d4a]">{error || "Reservasi tidak ditemukan."}</p></Card>;
+  if (loading)
+    return (
+      <p className='py-10 text-center text-sm text-[#434655]'>
+        Memuat reservasi…
+      </p>
+    );
+  if (!reservation)
+    return (
+      <Card pad='md'>
+        <p className='text-[#a03d4a]'>
+          {error || "Reservasi tidak ditemukan."}
+        </p>
+      </Card>
+    );
 
   const canAttend = reservation.status === "Terjadwal";
   const canFinish = reservation.status === "Hadir";
-  const canRecordPayment = reservation.status === "Selesai" && !reservation.pembayaran;
-  const canViewPayment = reservation.status === "Selesai" && reservation.pembayaran;
+  const canRecordPayment =
+    reservation.status === "Selesai" && !reservation.pembayaran;
+  const canViewPayment =
+    reservation.status === "Selesai" && reservation.pembayaran;
   const detailContent = reservation.pembatalan
     ? cancellationSummary(reservation.pembatalan)
     : reservation.complaint || "Tidak ada keluhan yang dicatat.";
 
-  return <div className="flex flex-col gap-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-[28px] font-bold text-[#191c1e]">Detail Reservasi</h1><p className="mt-1 text-sm text-[#434655]">{reservation.id}</p></div><Chip>{reservation.status}</Chip></div>{error && <p className="rounded-lg bg-[#fdf1f1] p-3 text-sm text-[#a03d4a]">{error}</p>}<div className="flex flex-wrap gap-3">{canAttend && <Button onClick={() => openPending("hadir")}>Tandai Hadir</Button>}{canFinish && <Button onClick={() => openPending("selesai")}>Tandai Selesai</Button>}{canRecordPayment && <Button onClick={() => navigate(`/resepsionis/pembayaran?reservasi=${encodeURIComponent(reservation.id)}`)}>Catat Pembayaran</Button>}{canViewPayment && <Button onClick={() => navigate(`/resepsionis/pembayaran?reservasi=${encodeURIComponent(reservation.id)}`)}>Lihat Pembayaran</Button>}{canAttend && <Button variant="dangerSoft" onClick={() => openPending("batal")}>Batalkan</Button>}<Button variant="outline" onClick={() => navigate("/resepsionis/reservasi")}>Kembali</Button></div><div className="grid gap-5 lg:grid-cols-2"><Card pad="md"><h2 className="font-bold">Pasien</h2><p className="mt-3 font-semibold">{reservation.patientName}</p><p className="text-sm text-[#434655]">{reservation.patientEmail}</p><p className="text-sm text-[#434655]">{reservation.phone}</p></Card><Card pad="md"><h2 className="font-bold">Layanan dan Jadwal</h2><p className="mt-3 font-semibold">{reservation.service}</p><p className="text-sm text-[#434655]">{rupiah(reservation.price)} · {reservation.duration} menit</p><p className="mt-3 text-sm">{reservation.date} · {reservation.time} – {reservation.endTime}</p></Card><Card pad="md" className="lg:col-span-2"><h2 className="font-bold">{reservation.pembatalan ? "Detail Pembatalan" : "Keluhan Awal"}</h2><p className="mt-3 text-sm text-[#434655]">{detailContent}</p></Card></div>{pending && <Modal icon={<span className="text-xl font-bold">!</span>} iconTone={pending === "batal" ? "red" : "brand"} title={pending === "batal" ? "Batalkan Reservasi" : pending === "hadir" ? "Tandai Pasien Hadir" : "Selesaikan Reservasi"} subtitle="Konfirmasi perubahan status reservasi." onClose={closePending} footer={<><Button variant="outline" disabled={submitting} onClick={closePending}>Batal</Button><Button variant={pending === "batal" ? "danger" : "primary"} disabled={submitting} onClick={update}>{submitting ? "Memproses…" : "Konfirmasi"}</Button></>}>{pending === "batal" && <><Textarea rows={4} maxLength={255} value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Alasan pembatalan" />{error && <p className="rounded-lg bg-[#fdf1f1] p-3 text-sm text-[#a03d4a]">{error}</p>}</>}</Modal>}</div>;
+  return (
+    <div className='flex flex-col gap-5'>
+      <div className='flex flex-wrap items-center justify-between gap-3'>
+        <div>
+          <h1 className='text-[28px] font-bold text-[#191c1e]'>
+            Detail Reservasi
+          </h1>
+          <p className='mt-1 text-sm text-[#434655]'>{reservation.id}</p>
+        </div>
+        <Chip>{reservation.status}</Chip>
+      </div>
+      {error && (
+        <p className='rounded-lg bg-[#fdf1f1] p-3 text-sm text-[#a03d4a]'>
+          {error}
+        </p>
+      )}
+      <div className='flex flex-wrap gap-3'>
+        {canAttend && (
+          <Button onClick={() => openPending("hadir")}>Tandai Hadir</Button>
+        )}
+        {canFinish && (
+          <Button onClick={() => openPending("selesai")}>Tandai Selesai</Button>
+        )}
+        {canRecordPayment && (
+          <Button
+            onClick={() =>
+              navigate(
+                `/resepsionis/pembayaran?reservasi=${encodeURIComponent(reservation.id)}`,
+              )
+            }
+          >
+            Catat Pembayaran
+          </Button>
+        )}
+        {canViewPayment && (
+          <Button
+            onClick={() =>
+              navigate(
+                `/resepsionis/pembayaran?reservasi=${encodeURIComponent(reservation.id)}`,
+              )
+            }
+          >
+            Lihat Pembayaran
+          </Button>
+        )}
+        {canAttend && (
+          <Button variant='dangerSoft' onClick={() => openPending("batal")}>
+            Batalkan
+          </Button>
+        )}
+        <Button
+          variant='outline'
+          onClick={() => navigate("/resepsionis/reservasi")}
+        >
+          Kembali
+        </Button>
+      </div>
+      <div className='grid gap-5 lg:grid-cols-2'>
+        <Card pad='md'>
+          <h2 className='font-bold'>Pasien</h2>
+          <p className='mt-3 font-semibold'>{reservation.patientName}</p>
+          <p className='text-sm text-[#434655]'>{reservation.patientEmail}</p>
+          <p className='text-sm text-[#434655]'>{reservation.phone}</p>
+        </Card>
+        <Card pad='md'>
+          <h2 className='font-bold'>Layanan dan Jadwal</h2>
+          <p className='mt-3 font-semibold'>{reservation.service}</p>
+          <p className='text-sm text-[#434655]'>
+            {rupiah(reservation.price)} · {reservation.duration} menit
+          </p>
+          <p className='mt-3 text-sm'>
+            {reservation.date} · {reservation.time} – {reservation.endTime}
+          </p>
+        </Card>
+        <Card pad='md' className='lg:col-span-2'>
+          <h2 className='font-bold'>
+            {reservation.pembatalan ? "Detail Pembatalan" : "Keluhan Awal"}
+          </h2>
+          <p className='mt-3 text-sm text-[#434655]'>{detailContent}</p>
+        </Card>
+      </div>
+      {pending && (
+        <Modal
+          icon={<span className='text-xl font-bold'>!</span>}
+          iconTone={pending === "batal" ? "red" : "brand"}
+          title={
+            pending === "batal"
+              ? "Batalkan Reservasi"
+              : pending === "hadir"
+                ? "Tandai Pasien Hadir"
+                : "Selesaikan Reservasi"
+          }
+          subtitle='Konfirmasi perubahan status reservasi.'
+          onClose={closePending}
+          footer={
+            <>
+              <Button
+                variant='outline'
+                disabled={submitting}
+                onClick={closePending}
+              >
+                Batal
+              </Button>
+              <Button
+                variant={pending === "batal" ? "danger" : "primary"}
+                disabled={submitting}
+                onClick={update}
+              >
+                {submitting ? "Memproses…" : "Konfirmasi"}
+              </Button>
+            </>
+          }
+        >
+          {pending === "batal" && (
+            <>
+              <Textarea
+                rows={4}
+                maxLength={255}
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+                placeholder='Alasan pembatalan'
+              />
+              {error && (
+                <p className='rounded-lg bg-[#fdf1f1] p-3 text-sm text-[#a03d4a]'>
+                  {error}
+                </p>
+              )}
+            </>
+          )}
+        </Modal>
+      )}
+    </div>
+  );
 }

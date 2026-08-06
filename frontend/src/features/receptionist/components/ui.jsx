@@ -272,15 +272,10 @@ export function Modal({
   );
 }
 
-export function PageHeader({ eyebrow, title, action }) {
+export function PageHeader({ title, action }) {
   return (
     <div className='flex items-end justify-between gap-4'>
       <div>
-        {eyebrow && (
-          <p className='text-[11px] font-bold uppercase tracking-[2px] text-[#b99b57]'>
-            {eyebrow}
-          </p>
-        )}
         <h1 className='mt-2 font-serif text-[44px] font-medium leading-tight text-[#3d4940]'>
           {title}
         </h1>
