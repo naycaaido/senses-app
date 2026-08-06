@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   IconCalendar,
   IconDots,
+  IconPencil,
   IconPlus,
   IconReceipt,
   IconUsers,
@@ -116,7 +117,7 @@ export default function DetailPasien() {
             navigate(`/resepsionis/data-pasien/${patient.email}/edit`)
           }
         >
-          <IconPlus size={12} />
+          <IconPencil size={12} />
           Edit Pasien
         </Button>
       </div>
