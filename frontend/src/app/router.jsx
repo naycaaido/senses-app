@@ -20,7 +20,7 @@ import ReceptionistLayout from "../features/receptionist/components/Receptionist
 import ReceptionistDashboardPage from "../features/receptionist/pages/ReceptionistDashboardApiPage.jsx";
 import ReceptionistReservationPage from "../features/receptionist/pages/ReceptionistReservationPage.jsx";
 import ReceptionistNewReservationPage from "../features/receptionist/pages/ReceptionistNewReservationApiPage.jsx";
-import ReceptionistReservationDetailPage from "../features/receptionist/pages/ReceptionistReservationDetailApiPage.jsx";
+import ReceptionistReservationDetailPage from "../features/receptionist/pages/ReceptionistReservationDetailPage.jsx";
 import ReceptionistPatientDataPage from "../features/receptionist/pages/ReceptionistPatientDataPage.jsx";
 import ReceptionistPatientRegistrationPage from "../features/receptionist/pages/ReceptionistPatientRegistrationApiPage.jsx";
 import ReceptionistPatientDetailPage from "../features/receptionist/pages/ReceptionistPatientDetailPage.jsx";

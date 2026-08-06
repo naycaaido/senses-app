@@ -99,12 +99,6 @@ export default function Layanan() {
           icon={<IconGrid size={16} />}
         />
         <StatBox
-          label='Rata-rata Harga'
-          value={`Rp ${Math.round(avgPrice / 1000)}k`}
-          note='Sesuai standar regional'
-          icon={<IconGrid size={16} />}
-        />
-        <StatBox
           label='Layanan Nonaktif'
           value={inactiveCount}
           note='Tidak dapat dipilih untuk reservasi baru'
@@ -211,7 +205,9 @@ export default function Layanan() {
                         onClick={() => setPendingStatusChange(s)}
                         className={cx(
                           "rounded-lg px-2 py-1 text-xs font-semibold transition-colors hover:bg-[#f5f5f3]",
-                          s.status === "Aktif" ? "text-[#a03d4a]" : "text-emerald-600",
+                          s.status === "Aktif"
+                            ? "text-[#a03d4a]"
+                            : "text-emerald-600",
                         )}
                       >
                         {s.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"}
@@ -266,26 +262,35 @@ export default function Layanan() {
       {pendingStatusChange && (
         <Modal
           icon={<span className='text-xl font-bold'>!</span>}
-          iconTone={pendingStatusChange.status === "Aktif" ? 'red' : 'brand'}
+          iconTone={pendingStatusChange.status === "Aktif" ? "red" : "brand"}
           title={`${pendingStatusChange.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"} Layanan`}
           subtitle={`Anda akan ${pendingStatusChange.status === "Aktif" ? "menonaktifkan" : "mengaktifkan"} layanan berikut:`}
           onClose={() => setPendingStatusChange(null)}
           footer={
             <>
-              <Button variant='outline' onClick={() => setPendingStatusChange(null)}>
+              <Button
+                variant='outline'
+                onClick={() => setPendingStatusChange(null)}
+              >
                 Kembali
               </Button>
               <Button
-                variant={pendingStatusChange.status === "Aktif" ? 'danger' : 'primary'}
+                variant={
+                  pendingStatusChange.status === "Aktif" ? "danger" : "primary"
+                }
                 onClick={() => {
                   setServiceStatus(
                     pendingStatusChange.id,
-                    pendingStatusChange.status === "Aktif" ? "Nonaktif" : "Aktif",
+                    pendingStatusChange.status === "Aktif"
+                      ? "Nonaktif"
+                      : "Aktif",
                   );
                   setPendingStatusChange(null);
                 }}
               >
-                {pendingStatusChange.status === "Aktif" ? "Konfirmasi Nonaktifkan" : "Konfirmasi Aktifkan"}
+                {pendingStatusChange.status === "Aktif"
+                  ? "Konfirmasi Nonaktifkan"
+                  : "Konfirmasi Aktifkan"}
               </Button>
             </>
           }
@@ -295,8 +300,8 @@ export default function Layanan() {
               {pendingStatusChange.name}
             </p>
             <p className='text-xs text-[#434655]'>
-              {formatRupiah(pendingStatusChange.price)} · {pendingStatusChange.duration}{" "}
-              menit
+              {formatRupiah(pendingStatusChange.price)} ·{" "}
+              {pendingStatusChange.duration} menit
             </p>
           </div>
           <p className='mt-3 text-xs text-[#434655]'>

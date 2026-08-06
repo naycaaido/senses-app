@@ -13,7 +13,9 @@ import {
   getReceptionistPatientHistory,
   getReceptionistPatientPayments,
   getReceptionistPatientProfile,
+  getReceptionistPatientProfiles,
 } from "../../../shared/services/receptionistPatientApi.js";
+import { getReceptionistReservationDetail } from "../../../shared/services/receptionistApi.js";
 
 const rupiah = (value) => `Rp${Number(value || 0).toLocaleString("id-ID")}`;
 function Row({ label, value }) {
@@ -71,6 +73,7 @@ export default function DetailPasien() {
   const [patient, setPatient] = useState(null);
   const [history, setHistory] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [reservations, setReservations] = useState([]);
   const [error, setError] = useState("");
   useEffect(() => {
     (async () => {
@@ -291,10 +294,6 @@ export default function DetailPasien() {
                             {p.no_reservasi}
                           </span>
                         )}
-                      </td>
-                      <td className='px-5 py-4 text-[13px] text-[#191c1e]'>
-                        {reservations.find((r) => r.id === p.no_reservasi)
-                          ?.service || "Layanan"}
                       </td>
                       <td className='px-5 py-4 text-[13px] text-[#191c1e]'>
                         {formatDate(p.tanggal_bayar)}
